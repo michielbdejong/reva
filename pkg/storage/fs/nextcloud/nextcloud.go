@@ -19,7 +19,6 @@
 package nextcloud
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -85,7 +84,7 @@ func (nc *nextcloud) doUpload(r io.ReadCloser) error {
 
 	// initialize http client
 	client := &http.Client{}
-	req, err := http.NewRequest(http.MethodPut, "http://api.example.com/v1/user", bytes.NewBuffer(json))
+	req, err := http.NewRequest(http.MethodPut, "text/plain", r)
 	if err != nil {
 		panic(err)
 	}
