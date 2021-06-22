@@ -155,7 +155,9 @@ func (nc *nextcloud) RestoreRevision(ctx context.Context, ref *provider.Referenc
 func (nc *nextcloud) ListRecycle(ctx context.Context) ([]*provider.RecycleItem, error) {
 	return nil, gstatus.Errorf(codes.Unimplemented, "method not implemented")
 }
-func (nc *nextcloud) RestoreRecycleItem(ctx context.Context, key string, restoreRef *provider.Reference) error {
+
+// func (nc *nextcloud) RestoreRecycleItem(ctx context.Context, key string, restoreRef *provider.Reference) error {
+func (nc *nextcloud) RestoreRecycleItem(ctx context.Context, key string, restoreRef string) error {
 	return gstatus.Errorf(codes.Unimplemented, "method not implemented")
 }
 func (nc *nextcloud) PurgeRecycleItem(ctx context.Context, key string) error {
