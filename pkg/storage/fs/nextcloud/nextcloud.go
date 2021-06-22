@@ -78,7 +78,7 @@ type Action struct {
 
 func (nc *nextcloud) doUpload(r io.ReadCloser) error {
 	// See https://github.com/pondersource/sciencemesh-nextcloud/issues/13
-	endPoint := "http://nc/apps/sciencemesh/test"
+	endPoint := "http://nc/apps/sciencemesh/@alice/test"
 
 	fmt.Printf("\nUPLOADING IT TO %s!\n\n", endPoint)
 
