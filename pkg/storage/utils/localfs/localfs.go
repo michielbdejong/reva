@@ -21,6 +21,7 @@ package localfs
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -342,6 +343,7 @@ func (fs *localfs) normalize(ctx context.Context, fi os.FileInfo, fn string, mdK
 	}
 
 	// A fileid is constructed like `fileid-url_encoded_path`. See GetPathByID for the inverse conversion
+
 	md := &provider.ResourceInfo{
 		Id:            &provider.ResourceId{OpaqueId: "fileid-" + url.QueryEscape(path.Join(layout, fp))},
 		Path:          fp,
@@ -356,6 +358,10 @@ func (fs *localfs) normalize(ctx context.Context, fi os.FileInfo, fn string, mdK
 		Owner:             owner.Id,
 		ArbitraryMetadata: metadata,
 	}
+
+	// For debugging:
+	s, _ := json.Marshal(md)
+	fmt.Printf("%s\n", s)
 
 	return md, nil
 }
