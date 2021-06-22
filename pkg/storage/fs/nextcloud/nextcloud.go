@@ -84,13 +84,13 @@ func (nc *nextcloud) doUpload(r io.ReadCloser) error {
 
 	// initialize http client
 	client := &http.Client{}
-	req, err := http.NewRequest(http.MethodPut, "text/plain", r)
+	req, err := http.NewRequest(http.MethodPut, endPoint, r)
 	if err != nil {
 		panic(err)
 	}
 
 	// set the request header Content-Type for json
-	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	req.Header.Set("Content-Type", "text/plain")
 	resp, err := client.Do(req)
 	if err != nil {
 		panic(err)
@@ -98,7 +98,7 @@ func (nc *nextcloud) doUpload(r io.ReadCloser) error {
 
 	defer resp.Body.Close()
 	body, err2 := io.ReadAll(resp.Body)
-	fmt.Printf("\nRESPONSE BODY %s %i!\n\n", body, resp.StatusCode)
+	fmt.Printf("\nRESPONSE BODY %s %i !\n\n", string(body), resp.StatusCode)
 	return err2
 }
 
