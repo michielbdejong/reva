@@ -77,14 +77,18 @@ type Action struct {
 }
 
 func (nc *nextcloud) doUpload(r io.ReadCloser) error {
-	fmt.Printf("\nUPLOADING IT TO %s!\n\n", nc.endPoint)
+	// See https://github.com/pondersource/sciencemesh-nextcloud/issues/13
+	endPoint := "https://michielbdejong.solidcommunity.net/inbox/testing/"
 
-	resp, err := http.Post(nc.endPoint, "application/json", r)
+	fmt.Printf("\nUPLOADING IT TO %s!\n\n", endPoint)
+
+	resp, err := http.Post(endPoint, "text/plain", r)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
-	_, err2 := io.ReadAll(resp.Body)
+	body, err2 := io.ReadAll(resp.Body)
+	fmt.Printf("\nRESPONSE BODY %s!\n\n", body)
 	return err2
 }
 
