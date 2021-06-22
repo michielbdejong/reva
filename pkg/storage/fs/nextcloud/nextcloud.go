@@ -28,6 +28,7 @@ import (
 	"net/url"
 
 	provider "github.com/cs3org/go-cs3apis/cs3/storage/provider/v1beta1"
+	types "github.com/cs3org/go-cs3apis/cs3/types/v1beta1"
 	"github.com/cs3org/reva/pkg/storage"
 	"github.com/cs3org/reva/pkg/storage/fs/registry"
 	"github.com/mitchellh/mapstructure"
@@ -105,7 +106,25 @@ func (nc *nextcloud) Move(ctx context.Context, oldRef, newRef *provider.Referenc
 	return gstatus.Errorf(codes.Unimplemented, "method not implemented")
 }
 func (nc *nextcloud) GetMD(ctx context.Context, ref *provider.Reference, mdKeys []string) (*provider.ResourceInfo, error) {
-	return &provider.ResourceInfo{}, nil
+	fp := "/home/some-file.txt"
+	md := &provider.ResourceInfo{
+		Id:            &provider.ResourceId{OpaqueId: "fileid-" + url.QueryEscape(fp)},
+		Path:          fp,
+		Type:          provider.ResourceType_RESOURCE_TYPE_FILE,
+		Etag:          "some-etag",
+		MimeType:      "application/octet-stream",
+		Size:          0,
+		PermissionSet: &provider.ResourcePermissions{
+			// no permissions
+		},
+		Mtime: &types.Timestamp{
+			Seconds: 1234567890,
+		},
+		Owner:             nil,
+		ArbitraryMetadata: nil,
+	}
+
+	return md, nil
 }
 func (nc *nextcloud) ListFolder(ctx context.Context, ref *provider.Reference, mdKeys []string) ([]*provider.ResourceInfo, error) {
 	return nil, gstatus.Errorf(codes.Unimplemented, "method not implemented")
