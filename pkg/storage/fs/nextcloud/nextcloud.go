@@ -106,7 +106,47 @@ func (nc *nextcloud) Move(ctx context.Context, oldRef, newRef *provider.Referenc
 	return gstatus.Errorf(codes.Unimplemented, "method not implemented")
 }
 func (nc *nextcloud) GetMD(ctx context.Context, ref *provider.Reference, mdKeys []string) (*provider.ResourceInfo, error) {
-	fp := "/home/some-file.txt"
+	fp := "some-file.txt"
+	// example:
+	// {
+	// 	"type":1,
+	// 	"id":{
+	// 		"opaque_id":"fileid-einstein%2Ffile.txt"
+	// 	},
+	// 	"etag":"\"e13c8b47adc153eb32036b634072d4a8\"",
+	// 	"mime_type":"text/plain; charset=utf-8",
+	// 	"mtime":{
+	// 		"seconds":1624369389
+	// 	},
+	// 	"path":"/file.txt",
+	// 	"permission_set":{
+	// 		"add_grant":true,
+	// 		"create_container":true,
+	// 		"delete":true,
+	// 		"get_path":true,
+	// 		"get_quota":true,
+	// 		"initiate_file_download":true,
+	// 		"initiate_file_upload":true,
+	// 		"list_grants":true,
+	// 		"list_container":true,
+	// 		"list_file_versions":true,
+	// 		"list_recycle":true,
+	// 		"move":true,
+	// 		"remove_grant":true,
+	// 		"purge_recycle":true,
+	// 		"restore_file_version":true,
+	// 		"restore_recycle_item":true,
+	// 		"stat":true,
+	// 		"update_grant":true
+	// 	},
+	// 	"size":6990,
+	// 	"owner":{
+	// 		"idp":"cernbox.cern.ch",
+	// 		"opaque_id":"4c510ada-c86b-4815-8820-42cdf82c3d51"
+	// 	},
+	// 	"arbitrary_metadata":{
+	// 	}
+	// }
 	md := &provider.ResourceInfo{
 		Id:            &provider.ResourceId{OpaqueId: "fileid-" + url.QueryEscape(fp)},
 		Path:          fp,
