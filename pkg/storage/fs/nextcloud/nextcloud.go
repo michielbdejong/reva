@@ -19,6 +19,7 @@
 package nextcloud
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -78,17 +79,27 @@ type Action struct {
 
 func (nc *nextcloud) doUpload(r io.ReadCloser) error {
 	// See https://github.com/pondersource/sciencemesh-nextcloud/issues/13
-	endPoint := "https://michielbdejong.solidcommunity.net/inbox/testing/"
+	endPoint := "http://nc/apps/sciencemesh/test"
 
 	fmt.Printf("\nUPLOADING IT TO %s!\n\n", endPoint)
 
-	resp, err := http.Post(endPoint, "text/plain", r)
+	// initialize http client
+	client := &http.Client{}
+	req, err := http.NewRequest(http.MethodPut, "http://api.example.com/v1/user", bytes.NewBuffer(json))
 	if err != nil {
-		return err
+		panic(err)
 	}
+
+	// set the request header Content-Type for json
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+
 	defer resp.Body.Close()
 	body, err2 := io.ReadAll(resp.Body)
-	fmt.Printf("\nRESPONSE BODY %s!\n\n", body)
+	fmt.Printf("\nRESPONSE BODY %s %i!\n\n", body, resp.StatusCode)
 	return err2
 }
 
