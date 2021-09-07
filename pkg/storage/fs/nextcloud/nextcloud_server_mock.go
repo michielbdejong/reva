@@ -135,6 +135,7 @@ var responses = map[string]Response{
 
 	`POST /apps/sciencemesh/~tester/api/GetHome `: {200, `yes we are`, serverStateHome},
 	`POST /apps/sciencemesh/~tester/api/CreateHome `: {201, ``, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/CreateDir {"path":"/some/path"}`: {201, ``, serverStateEmpty},	
 }
 
 // GetNextcloudServerMock returns a handler that pretends to be a remote Nextcloud server

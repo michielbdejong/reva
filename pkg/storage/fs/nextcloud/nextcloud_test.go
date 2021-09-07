@@ -26,6 +26,7 @@ import (
 	"google.golang.org/grpc/metadata"
 
 	userpb "github.com/cs3org/go-cs3apis/cs3/identity/user/v1beta1"
+	provider "github.com/cs3org/go-cs3apis/cs3/storage/provider/v1beta1"
 	"github.com/cs3org/reva/pkg/auth/scope"
 	ctxpkg "github.com/cs3org/reva/pkg/ctx"
 	"github.com/cs3org/reva/pkg/storage/fs/nextcloud"
@@ -99,10 +100,10 @@ var _ = Describe("Nextcloud", func() {
 			called := make([]string, 0)
 
 			h := nextcloud.GetNextcloudServerMock(&called)
-			mock, teardown := nextcloud.TestingHTTPClient(h1)
+			mock, teardown := nextcloud.TestingHTTPClient(h)
 			defer teardown()
-			nc1.SetHTTPClient(mock)
-			home, err2 := nc1.GetHome(ctx)
+			nc.SetHTTPClient(mock)
+			home, err := nc.GetHome(ctx)
 			Expect(home).To(Equal("yes we are"))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(len(called)).To(Equal(1))
@@ -113,13 +114,13 @@ var _ = Describe("Nextcloud", func() {
 	// CreateHome(ctx context.Context) error
 	Describe("CreateHome", func() {
 		It("calls the CreateHome endpoint", func() {
-			nc2, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
+			nc, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
 				EndPoint: "http://mock.com/apps/sciencemesh/",
 				MockHTTP: true,
 			})
 			called := make([]string, 0)
 			h := nextcloud.GetNextcloudServerMock(&called)
-			mock, teardown := nextcloud.TestingHTTPClient(h2)
+			mock, teardown := nextcloud.TestingHTTPClient(h)
 			defer teardown()
 			nc.SetHTTPClient(mock)
 			err := nc.CreateHome(ctx)
@@ -132,23 +133,23 @@ var _ = Describe("Nextcloud", func() {
 	// CreateDir(ctx context.Context, ref *provider.Reference) error
 	Describe("CreateDir", func() {
 		It("calls the CreateDir endpoint", func() {
-			nc2, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
+			nc, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
 				EndPoint: "http://mock.com/apps/sciencemesh/",
 				MockHTTP: true,
 			})
 			called := make([]string, 0)
 			h := nextcloud.GetNextcloudServerMock(&called)
-			mock, teardown := nextcloud.TestingHTTPClient(h2)
+			mock, teardown := nextcloud.TestingHTTPClient(h)
 			defer teardown()
 			nc.SetHTTPClient(mock)
 			// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L550-L561
-			ref := *provider.Reference{
-				Path: "/some/path"
+			ref := &provider.Reference{
+				Path: "/some/path",
 			}
 			err := nc.CreateDir(ctx, ref)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(len(called)).To(Equal(1))
-			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/CreateDir "))
+			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/CreateDir {\"path\":\"/some/path\"}"))
 		})
 	})
 
