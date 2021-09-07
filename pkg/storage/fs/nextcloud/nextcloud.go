@@ -224,10 +224,15 @@ func (nc *StorageDriver) Move(ctx context.Context, oldRef, newRef *provider.Refe
 
 // GetMD as defined in the storage.FS interface
 func (nc *StorageDriver) GetMD(ctx context.Context, ref *provider.Reference, mdKeys []string) (*provider.ResourceInfo, error) {
-	refStr, _ := json.Marshal(ref)
-	mdKeysStr, _ := json.Marshal(mdKeys)
-	bodyStr := "{\"ref\":" + string(refStr) + ",\"mdKeys\":" + string(mdKeysStr) + "}"
-
+	type paramsObj struct {
+		Ref provider.Reference      `json:"ref"`
+		MdKeys []string `json:"mdKeys"`
+	}
+	bodyObj := &paramsObj{
+		Ref: *ref,
+		MdKeys: mdKeys,
+	}
+	bodyStr, _ := json.Marshal(bodyObj)
 	log := appctx.GetLogger(ctx)
 	log.Info().Msgf("GetMD %s", bodyStr)
 
