@@ -112,12 +112,13 @@ func (nc *StorageDriver) SetHTTPClient(c *http.Client) {
 	nc.client = c
 }
 
-func (nc *StorageDriver) doUpload(r io.ReadCloser) error {
-	filePath := "test.txt"
-
-	// initialize http client
-	client := &http.Client{}
-	url := nc.endPoint + "Upload/" + filePath
+func (nc *StorageDriver) doUpload(ctx context.Context, filePath string, r io.ReadCloser) error {
+	// log := appctx.GetLogger(ctx)
+	user, err := getUser(ctx)
+	if err != nil {
+		return err
+	}
+	url := nc.endPoint + "~" + user.Username + "/api/Upload/" + filePath
 	req, err := http.NewRequest(http.MethodPut, url, r)
 	if err != nil {
 		panic(err)
@@ -126,7 +127,7 @@ func (nc *StorageDriver) doUpload(r io.ReadCloser) error {
 	// set the request header Content-Type for the upload
 	// FIXME: get the actual content type from somewhere
 	req.Header.Set("Content-Type", "text/plain")
-	resp, err := client.Do(req)
+	resp, err := nc.client.Do(req)
 	if err != nil {
 		panic(err)
 	}
@@ -373,12 +374,7 @@ func (nc *StorageDriver) Upload(ctx context.Context, ref *provider.Reference, r 
 	log := appctx.GetLogger(ctx)
 	log.Info().Msgf("Upload %s", bodyStr)
 
-	err := nc.doUpload(r)
-	if err != nil {
-		return err
-	}
-	_, _, err = nc.do(ctx, Action{"Upload", string(bodyStr)})
-	return err
+	return nc.doUpload(ctx, ref.Path, r)
 }
 
 // Download as defined in the storage.FS interface

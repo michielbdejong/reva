@@ -21,8 +21,9 @@ package nextcloud_test
 import (
 	"context"
 	"encoding/json"
-	// "net/http"
+	"io"
 	"os"
+	"strings"
 
 	"google.golang.org/grpc/metadata"
 
@@ -321,6 +322,32 @@ var _ = Describe("Nextcloud", func() {
 	})
 
 	// Upload(ctx context.Context, ref *provider.Reference, r io.ReadCloser) error
+	Describe("Upload", func() {
+		It("calls the files API with PUT", func() {
+			nc, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
+				EndPoint: "http://mock.com/apps/sciencemesh/",
+				MockHTTP: true,
+			})
+			called := make([]string, 0)
+			h := nextcloud.GetNextcloudServerMock(&called)
+			mock, teardown := nextcloud.TestingHTTPClient(h)
+			defer teardown()
+			nc.SetHTTPClient(mock)
+			// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L550-L561
+			ref := &provider.Reference{
+				ResourceId: &provider.ResourceId{
+          StorageId: "storage-id",
+					OpaqueId: "opaque-id",
+				},
+				Path: "some/file/path.txt",
+			}
+			stringReader := strings.NewReader("shiny!")
+      stringReadCloser := io.NopCloser(stringReader)
+			err := nc.Upload(ctx, ref, stringReadCloser)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(called[0]).To(Equal("PUT /apps/sciencemesh/~tester/api/Upload/some/file/path.txt shiny!"))
+		})
+	})
 	// Download(ctx context.Context, ref *provider.Reference) (io.ReadCloser, error)
 	// ListRevisions(ctx context.Context, ref *provider.Reference) ([]*provider.FileVersion, error)
 	// DownloadRevision(ctx context.Context, ref *provider.Reference, key string) (io.ReadCloser, error)
