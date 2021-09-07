@@ -118,7 +118,7 @@ func (nc *StorageDriver) doUpload(ctx context.Context, filePath string, r io.Rea
 	if err != nil {
 		return err
 	}
-	url := nc.endPoint + "~" + user.Username + "/api/Upload/" + filePath
+	url := nc.endPoint + "~" + user.Username + "/files/" + filePath
 	req, err := http.NewRequest(http.MethodPut, url, r)
 	if err != nil {
 		panic(err)

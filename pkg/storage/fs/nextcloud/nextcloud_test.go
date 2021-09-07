@@ -345,10 +345,39 @@ var _ = Describe("Nextcloud", func() {
       stringReadCloser := io.NopCloser(stringReader)
 			err := nc.Upload(ctx, ref, stringReadCloser)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(called[0]).To(Equal("PUT /apps/sciencemesh/~tester/api/Upload/some/file/path.txt shiny!"))
+			Expect(called[0]).To(Equal("PUT /apps/sciencemesh/~tester/files/some/file/path.txt shiny!"))
 		})
 	})
 	// Download(ctx context.Context, ref *provider.Reference) (io.ReadCloser, error)
+	PDescribe("Download", func() {
+		It("calls the files API with GET", func() {
+			nc, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
+				EndPoint: "http://mock.com/apps/sciencemesh/",
+				MockHTTP: true,
+			})
+			called := make([]string, 0)
+			h := nextcloud.GetNextcloudServerMock(&called)
+			mock, teardown := nextcloud.TestingHTTPClient(h)
+			defer teardown()
+			nc.SetHTTPClient(mock)
+			// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L550-L561
+			ref := &provider.Reference{
+				ResourceId: &provider.ResourceId{
+          StorageId: "storage-id",
+					OpaqueId: "opaque-id",
+				},
+				Path: "some/file/path.txt",
+			}
+			reader, err := nc.Download(ctx, ref)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(called[0]).To(Equal("GET /apps/sciencemesh/~tester/files/some/file/path.txt !"))
+			buf := new(strings.Builder)
+			_, err = io.Copy(buf, reader)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(buf.String()).To(Equal("the contents of the file"))
+		})
+	})
+
 	// ListRevisions(ctx context.Context, ref *provider.Reference) ([]*provider.FileVersion, error)
 	// DownloadRevision(ctx context.Context, ref *provider.Reference, key string) (io.ReadCloser, error)
 	// RestoreRevision(ctx context.Context, ref *provider.Reference, key string) error

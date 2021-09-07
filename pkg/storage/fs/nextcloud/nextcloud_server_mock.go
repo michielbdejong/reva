@@ -142,7 +142,8 @@ var responses = map[string]Response{
 	`POST /apps/sciencemesh/~tester/api/ListFolder {"ref":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"/some/path"},"mdKeys":["val1","val2","val3"]}`: {200, `[{ "size": 1, "path":"/some/path", "metadata": { "foo": "bar" }, "etag": "in-json-etag", "mimetype": "in-json-mimetype" }]`, serverStateEmpty},	
   `POST /apps/sciencemesh/~tester/api/InitiateUpload {"ref":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"/some/path"},"uploadLength":12345,"metadata":{"key1":"val1","key2":"val2","key3":"val3"}}`: {200, `{ "not":"sure", "what": "should be", "returned": "here" }`, serverStateEmpty},
   `POST /apps/sciencemesh/~tester/api/Upload {"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"/some/path"}`: {200, ``, serverStateEmpty},
-  `PUT /apps/sciencemesh/~tester/api/Upload/some/file/path.txt shiny!`: {200, ``, serverStateEmpty},
+  `PUT /apps/sciencemesh/~tester/files/some/file/path.txt shiny!`: {200, ``, serverStateEmpty},
+  `GET /apps/sciencemesh/~tester/files/some/file/path.txt `: {200, `the contents of the file`, serverStateEmpty},
 }
 
 
