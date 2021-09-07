@@ -88,25 +88,29 @@ var _ = Describe("Nextcloud", func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 	})
+
+	// 	GetHome(ctx context.Context) (string, error)
 	Describe("GetHome", func() {
 		It("calls the GetHome endpoint", func() {
-			nc1, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
+			nc, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
 				EndPoint: "http://mock.com/apps/sciencemesh/",
 				MockHTTP: true,
 			})
 			called := make([]string, 0)
 
-			h1 := nextcloud.GetNextcloudServerMock(&called)
-			mock1, teardown1 := nextcloud.TestingHTTPClient(h1)
-			defer teardown1()
-			nc1.SetHTTPClient(mock1)
+			h := nextcloud.GetNextcloudServerMock(&called)
+			mock, teardown := nextcloud.TestingHTTPClient(h1)
+			defer teardown()
+			nc1.SetHTTPClient(mock)
 			home, err2 := nc1.GetHome(ctx)
 			Expect(home).To(Equal("yes we are"))
-			Expect(err2).ToNot(HaveOccurred())
+			Expect(err).ToNot(HaveOccurred())
 			Expect(len(called)).To(Equal(1))
 			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/GetHome "))
 		})
 	})
+
+	// CreateHome(ctx context.Context) error
 	Describe("CreateHome", func() {
 		It("calls the CreateHome endpoint", func() {
 			nc2, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
@@ -114,14 +118,65 @@ var _ = Describe("Nextcloud", func() {
 				MockHTTP: true,
 			})
 			called := make([]string, 0)
-			h2 := nextcloud.GetNextcloudServerMock(&called)
-			mock2, teardown2 := nextcloud.TestingHTTPClient(h2)
-			defer teardown2()
-			nc2.SetHTTPClient(mock2)
-			err2 := nc2.CreateHome(ctx)
-			Expect(err2).ToNot(HaveOccurred())
+			h := nextcloud.GetNextcloudServerMock(&called)
+			mock, teardown := nextcloud.TestingHTTPClient(h2)
+			defer teardown()
+			nc.SetHTTPClient(mock)
+			err := nc.CreateHome(ctx)
+			Expect(err).ToNot(HaveOccurred())
 			Expect(len(called)).To(Equal(1))
 			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/CreateHome "))
 		})
 	})
+
+	// CreateDir(ctx context.Context, ref *provider.Reference) error
+	Describe("CreateDir", func() {
+		It("calls the CreateDir endpoint", func() {
+			nc2, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
+				EndPoint: "http://mock.com/apps/sciencemesh/",
+				MockHTTP: true,
+			})
+			called := make([]string, 0)
+			h := nextcloud.GetNextcloudServerMock(&called)
+			mock, teardown := nextcloud.TestingHTTPClient(h2)
+			defer teardown()
+			nc.SetHTTPClient(mock)
+			// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L550-L561
+			ref := *provider.Reference{
+				Path: "/some/path"
+			}
+			err := nc.CreateDir(ctx, ref)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(len(called)).To(Equal(1))
+			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/CreateDir "))
+		})
+	})
+
+	// Delete(ctx context.Context, ref *provider.Reference) error
+	// Move(ctx context.Context, oldRef, newRef *provider.Reference) error
+	// GetMD(ctx context.Context, ref *provider.Reference, mdKeys []string) (*provider.ResourceInfo, error)
+	// ListFolder(ctx context.Context, ref *provider.Reference, mdKeys []string) ([]*provider.ResourceInfo, error)
+	// InitiateUpload(ctx context.Context, ref *provider.Reference, uploadLength int64, metadata map[string]string) (map[string]string, error)
+	// Upload(ctx context.Context, ref *provider.Reference, r io.ReadCloser) error
+	// Download(ctx context.Context, ref *provider.Reference) (io.ReadCloser, error)
+	// ListRevisions(ctx context.Context, ref *provider.Reference) ([]*provider.FileVersion, error)
+	// DownloadRevision(ctx context.Context, ref *provider.Reference, key string) (io.ReadCloser, error)
+	// RestoreRevision(ctx context.Context, ref *provider.Reference, key string) error
+	// ListRecycle(ctx context.Context, key, path string) ([]*provider.RecycleItem, error)
+	// RestoreRecycleItem(ctx context.Context, key, path string, restoreRef *provider.Reference) error
+	// PurgeRecycleItem(ctx context.Context, key, path string) error
+	// EmptyRecycle(ctx context.Context) error
+	// GetPathByID(ctx context.Context, id *provider.ResourceId) (string, error)
+	// AddGrant(ctx context.Context, ref *provider.Reference, g *provider.Grant) error
+	// DenyGrant(ctx context.Context, ref *provider.Reference, g *provider.Grantee) error
+	// RemoveGrant(ctx context.Context, ref *provider.Reference, g *provider.Grant) error
+	// UpdateGrant(ctx context.Context, ref *provider.Reference, g *provider.Grant) error
+	// ListGrants(ctx context.Context, ref *provider.Reference) ([]*provider.Grant, error)
+	// GetQuota(ctx context.Context) (uint64, uint64, error)
+	// CreateReference(ctx context.Context, path string, targetURI *url.URL) error
+	// Shutdown(ctx context.Context) error
+	// SetArbitraryMetadata(ctx context.Context, ref *provider.Reference, md *provider.ArbitraryMetadata) error
+	// UnsetArbitraryMetadata(ctx context.Context, ref *provider.Reference, keys []string) error
+	// ListStorageSpaces(ctx context.Context, filter []*provider.ListStorageSpacesRequest_Filter) ([]*provider.StorageSpace, error)
+
 })
