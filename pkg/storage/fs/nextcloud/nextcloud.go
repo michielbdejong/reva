@@ -259,7 +259,7 @@ func (nc *StorageDriver) GetMD(ctx context.Context, ref *provider.Reference, mdK
 	md := &provider.ResourceInfo{
 		Opaque:            &types.Opaque{},
 		Type:              provider.ResourceType_RESOURCE_TYPE_FILE,
-		Id:                &provider.ResourceId{OpaqueId: "fileid-" + url.QueryEscape(ref.Path)},
+		Id:                &provider.ResourceId{OpaqueId: "fileid-" + url.QueryEscape(respMap["path"].(string))},
 		Checksum:          &provider.ResourceChecksum{},
 		Etag:              respMap["etag"].(string),
 		MimeType:          respMap["mimetype"].(string),
@@ -286,7 +286,15 @@ func (nc *StorageDriver) GetMD(ctx context.Context, ref *provider.Reference, mdK
 
 // ListFolder as defined in the storage.FS interface
 func (nc *StorageDriver) ListFolder(ctx context.Context, ref *provider.Reference, mdKeys []string) ([]*provider.ResourceInfo, error) {
-	bodyStr, err := json.Marshal(ref)
+	type paramsObj struct {
+		Ref provider.Reference      `json:"ref"`
+		MdKeys []string `json:"mdKeys"`
+	}
+	bodyObj := &paramsObj{
+		Ref: *ref,
+		MdKeys: mdKeys,
+	}
+	bodyStr, err := json.Marshal(bodyObj)
 	log := appctx.GetLogger(ctx)
 	log.Info().Msgf("LisfFolder %s", bodyStr)
 	if err != nil {
@@ -299,17 +307,22 @@ func (nc *StorageDriver) ListFolder(ctx context.Context, ref *provider.Reference
 	if status == 404 {
 		return nil, errtypes.NotFound("")
 	}
-	var bodyArr []string
-	err = json.Unmarshal(body, &bodyArr)
-	var infos = make([]*provider.ResourceInfo, len(bodyArr))
-	for i := 0; i < len(bodyArr); i++ {
+
+	var respMapArr []interface{}
+	err = json.Unmarshal(body, &respMapArr)
+	if err != nil {
+		return nil, err
+	}
+	var infos = make([]*provider.ResourceInfo, len(respMapArr))
+	for i := 0; i < len(respMapArr); i++ {
+		respMap := respMapArr[i].(map[string]interface{})
 		infos[i] = &provider.ResourceInfo{
 			Opaque:               &types.Opaque{},
 			Type:                 provider.ResourceType_RESOURCE_TYPE_CONTAINER,
-			Id:                   &provider.ResourceId{OpaqueId: "fileid-" + url.QueryEscape(bodyArr[i])},
+			Id:                   &provider.ResourceId{OpaqueId: "fileid-" + url.QueryEscape(respMap["path"].(string))},
 			Checksum:             &provider.ResourceChecksum{},
-			Etag:                 "some-etag",
-			MimeType:             "application/octet-stream",
+			Etag:                 respMap["etag"].(string),
+			MimeType:             respMap["mimetype"].(string),
 			Mtime:                &types.Timestamp{Seconds: 1234567890},
 			Path:                 "/subdir", // FIXME: bodyArr[i],
 			PermissionSet:        &provider.ResourcePermissions{},

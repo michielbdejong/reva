@@ -254,8 +254,6 @@ var _ = Describe("Nextcloud", func() {
 
 	// ListFolder(ctx context.Context, ref *provider.Reference, mdKeys []string) ([]*provider.ResourceInfo, error)
 	Describe("ListFolder", func() {
-		// FIXME: this test is testing the current incorrect behavior of ListFolder,
-		// see https://github.com/pondersource/sciencemesh-nextcloud/issues/24
 		It("calls the ListFolder endpoint", func() {
 			nc, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
 				EndPoint: "http://mock.com/apps/sciencemesh/",
@@ -277,15 +275,11 @@ var _ = Describe("Nextcloud", func() {
 			mdKeys := []string{"val1", "val2", "val3"}
 			results, err := nc.ListFolder(ctx, ref, mdKeys)
 			Expect(len(results)).To(Equal(1))
-			Expect(results[0].Etag).To(Equal("some-etag"))
-			Expect(results[0].MimeType).To(Equal("application/octet-stream"))
-			// resultJson, err := json.Marshal(results[0].ArbitraryMetadata)
-			// Expect(err).ToNot(HaveOccurred())
-			// Expect(string(resultJson)).To(Equal("{\"metadata\":{\"foo\":\"bar\"}}"))
+			Expect(results[0].Etag).To(Equal("in-json-etag"))
+			Expect(results[0].MimeType).To(Equal("in-json-mimetype"))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(len(called)).To(Equal(1))
-			// Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/ListFolder {\"ref\":{\"resource_id\":{\"storage_id\":\"storage-id\",\"opaque_id\":\"opaque-id\"},\"path\":\"/some/path\"},\"mdKeys\":[\"val1\",\"val2\",\"val3\"]}"))
-			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/ListFolder {\"resource_id\":{\"storage_id\":\"storage-id\",\"opaque_id\":\"opaque-id\"},\"path\":\"/some/path\"}"))
+			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/ListFolder {\"ref\":{\"resource_id\":{\"storage_id\":\"storage-id\",\"opaque_id\":\"opaque-id\"},\"path\":\"/some/path\"},\"mdKeys\":[\"val1\",\"val2\",\"val3\"]}"))
 		})
 	})
 
