@@ -20,7 +20,7 @@ package nextcloud_test
 
 import (
 	"context"
-	"net/http"
+	// "net/http"
 	"os"
 
 	"google.golang.org/grpc/metadata"
@@ -47,6 +47,7 @@ var _ = Describe("Nextcloud", func() {
 				OpaqueId: "f7fbf8c8-139b-4376-b307-cf0a8c2d0d9c",
 				Type:     userpb.UserType_USER_TYPE_PRIMARY,
 			},
+			Username: "tester",
 		}
 	)
 
@@ -87,32 +88,40 @@ var _ = Describe("Nextcloud", func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 	})
-	Describe("CreateHome", func() {
-		It("calls the CreateHome endpoint", func() {
-			nc, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
-				EndPoint: "http://mock.com",
+	Describe("GetHome", func() {
+		It("calls the GetHome endpoint", func() {
+			nc1, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
+				EndPoint: "http://mock.com/apps/sciencemesh/",
 				MockHTTP: true,
 			})
+			called := make([]string, 0)
 
-			const (
-				okResponse = `{
-					"users": [
-						{"id": 1, "name": "Roman"},
-						{"id": 2, "name": "Dmitry"}
-					]	
-				}`
-			)
-			h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				_, err := w.Write([]byte(okResponse))
-				if err != nil {
-					panic(err)
-				}
-			})
-			mock, teardown := nextcloud.TestingHTTPClient(h)
-			defer teardown()
-			nc.SetHTTPClient(mock)
-			err2 := nc.CreateHome(ctx)
+			h1 := nextcloud.GetNextcloudServerMock(&called)
+			mock1, teardown1 := nextcloud.TestingHTTPClient(h1)
+			defer teardown1()
+			nc1.SetHTTPClient(mock1)
+			home, err2 := nc1.GetHome(ctx)
+			Expect(home).To(Equal("yes we are"))
 			Expect(err2).ToNot(HaveOccurred())
+			Expect(len(called)).To(Equal(1))
+			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/GetHome "))
+		})
+	})
+	Describe("CreateHome", func() {
+		It("calls the CreateHome endpoint", func() {
+			nc2, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
+				EndPoint: "http://mock.com/apps/sciencemesh/",
+				MockHTTP: true,
+			})
+			called := make([]string, 0)
+			h2 := nextcloud.GetNextcloudServerMock(&called)
+			mock2, teardown2 := nextcloud.TestingHTTPClient(h2)
+			defer teardown2()
+			nc2.SetHTTPClient(mock2)
+			err2 := nc2.CreateHome(ctx)
+			Expect(err2).ToNot(HaveOccurred())
+			Expect(len(called)).To(Equal(1))
+			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/CreateHome "))
 		})
 	})
 })

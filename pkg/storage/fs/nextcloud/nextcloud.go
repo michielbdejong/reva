@@ -80,7 +80,8 @@ func New(m map[string]interface{}) (storage.FS, error) {
 func NewStorageDriver(c *StorageDriverConfig) (*StorageDriver, error) {
 	var client *http.Client
 	if c.MockHTTP {
-		nextcloudServerMock := GetNextcloudServerMock()
+		called := make([]string, 0)
+		nextcloudServerMock := GetNextcloudServerMock(&called)
 		client, _ = TestingHTTPClient(nextcloudServerMock)
 	} else {
 		client = &http.Client{}

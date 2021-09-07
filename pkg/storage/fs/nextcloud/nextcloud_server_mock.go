@@ -132,10 +132,13 @@ var responses = map[string]Response{
 	`POST /apps/sciencemesh/~einstein/api/UnsetArbitraryMetadata {"path":"/subdir"}`: {200, ``, serverStateSubdir},
 
 	`POST /apps/sciencemesh/~einstein/api/UpdateGrant {"path":"/subdir"}`: {200, ``, serverStateGrantUpdated},
+
+	`POST /apps/sciencemesh/~tester/api/GetHome `: {200, `yes we are`, serverStateHome},
+	`POST /apps/sciencemesh/~tester/api/CreateHome `: {201, ``, serverStateEmpty},
 }
 
 // GetNextcloudServerMock returns a handler that pretends to be a remote Nextcloud server
-func GetNextcloudServerMock() http.Handler {
+func GetNextcloudServerMock(called *[]string) (http.Handler) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		buf := new(strings.Builder)
 		_, err := io.Copy(buf, r.Body)
@@ -144,10 +147,12 @@ func GetNextcloudServerMock() http.Handler {
 		}
 		var key = fmt.Sprintf("%s %s %s", r.Method, r.URL, buf.String())
 		fmt.Printf("Nextcloud Server Mock key %s\n", key)
+		*called = append(*called, key)
 		response := responses[key]
 		if (response == Response{}) {
 			key = fmt.Sprintf("%s %s %s %s", r.Method, r.URL, buf.String(), serverState)
 			fmt.Printf("Nextcloud Server Mock key with State %s\n", key)
+			// *called = append(*called, key)
 			response = responses[key]
 		}
 		if (response == Response{}) {
