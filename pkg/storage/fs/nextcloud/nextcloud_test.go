@@ -284,6 +284,42 @@ var _ = Describe("Nextcloud", func() {
 	})
 
 	// InitiateUpload(ctx context.Context, ref *provider.Reference, uploadLength int64, metadata map[string]string) (map[string]string, error)
+	Describe("InitiateUpload", func() {
+		It("calls the ListFolder endpoint", func() {
+			nc, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
+				EndPoint: "http://mock.com/apps/sciencemesh/",
+				MockHTTP: true,
+			})
+			called := make([]string, 0)
+			h := nextcloud.GetNextcloudServerMock(&called)
+			mock, teardown := nextcloud.TestingHTTPClient(h)
+			defer teardown()
+			nc.SetHTTPClient(mock)
+			// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L550-L561
+			ref := &provider.Reference{
+				ResourceId: &provider.ResourceId{
+          StorageId: "storage-id",
+					OpaqueId: "opaque-id",
+				},
+				Path: "/some/path",
+			}
+			uploadLength := int64(12345)
+			metadata := map[string]string{
+				"key1": "val1",
+				"key2": "val2",
+				"key3": "val3",
+			}
+			results, err := nc.InitiateUpload(ctx, ref, uploadLength, metadata)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(results).To(Equal(map[string]string{
+				"not": "sure",
+				"what": "should be",
+				"returned": "here",
+			}))
+			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/InitiateUpload {\"ref\":{\"resource_id\":{\"storage_id\":\"storage-id\",\"opaque_id\":\"opaque-id\"},\"path\":\"/some/path\"},\"uploadLength\":12345,\"metadata\":{\"key1\":\"val1\",\"key2\":\"val2\",\"key3\":\"val3\"}}"))
+		})
+	})
+
 	// Upload(ctx context.Context, ref *provider.Reference, r io.ReadCloser) error
 	// Download(ctx context.Context, ref *provider.Reference) (io.ReadCloser, error)
 	// ListRevisions(ctx context.Context, ref *provider.Reference) ([]*provider.FileVersion, error)

@@ -341,7 +341,17 @@ func (nc *StorageDriver) ListFolder(ctx context.Context, ref *provider.Reference
 
 // InitiateUpload as defined in the storage.FS interface
 func (nc *StorageDriver) InitiateUpload(ctx context.Context, ref *provider.Reference, uploadLength int64, metadata map[string]string) (map[string]string, error) {
-	bodyStr, _ := json.Marshal(ref)
+	type paramsObj struct {
+		Ref provider.Reference      `json:"ref"`
+		UploadLength int64 `json:"uploadLength"`
+		Metadata map[string]string `json:"metadata"`
+	}
+	bodyObj := &paramsObj{
+		Ref: *ref,
+		UploadLength: uploadLength,
+		Metadata: metadata,
+	}
+	bodyStr, _ := json.Marshal(bodyObj)
 	log := appctx.GetLogger(ctx)
 	log.Info().Msgf("InitiateUpload %s", bodyStr)
 
