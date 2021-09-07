@@ -20,6 +20,7 @@ package nextcloud_test
 
 import (
 	"context"
+	"encoding/json"
 	// "net/http"
 	"os"
 
@@ -185,7 +186,72 @@ var _ = Describe("Nextcloud", func() {
 	})
 
 	// Move(ctx context.Context, oldRef, newRef *provider.Reference) error
+	Describe("Move", func() {
+		It("calls the Move endpoint", func() {
+			nc, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
+				EndPoint: "http://mock.com/apps/sciencemesh/",
+				MockHTTP: true,
+			})
+			called := make([]string, 0)
+			h := nextcloud.GetNextcloudServerMock(&called)
+			mock, teardown := nextcloud.TestingHTTPClient(h)
+			defer teardown()
+			nc.SetHTTPClient(mock)
+			// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L550-L561
+			ref1 := &provider.Reference{
+				ResourceId: &provider.ResourceId{
+          StorageId: "storage-id-1",
+					OpaqueId: "opaque-id-1",
+				},
+				Path: "/some/old/path",
+			}
+			ref2 := &provider.Reference{
+				ResourceId: &provider.ResourceId{
+          StorageId: "storage-id-2",
+					OpaqueId: "opaque-id-2",
+				},
+				Path: "/some/new/path",
+			}
+			err := nc.Move(ctx, ref1, ref2)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(len(called)).To(Equal(1))
+			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/Move {\"from\":{\"resource_id\":{\"storage_id\":\"storage-id-1\",\"opaque_id\":\"opaque-id-1\"},\"path\":\"/some/old/path\"},\"to\":{\"resource_id\":{\"storage_id\":\"storage-id-2\",\"opaque_id\":\"opaque-id-2\"},\"path\":\"/some/new/path\"}}"))
+		})
+	})
+
 	// GetMD(ctx context.Context, ref *provider.Reference, mdKeys []string) (*provider.ResourceInfo, error)
+	Describe("GetMD", func() {
+		It("calls the GetMD endpoint", func() {
+			nc, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
+				EndPoint: "http://mock.com/apps/sciencemesh/",
+				MockHTTP: true,
+			})
+			called := make([]string, 0)
+			h := nextcloud.GetNextcloudServerMock(&called)
+			mock, teardown := nextcloud.TestingHTTPClient(h)
+			defer teardown()
+			nc.SetHTTPClient(mock)
+			// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L550-L561
+			ref := &provider.Reference{
+				ResourceId: &provider.ResourceId{
+          StorageId: "storage-id",
+					OpaqueId: "opaque-id",
+				},
+				Path: "/some/path",
+			}
+			mdKeys := []string{"val1", "val2", "val3"}
+			result, err := nc.GetMD(ctx, ref, mdKeys)
+			Expect(result.Etag).To(Equal("in-json-etag"))
+			Expect(result.MimeType).To(Equal("in-json-mimetype"))
+			resultJson, err := json.Marshal(result.ArbitraryMetadata)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(string(resultJson)).To(Equal("{\"metadata\":{\"foo\":\"bar\"}}"))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(len(called)).To(Equal(1))
+			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/GetMD {\"ref\":{\"resource_id\":{\"storage_id\":\"storage-id\",\"opaque_id\":\"opaque-id\"},\"path\":\"/some/path\"},\"mdKeys\":[\"val1\",\"val2\",\"val3\"]}"))
+		})
+	})
+
 	// ListFolder(ctx context.Context, ref *provider.Reference, mdKeys []string) ([]*provider.ResourceInfo, error)
 	// InitiateUpload(ctx context.Context, ref *provider.Reference, uploadLength int64, metadata map[string]string) (map[string]string, error)
 	// Upload(ctx context.Context, ref *provider.Reference, r io.ReadCloser) error

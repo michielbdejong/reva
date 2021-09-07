@@ -211,9 +211,9 @@ func (nc *StorageDriver) Delete(ctx context.Context, ref *provider.Reference) er
 
 // Move as defined in the storage.FS interface
 func (nc *StorageDriver) Move(ctx context.Context, oldRef, newRef *provider.Reference) error {
-	data := make(map[string]string)
-	data["from"] = oldRef.Path
-	data["to"] = newRef.Path
+	data := make(map[string]provider.Reference)
+	data["from"] = *oldRef
+	data["to"] = *newRef
 	bodyStr, _ := json.Marshal(data)
 	log := appctx.GetLogger(ctx)
 	log.Info().Msgf("Move %s", bodyStr)
@@ -224,13 +224,13 @@ func (nc *StorageDriver) Move(ctx context.Context, oldRef, newRef *provider.Refe
 
 // GetMD as defined in the storage.FS interface
 func (nc *StorageDriver) GetMD(ctx context.Context, ref *provider.Reference, mdKeys []string) (*provider.ResourceInfo, error) {
-	bodyStr, err := json.Marshal(ref)
+	refStr, _ := json.Marshal(ref)
+	mdKeysStr, _ := json.Marshal(mdKeys)
+	bodyStr := "{\"ref\":" + string(refStr) + ",\"mdKeys\":" + string(mdKeysStr) + "}"
+
 	log := appctx.GetLogger(ctx)
 	log.Info().Msgf("GetMD %s", bodyStr)
 
-	if err != nil {
-		return nil, err
-	}
 	status, body, err := nc.do(ctx, Action{"GetMD", string(bodyStr)})
 	if err != nil {
 		return nil, err
@@ -256,8 +256,8 @@ func (nc *StorageDriver) GetMD(ctx context.Context, ref *provider.Reference, mdK
 		Type:              provider.ResourceType_RESOURCE_TYPE_FILE,
 		Id:                &provider.ResourceId{OpaqueId: "fileid-" + url.QueryEscape(ref.Path)},
 		Checksum:          &provider.ResourceChecksum{},
-		Etag:              "some-etag",
-		MimeType:          "application/octet-stream",
+		Etag:              respMap["etag"].(string),
+		MimeType:          respMap["mimetype"].(string),
 		Mtime:             &types.Timestamp{Seconds: 1234567890},
 		Path:              ref.Path,
 		PermissionSet:     &provider.ResourcePermissions{},
