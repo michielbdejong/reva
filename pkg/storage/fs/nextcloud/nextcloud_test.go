@@ -144,6 +144,10 @@ var _ = Describe("Nextcloud", func() {
 			nc.SetHTTPClient(mock)
 			// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L550-L561
 			ref := &provider.Reference{
+				ResourceId: &provider.ResourceId{
+          StorageId: "storage-id",
+					OpaqueId: "opaque-id",
+				},
 				Path: "/some/path",
 			}
 			err := nc.CreateDir(ctx, ref)
