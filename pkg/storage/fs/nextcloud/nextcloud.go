@@ -216,7 +216,7 @@ func (nc *StorageDriver) do(ctx context.Context, a Action) (int, []byte, error) 
 		return 0, nil, err
 	}
 
-	log.Info().Msgf("nc.do response %d %s", resp.StatusCode, body)
+	fmt.Printf("nc.do response %d %s\n", resp.StatusCode, body)
 	return resp.StatusCode, body, nil
 }
 
@@ -598,9 +598,6 @@ func (nc *StorageDriver) EmptyRecycle(ctx context.Context) error {
 // GetPathByID as defined in the storage.FS interface
 func (nc *StorageDriver) GetPathByID(ctx context.Context, id *provider.ResourceId) (string, error) {
 	bodyStr, _ := json.Marshal(id)
-	log := appctx.GetLogger(ctx)
-	log.Info().Msgf("GetPathByID %s", bodyStr)
-
 	_, respBody, err := nc.do(ctx, Action{"GetPathByID", string(bodyStr)})
 	return string(respBody), err
 }

@@ -563,6 +563,29 @@ var _ = Describe("Nextcloud", func() {
 	})
 
 	// GetPathByID(ctx context.Context, id *provider.ResourceId) (string, error)
+	Describe("GetPathByID", func() {
+		It("calls the GetPathByID endpoint", func() {
+			nc, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
+				EndPoint: "http://mock.com/apps/sciencemesh/",
+				MockHTTP: true,
+			})
+			called := make([]string, 0)
+			h := nextcloud.GetNextcloudServerMock(&called)
+			mock, teardown := nextcloud.TestingHTTPClient(h)
+			defer teardown()
+			nc.SetHTTPClient(mock)
+			// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L602-L618
+			id := &provider.ResourceId{
+				StorageId: "storage-id",
+				OpaqueId:  "opaque-id",
+			}
+			path, err := nc.GetPathByID(ctx, id)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/GetPathByID {\"storage_id\":\"storage-id\",\"opaque_id\":\"opaque-id\"}"))
+			Expect(path).To(Equal("the/path/for/that/id.txt"))
+		})
+	})
+
 	// AddGrant(ctx context.Context, ref *provider.Reference, g *provider.Grant) error
 	// DenyGrant(ctx context.Context, ref *provider.Reference, g *provider.Grantee) error
 	// RemoveGrant(ctx context.Context, ref *provider.Reference, g *provider.Grant) error

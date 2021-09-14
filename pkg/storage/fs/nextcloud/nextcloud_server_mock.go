@@ -149,7 +149,8 @@ var responses = map[string]Response{
 	`POST /apps/sciencemesh/~tester/api/ListRecycle {"path":"/some/file.txt","key":"asdf"}`:                                                    {200, `[{"key":"deleted-version","size":12345,"deletionTime":1234567890}]`, serverStateEmpty},
 	`POST /apps/sciencemesh/~tester/api/RestoreRecycleItem {"key":"asdf","path":"original/location/when/deleted.txt","restoreRef":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"}}`: {200, ``, serverStateEmpty},
 	`POST /apps/sciencemesh/~tester/api/PurgeRecycleItem {"key":"asdf","path":"original/location/when/deleted.txt"}`:                                                                                                                {200, ``, serverStateEmpty},
-	`POST /apps/sciencemesh/~tester/api/EmptyRecycle `: {200, ``, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/EmptyRecycle `:                                                   {200, ``, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/GetPathByID {"storage_id":"storage-id","opaque_id":"opaque-id"}`: {200, `the/path/for/that/id.txt`, serverStateEmpty},
 }
 
 // GetNextcloudServerMock returns a handler that pretends to be a remote Nextcloud server
@@ -161,6 +162,7 @@ func GetNextcloudServerMock(called *[]string) http.Handler {
 			panic("Error reading response into buffer")
 		}
 		var key = fmt.Sprintf("%s %s %s", r.Method, r.URL, buf.String())
+		fmt.Printf("Nextcloud Server Mock key components %s %d %s %d %s %d\n", r.Method, len(r.Method), r.URL.String(), len(r.URL.String()), buf.String(), len(buf.String()))
 		fmt.Printf("Nextcloud Server Mock key %s\n", key)
 		*called = append(*called, key)
 		response := responses[key]
