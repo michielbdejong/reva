@@ -549,7 +549,18 @@ func (nc *StorageDriver) ListRecycle(ctx context.Context, key string, path strin
 
 // RestoreRecycleItem as defined in the storage.FS interface
 func (nc *StorageDriver) RestoreRecycleItem(ctx context.Context, key string, path string, restoreRef *provider.Reference) error {
-	bodyStr, _ := json.Marshal(restoreRef)
+	type paramsObj struct {
+		Key        string             `json:"key"`
+		Path       string             `json:"path"`
+		RestoreRef provider.Reference `json:"restoreRef"`
+	}
+	bodyObj := &paramsObj{
+		Key:        key,
+		Path:       path,
+		RestoreRef: *restoreRef,
+	}
+	bodyStr, _ := json.Marshal(bodyObj)
+
 	log := appctx.GetLogger(ctx)
 	log.Info().Msgf("RestoreRecycleItem %s", bodyStr)
 
@@ -559,7 +570,15 @@ func (nc *StorageDriver) RestoreRecycleItem(ctx context.Context, key string, pat
 
 // PurgeRecycleItem as defined in the storage.FS interface
 func (nc *StorageDriver) PurgeRecycleItem(ctx context.Context, key string, path string) error {
-	bodyStr, _ := json.Marshal(key)
+	type paramsObj struct {
+		Key  string `json:"key"`
+		Path string `json:"path"`
+	}
+	bodyObj := &paramsObj{
+		Key:  key,
+		Path: path,
+	}
+	bodyStr, _ := json.Marshal(bodyObj)
 	log := appctx.GetLogger(ctx)
 	log.Info().Msgf("PurgeRecycleItem %s", bodyStr)
 
