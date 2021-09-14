@@ -126,7 +126,7 @@ func (nc *StorageDriver) doUpload(ctx context.Context, filePath string, r io.Rea
 	// See https://github.com/pondersource/nc-sciencemesh/issues/5
 	// url := nc.endPoint + "~" + user.Username + "/files/" + filePath
 	url := nc.endPoint + "~" + user.Username + "/api/Upload/" + filePath
-	req, err := http.NewRequest(http.MethodPost, url, r)
+	req, err := http.NewRequest(http.MethodPut, url, r)
 	if err != nil {
 		panic(err)
 	}
@@ -152,6 +152,29 @@ func (nc *StorageDriver) doDownload(ctx context.Context, filePath string) (io.Re
 	// See https://github.com/pondersource/nc-sciencemesh/issues/5
 	// url := nc.endPoint + "~" + user.Username + "/files/" + filePath
 	url := nc.endPoint + "~" + user.Username + "/api/Download/" + filePath
+	req, err := http.NewRequest(http.MethodGet, url, strings.NewReader(""))
+	if err != nil {
+		panic(err)
+	}
+
+	resp, err := nc.client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	if resp.StatusCode != 200 {
+		panic("No 200 response code in download request")
+	}
+
+	return resp.Body, err
+}
+
+func (nc *StorageDriver) doDownloadRevision(ctx context.Context, filePath string, key string) (io.ReadCloser, error) {
+	user, err := getUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+	// See https://github.com/pondersource/nc-sciencemesh/issues/5
+	url := nc.endPoint + "~" + user.Username + "/api/DownloadRevision/" + key + "/" + filePath
 	req, err := http.NewRequest(http.MethodGet, url, strings.NewReader(""))
 	if err != nil {
 		panic(err)
@@ -452,17 +475,24 @@ func (nc *StorageDriver) ListRevisions(ctx context.Context, ref *provider.Refere
 
 // DownloadRevision as defined in the storage.FS interface
 func (nc *StorageDriver) DownloadRevision(ctx context.Context, ref *provider.Reference, key string) (io.ReadCloser, error) {
-	bodyStr, _ := json.Marshal(ref)
 	log := appctx.GetLogger(ctx)
-	log.Info().Msgf("DownloadRevision %s", bodyStr)
+	log.Info().Msgf("DownloadRevision %s %s", ref.Path, key)
 
-	_, _, err := nc.do(ctx, Action{"DownloadRevision", string(bodyStr)})
-	return nil, err
+	readCloser, err := nc.doDownloadRevision(ctx, ref.Path, key)
+	return readCloser, err
 }
 
 // RestoreRevision as defined in the storage.FS interface
 func (nc *StorageDriver) RestoreRevision(ctx context.Context, ref *provider.Reference, key string) error {
-	bodyStr, _ := json.Marshal(ref)
+	type paramsObj struct {
+		Path string `json:"path"`
+		Key  string `json:"key"`
+	}
+	bodyObj := &paramsObj{
+		Path: ref.Path,
+		Key:  key,
+	}
+	bodyStr, _ := json.Marshal(bodyObj)
 	log := appctx.GetLogger(ctx)
 	log.Info().Msgf("RestoreRevision %s", bodyStr)
 
