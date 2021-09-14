@@ -22,6 +22,7 @@ import (
 	"context"
 	"encoding/json"
 	"io"
+	"net/url"
 	"os"
 	"strings"
 
@@ -848,6 +849,26 @@ var _ = Describe("Nextcloud", func() {
 	})
 
 	// CreateReference(ctx context.Context, path string, targetURI *url.URL) error
+	Describe("CreateReference", func() {
+		It("calls the CreateReference endpoint", func() {
+			nc, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
+				EndPoint: "http://mock.com/apps/sciencemesh/",
+				MockHTTP: true,
+			})
+			called := make([]string, 0)
+			h := nextcloud.GetNextcloudServerMock(&called)
+			mock, teardown := nextcloud.TestingHTTPClient(h)
+			defer teardown()
+			nc.SetHTTPClient(mock)
+			path := "some/file/path.txt"
+			targetURI, err := url.Parse("http://bing.com/search?q=dotnet")
+			Expect(err).ToNot(HaveOccurred())
+			err = nc.CreateReference(ctx, path, targetURI)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/CreateReference {"path":"some/file/path.txt","url":"http://bing.com/search?q=dotnet"}`))
+		})
+	})
+
 	// Shutdown(ctx context.Context) error
 	// SetArbitraryMetadata(ctx context.Context, ref *provider.Reference, md *provider.ArbitraryMetadata) error
 	// UnsetArbitraryMetadata(ctx context.Context, ref *provider.Reference, keys []string) error

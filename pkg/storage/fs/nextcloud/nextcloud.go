@@ -754,10 +754,17 @@ func (nc *StorageDriver) GetQuota(ctx context.Context) (uint64, uint64, error) {
 
 // CreateReference as defined in the storage.FS interface
 func (nc *StorageDriver) CreateReference(ctx context.Context, path string, targetURI *url.URL) error {
-	log := appctx.GetLogger(ctx)
-	log.Info().Msgf("CreateReference %s", path)
+	type paramsObj struct {
+		Path string `json:"path"`
+		Url  string `json:"url"`
+	}
+	bodyObj := &paramsObj{
+		Path: path,
+		Url:  targetURI.String(),
+	}
+	bodyStr, _ := json.Marshal(bodyObj)
 
-	_, _, err := nc.do(ctx, Action{"CreateReference", fmt.Sprintf(`{"path":"%s"}`, path)})
+	_, _, err := nc.do(ctx, Action{"CreateReference", string(bodyStr)})
 	return err
 }
 
