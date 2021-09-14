@@ -695,14 +695,14 @@ func (nc *StorageDriver) ListGrants(ctx context.Context, ref *provider.Reference
 		respMap := respMapArr[i].(map[string]interface{})
 		permsMap := respMap["permissions"].(map[string]interface{})
 		granteeMap := respMap["grantee"].(map[string]interface{})
-		granteeIdMap := granteeMap["Id"].(map[string]interface{})
-		granteeIdUserIdMap := granteeIdMap["UserId"].(map[string]interface{})
+		granteeIDMap := granteeMap["Id"].(map[string]interface{})
+		granteeIDUserIDMap := granteeIDMap["UserId"].(map[string]interface{})
 		grants[i] = &provider.Grant{
 			Grantee: &provider.Grantee{
 				Id: &provider.Grantee_UserId{
 					UserId: &user.UserId{
-						Idp:      granteeIdUserIdMap["idp"].(string),
-						OpaqueId: granteeIdUserIdMap["opaque_id"].(string),
+						Idp:      granteeIDUserIDMap["idp"].(string),
+						OpaqueId: granteeIDUserIDMap["opaque_id"].(string),
 						Type:     user.UserType_USER_TYPE_PRIMARY,
 					},
 				},
@@ -760,11 +760,11 @@ func (nc *StorageDriver) GetQuota(ctx context.Context) (uint64, uint64, error) {
 func (nc *StorageDriver) CreateReference(ctx context.Context, path string, targetURI *url.URL) error {
 	type paramsObj struct {
 		Path string `json:"path"`
-		Url  string `json:"url"`
+		URL  string `json:"url"`
 	}
 	bodyObj := &paramsObj{
 		Path: path,
-		Url:  targetURI.String(),
+		URL:  targetURI.String(),
 	}
 	bodyStr, _ := json.Marshal(bodyObj)
 
@@ -827,6 +827,10 @@ func (nc *StorageDriver) ListStorageSpaces(ctx context.Context, f []*provider.Li
 	}
 	bodyStr, _ := json.Marshal(bodyObj)
 	_, respBody, err := nc.do(ctx, Action{"ListStorageSpaces", string(bodyStr)})
+	if err != nil {
+		return nil, err
+	}
+
 	// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L1341-L1366
 	var respMapArr []interface{}
 	err = json.Unmarshal(respBody, &respMapArr)
