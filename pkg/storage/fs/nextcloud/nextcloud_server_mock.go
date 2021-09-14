@@ -159,6 +159,9 @@ var responses = map[string]Response{
 	`POST /apps/sciencemesh/~tester/api/GetQuota `: {200, `{"total":456,"used":123}`, serverStateEmpty},
 	`POST /apps/sciencemesh/~tester/api/CreateReference {"path":"some/file/path.txt","url":"http://bing.com/search?q=dotnet"}`: {200, ``, serverStateEmpty},
 	`POST /apps/sciencemesh/~tester/api/Shutdown `: {200, ``, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/SetArbitraryMetadata {"reference":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"},"metadata":{"metadata":{"arbi":"trary","meta":"data"}}}`: {200, ``, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/UnsetArbitraryMetadata {"reference":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"},"keys":["arbi"]}`:                                      {200, ``, serverStateEmpty},
+	``: {200, ``, serverStateEmpty},
 }
 
 // GetNextcloudServerMock returns a handler that pretends to be a remote Nextcloud server

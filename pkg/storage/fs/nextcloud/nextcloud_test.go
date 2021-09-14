@@ -914,11 +914,36 @@ var _ = Describe("Nextcloud", func() {
 			}
 			err := nc.SetArbitraryMetadata(ctx, ref, md)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/Shutdown `))
+			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/SetArbitraryMetadata {"reference":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"},"metadata":{"metadata":{"arbi":"trary","meta":"data"}}}`))
 		})
 	})
 
 	// UnsetArbitraryMetadata(ctx context.Context, ref *provider.Reference, keys []string) error
+	Describe("UnsetArbitraryMetadata", func() {
+		It("calls the UnsetArbitraryMetadata endpoint", func() {
+			nc, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
+				EndPoint: "http://mock.com/apps/sciencemesh/",
+				MockHTTP: true,
+			})
+			called := make([]string, 0)
+			h := nextcloud.GetNextcloudServerMock(&called)
+			mock, teardown := nextcloud.TestingHTTPClient(h)
+			defer teardown()
+			nc.SetHTTPClient(mock)
+			ref := &provider.Reference{
+				ResourceId: &provider.ResourceId{
+					StorageId: "storage-id",
+					OpaqueId:  "opaque-id",
+				},
+				Path: "some/file/path.txt",
+			}
+			keys := []string{"arbi"}
+			err := nc.UnsetArbitraryMetadata(ctx, ref, keys)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/UnsetArbitraryMetadata {"reference":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"},"keys":["arbi"]}`))
+		})
+	})
+
 	// ListStorageSpaces(ctx context.Context, filter []*provider.ListStorageSpacesRequest_Filter) ([]*provider.StorageSpace, error)
 
 })

@@ -801,7 +801,15 @@ func (nc *StorageDriver) SetArbitraryMetadata(ctx context.Context, ref *provider
 
 // UnsetArbitraryMetadata as defined in the storage.FS interface
 func (nc *StorageDriver) UnsetArbitraryMetadata(ctx context.Context, ref *provider.Reference, keys []string) error {
-	bodyStr, _ := json.Marshal(ref)
+	type paramsObj struct {
+		Reference provider.Reference `json:"reference"`
+		Keys      []string           `json:"keys"`
+	}
+	bodyObj := &paramsObj{
+		Reference: *ref,
+		Keys:      keys,
+	}
+	bodyStr, _ := json.Marshal(bodyObj)
 	log := appctx.GetLogger(ctx)
 	log.Info().Msgf("UnsetArbitraryMetadata %s", bodyStr)
 
