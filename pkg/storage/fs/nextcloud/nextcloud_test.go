@@ -870,6 +870,23 @@ var _ = Describe("Nextcloud", func() {
 	})
 
 	// Shutdown(ctx context.Context) error
+	Describe("Shutdown", func() {
+		It("calls the Shutdown endpoint", func() {
+			nc, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
+				EndPoint: "http://mock.com/apps/sciencemesh/",
+				MockHTTP: true,
+			})
+			called := make([]string, 0)
+			h := nextcloud.GetNextcloudServerMock(&called)
+			mock, teardown := nextcloud.TestingHTTPClient(h)
+			defer teardown()
+			nc.SetHTTPClient(mock)
+			err := nc.Shutdown(ctx)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/CreateReference {"path":"some/file/path.txt","url":"http://bing.com/search?q=dotnet"}`))
+		})
+	})
+
 	// SetArbitraryMetadata(ctx context.Context, ref *provider.Reference, md *provider.ArbitraryMetadata) error
 	// UnsetArbitraryMetadata(ctx context.Context, ref *provider.Reference, keys []string) error
 	// ListStorageSpaces(ctx context.Context, filter []*provider.ListStorageSpacesRequest_Filter) ([]*provider.StorageSpace, error)
