@@ -231,11 +231,11 @@ func (nc *StorageDriver) Move(ctx context.Context, oldRef, newRef *provider.Refe
 // GetMD as defined in the storage.FS interface
 func (nc *StorageDriver) GetMD(ctx context.Context, ref *provider.Reference, mdKeys []string) (*provider.ResourceInfo, error) {
 	type paramsObj struct {
-		Ref provider.Reference      `json:"ref"`
-		MdKeys []string `json:"mdKeys"`
+		Ref    provider.Reference `json:"ref"`
+		MdKeys []string           `json:"mdKeys"`
 	}
 	bodyObj := &paramsObj{
-		Ref: *ref,
+		Ref:    *ref,
 		MdKeys: mdKeys,
 	}
 	bodyStr, _ := json.Marshal(bodyObj)
@@ -293,11 +293,11 @@ func (nc *StorageDriver) GetMD(ctx context.Context, ref *provider.Reference, mdK
 // ListFolder as defined in the storage.FS interface
 func (nc *StorageDriver) ListFolder(ctx context.Context, ref *provider.Reference, mdKeys []string) ([]*provider.ResourceInfo, error) {
 	type paramsObj struct {
-		Ref provider.Reference      `json:"ref"`
-		MdKeys []string `json:"mdKeys"`
+		Ref    provider.Reference `json:"ref"`
+		MdKeys []string           `json:"mdKeys"`
 	}
 	bodyObj := &paramsObj{
-		Ref: *ref,
+		Ref:    *ref,
 		MdKeys: mdKeys,
 	}
 	bodyStr, err := json.Marshal(bodyObj)
@@ -348,14 +348,14 @@ func (nc *StorageDriver) ListFolder(ctx context.Context, ref *provider.Reference
 // InitiateUpload as defined in the storage.FS interface
 func (nc *StorageDriver) InitiateUpload(ctx context.Context, ref *provider.Reference, uploadLength int64, metadata map[string]string) (map[string]string, error) {
 	type paramsObj struct {
-		Ref provider.Reference      `json:"ref"`
-		UploadLength int64 `json:"uploadLength"`
-		Metadata map[string]string `json:"metadata"`
+		Ref          provider.Reference `json:"ref"`
+		UploadLength int64              `json:"uploadLength"`
+		Metadata     map[string]string  `json:"metadata"`
 	}
 	bodyObj := &paramsObj{
-		Ref: *ref,
+		Ref:          *ref,
 		UploadLength: uploadLength,
-		Metadata: metadata,
+		Metadata:     metadata,
 	}
 	bodyStr, _ := json.Marshal(bodyObj)
 	log := appctx.GetLogger(ctx)

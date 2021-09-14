@@ -147,8 +147,8 @@ var _ = Describe("Nextcloud", func() {
 			// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L550-L561
 			ref := &provider.Reference{
 				ResourceId: &provider.ResourceId{
-          StorageId: "storage-id",
-					OpaqueId: "opaque-id",
+					StorageId: "storage-id",
+					OpaqueId:  "opaque-id",
 				},
 				Path: "/some/path",
 			}
@@ -174,8 +174,8 @@ var _ = Describe("Nextcloud", func() {
 			// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L550-L561
 			ref := &provider.Reference{
 				ResourceId: &provider.ResourceId{
-          StorageId: "storage-id",
-					OpaqueId: "opaque-id",
+					StorageId: "storage-id",
+					OpaqueId:  "opaque-id",
 				},
 				Path: "/some/path",
 			}
@@ -201,15 +201,15 @@ var _ = Describe("Nextcloud", func() {
 			// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L550-L561
 			ref1 := &provider.Reference{
 				ResourceId: &provider.ResourceId{
-          StorageId: "storage-id-1",
-					OpaqueId: "opaque-id-1",
+					StorageId: "storage-id-1",
+					OpaqueId:  "opaque-id-1",
 				},
 				Path: "/some/old/path",
 			}
 			ref2 := &provider.Reference{
 				ResourceId: &provider.ResourceId{
-          StorageId: "storage-id-2",
-					OpaqueId: "opaque-id-2",
+					StorageId: "storage-id-2",
+					OpaqueId:  "opaque-id-2",
 				},
 				Path: "/some/new/path",
 			}
@@ -235,8 +235,8 @@ var _ = Describe("Nextcloud", func() {
 			// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L550-L561
 			ref := &provider.Reference{
 				ResourceId: &provider.ResourceId{
-          StorageId: "storage-id",
-					OpaqueId: "opaque-id",
+					StorageId: "storage-id",
+					OpaqueId:  "opaque-id",
 				},
 				Path: "/some/path",
 			}
@@ -268,8 +268,8 @@ var _ = Describe("Nextcloud", func() {
 			// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L550-L561
 			ref := &provider.Reference{
 				ResourceId: &provider.ResourceId{
-          StorageId: "storage-id",
-					OpaqueId: "opaque-id",
+					StorageId: "storage-id",
+					OpaqueId:  "opaque-id",
 				},
 				Path: "/some/path",
 			}
@@ -299,8 +299,8 @@ var _ = Describe("Nextcloud", func() {
 			// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L550-L561
 			ref := &provider.Reference{
 				ResourceId: &provider.ResourceId{
-          StorageId: "storage-id",
-					OpaqueId: "opaque-id",
+					StorageId: "storage-id",
+					OpaqueId:  "opaque-id",
 				},
 				Path: "/some/path",
 			}
@@ -313,8 +313,8 @@ var _ = Describe("Nextcloud", func() {
 			results, err := nc.InitiateUpload(ctx, ref, uploadLength, metadata)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(results).To(Equal(map[string]string{
-				"not": "sure",
-				"what": "should be",
+				"not":      "sure",
+				"what":     "should be",
 				"returned": "here",
 			}))
 			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/InitiateUpload {\"ref\":{\"resource_id\":{\"storage_id\":\"storage-id\",\"opaque_id\":\"opaque-id\"},\"path\":\"/some/path\"},\"uploadLength\":12345,\"metadata\":{\"key1\":\"val1\",\"key2\":\"val2\",\"key3\":\"val3\"}}"))
@@ -336,13 +336,13 @@ var _ = Describe("Nextcloud", func() {
 			// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L550-L561
 			ref := &provider.Reference{
 				ResourceId: &provider.ResourceId{
-          StorageId: "storage-id",
-					OpaqueId: "opaque-id",
+					StorageId: "storage-id",
+					OpaqueId:  "opaque-id",
 				},
 				Path: "some/file/path.txt",
 			}
 			stringReader := strings.NewReader("shiny!")
-      stringReadCloser := io.NopCloser(stringReader)
+			stringReadCloser := io.NopCloser(stringReader)
 			err := nc.Upload(ctx, ref, stringReadCloser)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(called[0]).To(Equal("PUT /apps/sciencemesh/~tester/files/some/file/path.txt shiny!"))
@@ -363,8 +363,8 @@ var _ = Describe("Nextcloud", func() {
 			// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L550-L561
 			ref := &provider.Reference{
 				ResourceId: &provider.ResourceId{
-          StorageId: "storage-id",
-					OpaqueId: "opaque-id",
+					StorageId: "storage-id",
+					OpaqueId:  "opaque-id",
 				},
 				Path: "some/file/path.txt",
 			}

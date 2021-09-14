@@ -133,22 +133,21 @@ var responses = map[string]Response{
 
 	`POST /apps/sciencemesh/~einstein/api/UpdateGrant {"path":"/subdir"}`: {200, ``, serverStateGrantUpdated},
 
-	`POST /apps/sciencemesh/~tester/api/GetHome `: {200, `yes we are`, serverStateHome},
+	`POST /apps/sciencemesh/~tester/api/GetHome `:    {200, `yes we are`, serverStateHome},
 	`POST /apps/sciencemesh/~tester/api/CreateHome `: {201, ``, serverStateEmpty},
-	`POST /apps/sciencemesh/~tester/api/CreateDir {"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"/some/path"}`: {201, ``, serverStateEmpty},	
-	`POST /apps/sciencemesh/~tester/api/Delete {"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"/some/path"}`: {200, ``, serverStateEmpty},	
-	`POST /apps/sciencemesh/~tester/api/Move {"from":{"resource_id":{"storage_id":"storage-id-1","opaque_id":"opaque-id-1"},"path":"/some/old/path"},"to":{"resource_id":{"storage_id":"storage-id-2","opaque_id":"opaque-id-2"},"path":"/some/new/path"}}`: {200, ``, serverStateEmpty},	
-	`POST /apps/sciencemesh/~tester/api/GetMD {"ref":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"/some/path"},"mdKeys":["val1","val2","val3"]}`: {200, `{ "size": 1, "path":"/some/path", "metadata": { "foo": "bar" }, "etag": "in-json-etag", "mimetype": "in-json-mimetype" }`, serverStateEmpty},	
-	`POST /apps/sciencemesh/~tester/api/ListFolder {"ref":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"/some/path"},"mdKeys":["val1","val2","val3"]}`: {200, `[{ "size": 1, "path":"/some/path", "metadata": { "foo": "bar" }, "etag": "in-json-etag", "mimetype": "in-json-mimetype" }]`, serverStateEmpty},	
-  `POST /apps/sciencemesh/~tester/api/InitiateUpload {"ref":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"/some/path"},"uploadLength":12345,"metadata":{"key1":"val1","key2":"val2","key3":"val3"}}`: {200, `{ "not":"sure", "what": "should be", "returned": "here" }`, serverStateEmpty},
-  `POST /apps/sciencemesh/~tester/api/Upload {"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"/some/path"}`: {200, ``, serverStateEmpty},
-  `PUT /apps/sciencemesh/~tester/files/some/file/path.txt shiny!`: {200, ``, serverStateEmpty},
-  `GET /apps/sciencemesh/~tester/files/some/file/path.txt `: {200, `the contents of the file`, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/CreateDir {"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"/some/path"}`:                                                                                                                  {201, ``, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/Delete {"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"/some/path"}`:                                                                                                                     {200, ``, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/Move {"from":{"resource_id":{"storage_id":"storage-id-1","opaque_id":"opaque-id-1"},"path":"/some/old/path"},"to":{"resource_id":{"storage_id":"storage-id-2","opaque_id":"opaque-id-2"},"path":"/some/new/path"}}`: {200, ``, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/GetMD {"ref":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"/some/path"},"mdKeys":["val1","val2","val3"]}`:                                                                              {200, `{ "size": 1, "path":"/some/path", "metadata": { "foo": "bar" }, "etag": "in-json-etag", "mimetype": "in-json-mimetype" }`, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/ListFolder {"ref":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"/some/path"},"mdKeys":["val1","val2","val3"]}`:                                                                         {200, `[{ "size": 1, "path":"/some/path", "metadata": { "foo": "bar" }, "etag": "in-json-etag", "mimetype": "in-json-mimetype" }]`, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/InitiateUpload {"ref":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"/some/path"},"uploadLength":12345,"metadata":{"key1":"val1","key2":"val2","key3":"val3"}}`:                         {200, `{ "not":"sure", "what": "should be", "returned": "here" }`, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/Upload {"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"/some/path"}`:                                                                                                                     {200, ``, serverStateEmpty},
+	`PUT /apps/sciencemesh/~tester/files/some/file/path.txt shiny!`: {200, ``, serverStateEmpty},
+	`GET /apps/sciencemesh/~tester/files/some/file/path.txt `:       {200, `the contents of the file`, serverStateEmpty},
 }
 
-
 // GetNextcloudServerMock returns a handler that pretends to be a remote Nextcloud server
-func GetNextcloudServerMock(called *[]string) (http.Handler) {
+func GetNextcloudServerMock(called *[]string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		buf := new(strings.Builder)
 		_, err := io.Copy(buf, r.Body)
