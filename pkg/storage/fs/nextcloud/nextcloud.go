@@ -684,57 +684,52 @@ func (nc *StorageDriver) ListGrants(ctx context.Context, ref *provider.Reference
 	if err != nil {
 		return nil, err
 	}
-	var m []map[string]bool
-	err = json.Unmarshal(respBody, &m)
+
+	var respMapArr []interface{}
+	err = json.Unmarshal(respBody, &respMapArr)
 	if err != nil {
 		return nil, err
 	}
-	grants := make([]*provider.Grant, len(m))
-	for i := 0; i < len(m); i++ {
-		var perms = &provider.ResourcePermissions{
-			AddGrant:             false,
-			CreateContainer:      false,
-			Delete:               false,
-			GetPath:              false,
-			GetQuota:             false,
-			InitiateFileDownload: false,
-			InitiateFileUpload:   false,
-			ListGrants:           false,
-			ListContainer:        false,
-			ListFileVersions:     false,
-			ListRecycle:          false,
-			Move:                 false,
-			RemoveGrant:          false,
-			PurgeRecycle:         false,
-			RestoreFileVersion:   false,
-			RestoreRecycleItem:   false,
-			Stat:                 false,
-			UpdateGrant:          false,
-			XXX_NoUnkeyedLiteral: struct{}{},
-			XXX_unrecognized:     []byte{},
-			XXX_sizecache:        0,
-		}
-		for key, element := range m[i] {
-			if key == "stat" {
-				perms.Stat = element
-			}
-			if key == "move" {
-				perms.Move = element
-			}
-			if key == "delete" {
-				perms.Delete = element
-			}
-		}
+	grants := make([]*provider.Grant, len(respMapArr))
+	for i := 0; i < len(respMapArr); i++ {
+		respMap := respMapArr[i].(map[string]interface{})
+		permsMap := respMap["permissions"].(map[string]interface{})
+		granteeMap := respMap["grantee"].(map[string]interface{})
+		granteeIdMap := granteeMap["Id"].(map[string]interface{})
+		granteeIdUserIdMap := granteeIdMap["UserId"].(map[string]interface{})
 		grants[i] = &provider.Grant{
 			Grantee: &provider.Grantee{
-				Type:                 provider.GranteeType_GRANTEE_TYPE_USER,
-				Id:                   nil,
-				Opaque:               &types.Opaque{},
+				Id: &provider.Grantee_UserId{
+					UserId: &user.UserId{
+						Idp:      granteeIdUserIdMap["idp"].(string),
+						OpaqueId: granteeIdUserIdMap["opaque_id"].(string),
+						Type:     user.UserType_USER_TYPE_PRIMARY,
+					},
+				},
+			},
+			Permissions: &provider.ResourcePermissions{
+				AddGrant:             permsMap["add_grant"].(bool),
+				CreateContainer:      permsMap["create_container"].(bool),
+				Delete:               permsMap["delete"].(bool),
+				GetPath:              permsMap["get_path"].(bool),
+				GetQuota:             permsMap["get_quota"].(bool),
+				InitiateFileDownload: permsMap["initiate_file_download"].(bool),
+				InitiateFileUpload:   permsMap["initiate_file_upload"].(bool),
+				ListGrants:           permsMap["list_grants"].(bool),
+				ListContainer:        permsMap["list_container"].(bool),
+				ListFileVersions:     permsMap["list_file_versions"].(bool),
+				ListRecycle:          permsMap["list_recycle"].(bool),
+				Move:                 permsMap["move"].(bool),
+				RemoveGrant:          permsMap["remove_grant"].(bool),
+				PurgeRecycle:         permsMap["purge_recycle"].(bool),
+				RestoreFileVersion:   permsMap["restore_file_version"].(bool),
+				RestoreRecycleItem:   permsMap["restore_recycle_item"].(bool),
+				Stat:                 permsMap["stat"].(bool),
+				UpdateGrant:          permsMap["update_grant"].(bool),
 				XXX_NoUnkeyedLiteral: struct{}{},
 				XXX_unrecognized:     []byte{},
 				XXX_sizecache:        0,
 			},
-			Permissions:          perms,
 			XXX_NoUnkeyedLiteral: struct{}{},
 			XXX_unrecognized:     []byte{},
 			XXX_sizecache:        0,
