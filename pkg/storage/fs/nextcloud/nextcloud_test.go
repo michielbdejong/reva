@@ -435,14 +435,14 @@ var _ = Describe("Nextcloud", func() {
 				},
 				Path: "some/file/path.txt",
 			}
-			key := "version-12"
+			key := "some/revision"
 			reader, err := nc.DownloadRevision(ctx, ref, key)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(called[0]).To(Equal("GET /apps/sciencemesh/~tester/api/DownloadRevision/version-12/some/file/path.txt "))
+			Expect(called[0]).To(Equal("GET /apps/sciencemesh/~tester/api/DownloadRevision/some%2Frevision/some/file/path.txt "))
 			defer reader.Close()
 			body, err := io.ReadAll(reader)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(string(body)).To(Equal("the contents of version 12"))
+			Expect(string(body)).To(Equal("the contents of that revision"))
 		})
 	})
 

@@ -144,7 +144,7 @@ var responses = map[string]Response{
 	`PUT /apps/sciencemesh/~tester/api/Upload/some/file/path.txt shiny!`:                                                                       {200, ``, serverStateEmpty},
 	`GET /apps/sciencemesh/~tester/api/Download/some/file/path.txt `:                                                                           {200, `the contents of the file`, serverStateEmpty},
 	`POST /apps/sciencemesh/~tester/api/ListRevisions {"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"/some/path"}`: {200, `[{"key":"version-12", "size": 12345, "mtime": 1234567990, "etag": "deadb00f"}, {"key":"asdf", "size": 1235, "mtime": 1234567890, "etag": "deadbeef"}]`, serverStateEmpty},
-	`GET /apps/sciencemesh/~tester/api/DownloadRevision/version-12/some/file/path.txt `:                                                        {200, `the contents of version 12`, serverStateEmpty},
+	`GET /apps/sciencemesh/~tester/api/DownloadRevision/some%2Frevision/some/file/path.txt `:                                                   {200, `the contents of that revision`, serverStateEmpty},
 	`POST /apps/sciencemesh/~tester/api/RestoreRevision {"path":"some/file/path.txt","key":"asdf"}`:                                            {200, ``, serverStateEmpty},
 	`POST /apps/sciencemesh/~tester/api/ListRecycle {"path":"/some/file.txt","key":"asdf"}`:                                                    {200, `[{"key":"deleted-version","size":12345,"deletionTime":1234567890}]`, serverStateEmpty},
 }

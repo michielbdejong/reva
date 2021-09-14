@@ -174,7 +174,7 @@ func (nc *StorageDriver) doDownloadRevision(ctx context.Context, filePath string
 		return nil, err
 	}
 	// See https://github.com/pondersource/nc-sciencemesh/issues/5
-	url := nc.endPoint + "~" + user.Username + "/api/DownloadRevision/" + key + "/" + filePath
+	url := nc.endPoint + "~" + user.Username + "/api/DownloadRevision/" + url.QueryEscape(key) + "/" + filePath
 	req, err := http.NewRequest(http.MethodGet, url, strings.NewReader(""))
 	if err != nil {
 		panic(err)
