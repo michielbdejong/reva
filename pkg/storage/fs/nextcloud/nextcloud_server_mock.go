@@ -149,8 +149,12 @@ var responses = map[string]Response{
 	`POST /apps/sciencemesh/~tester/api/ListRecycle {"path":"/some/file.txt","key":"asdf"}`:                                                    {200, `[{"key":"deleted-version","size":12345,"deletionTime":1234567890}]`, serverStateEmpty},
 	`POST /apps/sciencemesh/~tester/api/RestoreRecycleItem {"key":"asdf","path":"original/location/when/deleted.txt","restoreRef":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"}}`: {200, ``, serverStateEmpty},
 	`POST /apps/sciencemesh/~tester/api/PurgeRecycleItem {"key":"asdf","path":"original/location/when/deleted.txt"}`:                                                                                                                {200, ``, serverStateEmpty},
-	`POST /apps/sciencemesh/~tester/api/EmptyRecycle `:                                                   {200, ``, serverStateEmpty},
-	`POST /apps/sciencemesh/~tester/api/GetPathByID {"storage_id":"storage-id","opaque_id":"opaque-id"}`: {200, `the/path/for/that/id.txt`, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/EmptyRecycle `:                                                                                               {200, ``, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/GetPathByID {"storage_id":"storage-id","opaque_id":"opaque-id"}`:                                             {200, `the/path/for/that/id.txt`, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/AddGrant {"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"}`:    {200, ``, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/DenyGrant {"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"}`:   {200, ``, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/RemoveGrant {"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"}`: {200, ``, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/UpdateGrant {"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"}`: {200, ``, serverStateEmpty},
 }
 
 // GetNextcloudServerMock returns a handler that pretends to be a remote Nextcloud server

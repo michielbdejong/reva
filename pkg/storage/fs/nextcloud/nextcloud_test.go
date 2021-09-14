@@ -587,9 +587,220 @@ var _ = Describe("Nextcloud", func() {
 	})
 
 	// AddGrant(ctx context.Context, ref *provider.Reference, g *provider.Grant) error
+	Describe("AddGrant", func() {
+		It("calls the AddGrant endpoint", func() {
+			nc, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
+				EndPoint: "http://mock.com/apps/sciencemesh/",
+				MockHTTP: true,
+			})
+			called := make([]string, 0)
+			h := nextcloud.GetNextcloudServerMock(&called)
+			mock, teardown := nextcloud.TestingHTTPClient(h)
+			defer teardown()
+			nc.SetHTTPClient(mock)
+			ref := &provider.Reference{
+				ResourceId: &provider.ResourceId{
+					StorageId: "storage-id",
+					OpaqueId:  "opaque-id",
+				},
+				Path: "some/file/path.txt",
+			}
+			// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L843-L855
+			grant := &provider.Grant{
+				// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L896-L915
+				Grantee: &provider.Grantee{
+					Id: &provider.Grantee_UserId{
+						UserId: &userpb.UserId{
+							Idp:      "0.0.0.0:19000",
+							OpaqueId: "f7fbf8c8-139b-4376-b307-cf0a8c2d0d9c",
+							Type:     userpb.UserType_USER_TYPE_PRIMARY,
+						},
+					},
+				},
+				// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L659-L683
+				Permissions: &provider.ResourcePermissions{
+					AddGrant:             true,
+					CreateContainer:      true,
+					Delete:               true,
+					GetPath:              true,
+					GetQuota:             true,
+					InitiateFileDownload: true,
+					InitiateFileUpload:   true,
+					ListGrants:           true,
+					ListContainer:        true,
+					ListFileVersions:     true,
+					ListRecycle:          true,
+					Move:                 true,
+					RemoveGrant:          true,
+					PurgeRecycle:         true,
+					RestoreFileVersion:   true,
+					RestoreRecycleItem:   true,
+					Stat:                 true,
+					UpdateGrant:          true,
+					DenyGrant:            true,
+				},
+			}
+			err := nc.AddGrant(ctx, ref, grant)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/AddGrant {\"resource_id\":{\"storage_id\":\"storage-id\",\"opaque_id\":\"opaque-id\"},\"path\":\"some/file/path.txt\"}"))
+		})
+	})
+
 	// DenyGrant(ctx context.Context, ref *provider.Reference, g *provider.Grantee) error
+	Describe("AddGrant", func() {
+		It("calls the AddGrant endpoint", func() {
+			nc, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
+				EndPoint: "http://mock.com/apps/sciencemesh/",
+				MockHTTP: true,
+			})
+			called := make([]string, 0)
+			h := nextcloud.GetNextcloudServerMock(&called)
+			mock, teardown := nextcloud.TestingHTTPClient(h)
+			defer teardown()
+			nc.SetHTTPClient(mock)
+			ref := &provider.Reference{
+				ResourceId: &provider.ResourceId{
+					StorageId: "storage-id",
+					OpaqueId:  "opaque-id",
+				},
+				Path: "some/file/path.txt",
+			}
+			// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L896-L915
+			grantee := &provider.Grantee{
+				Id: &provider.Grantee_UserId{
+					UserId: &userpb.UserId{
+						Idp:      "0.0.0.0:19000",
+						OpaqueId: "f7fbf8c8-139b-4376-b307-cf0a8c2d0d9c",
+						Type:     userpb.UserType_USER_TYPE_PRIMARY,
+					},
+				},
+			}
+			err := nc.DenyGrant(ctx, ref, grantee)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/DenyGrant {"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"}`))
+		})
+	})
+
 	// RemoveGrant(ctx context.Context, ref *provider.Reference, g *provider.Grant) error
+	Describe("RemoveGrant", func() {
+		It("calls the RemoveGrant endpoint", func() {
+			nc, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
+				EndPoint: "http://mock.com/apps/sciencemesh/",
+				MockHTTP: true,
+			})
+			called := make([]string, 0)
+			h := nextcloud.GetNextcloudServerMock(&called)
+			mock, teardown := nextcloud.TestingHTTPClient(h)
+			defer teardown()
+			nc.SetHTTPClient(mock)
+			ref := &provider.Reference{
+				ResourceId: &provider.ResourceId{
+					StorageId: "storage-id",
+					OpaqueId:  "opaque-id",
+				},
+				Path: "some/file/path.txt",
+			}
+			// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L843-L855
+			grant := &provider.Grant{
+				// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L896-L915
+				Grantee: &provider.Grantee{
+					Id: &provider.Grantee_UserId{
+						UserId: &userpb.UserId{
+							Idp:      "0.0.0.0:19000",
+							OpaqueId: "f7fbf8c8-139b-4376-b307-cf0a8c2d0d9c",
+							Type:     userpb.UserType_USER_TYPE_PRIMARY,
+						},
+					},
+				},
+				// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L659-L683
+				Permissions: &provider.ResourcePermissions{
+					AddGrant:             true,
+					CreateContainer:      true,
+					Delete:               true,
+					GetPath:              true,
+					GetQuota:             true,
+					InitiateFileDownload: true,
+					InitiateFileUpload:   true,
+					ListGrants:           true,
+					ListContainer:        true,
+					ListFileVersions:     true,
+					ListRecycle:          true,
+					Move:                 true,
+					RemoveGrant:          true,
+					PurgeRecycle:         true,
+					RestoreFileVersion:   true,
+					RestoreRecycleItem:   true,
+					Stat:                 true,
+					UpdateGrant:          true,
+					DenyGrant:            true,
+				},
+			}
+			err := nc.RemoveGrant(ctx, ref, grant)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/RemoveGrant {\"resource_id\":{\"storage_id\":\"storage-id\",\"opaque_id\":\"opaque-id\"},\"path\":\"some/file/path.txt\"}"))
+		})
+	})
+
 	// UpdateGrant(ctx context.Context, ref *provider.Reference, g *provider.Grant) error
+	Describe("UpdateGrant", func() {
+		It("calls the UpdateGrant endpoint", func() {
+			nc, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
+				EndPoint: "http://mock.com/apps/sciencemesh/",
+				MockHTTP: true,
+			})
+			called := make([]string, 0)
+			h := nextcloud.GetNextcloudServerMock(&called)
+			mock, teardown := nextcloud.TestingHTTPClient(h)
+			defer teardown()
+			nc.SetHTTPClient(mock)
+			ref := &provider.Reference{
+				ResourceId: &provider.ResourceId{
+					StorageId: "storage-id",
+					OpaqueId:  "opaque-id",
+				},
+				Path: "some/file/path.txt",
+			}
+			// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L843-L855
+			grant := &provider.Grant{
+				// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L896-L915
+				Grantee: &provider.Grantee{
+					Id: &provider.Grantee_UserId{
+						UserId: &userpb.UserId{
+							Idp:      "0.0.0.0:19000",
+							OpaqueId: "f7fbf8c8-139b-4376-b307-cf0a8c2d0d9c",
+							Type:     userpb.UserType_USER_TYPE_PRIMARY,
+						},
+					},
+				},
+				// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L659-L683
+				Permissions: &provider.ResourcePermissions{
+					AddGrant:             true,
+					CreateContainer:      true,
+					Delete:               true,
+					GetPath:              true,
+					GetQuota:             true,
+					InitiateFileDownload: true,
+					InitiateFileUpload:   true,
+					ListGrants:           true,
+					ListContainer:        true,
+					ListFileVersions:     true,
+					ListRecycle:          true,
+					Move:                 true,
+					RemoveGrant:          true,
+					PurgeRecycle:         true,
+					RestoreFileVersion:   true,
+					RestoreRecycleItem:   true,
+					Stat:                 true,
+					UpdateGrant:          true,
+					DenyGrant:            true,
+				},
+			}
+			err := nc.UpdateGrant(ctx, ref, grant)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/UpdateGrant {\"resource_id\":{\"storage_id\":\"storage-id\",\"opaque_id\":\"opaque-id\"},\"path\":\"some/file/path.txt\"}"))
+		})
+	})
+
 	// ListGrants(ctx context.Context, ref *provider.Reference) ([]*provider.Grant, error)
 	// GetQuota(ctx context.Context) (uint64, uint64, error)
 	// CreateReference(ctx context.Context, path string, targetURI *url.URL) error
