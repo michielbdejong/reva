@@ -141,8 +141,9 @@ var responses = map[string]Response{
 	`POST /apps/sciencemesh/~tester/api/GetMD {"ref":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"/some/path"},"mdKeys":["val1","val2","val3"]}`:                                                                              {200, `{ "size": 1, "path":"/some/path", "metadata": { "foo": "bar" }, "etag": "in-json-etag", "mimetype": "in-json-mimetype" }`, serverStateEmpty},
 	`POST /apps/sciencemesh/~tester/api/ListFolder {"ref":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"/some/path"},"mdKeys":["val1","val2","val3"]}`:                                                                         {200, `[{ "size": 1, "path":"/some/path", "metadata": { "foo": "bar" }, "etag": "in-json-etag", "mimetype": "in-json-mimetype" }]`, serverStateEmpty},
 	`POST /apps/sciencemesh/~tester/api/InitiateUpload {"ref":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"/some/path"},"uploadLength":12345,"metadata":{"key1":"val1","key2":"val2","key3":"val3"}}`:                         {200, `{ "not":"sure", "what": "should be", "returned": "here" }`, serverStateEmpty},
-	`POST /apps/sciencemesh/~tester/api/Upload/some/file/path.txt shiny!`: {200, ``, serverStateEmpty},
-	`GET /apps/sciencemesh/~tester/api/Download/some/file/path.txt `:      {200, `the contents of the file`, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/Upload/some/file/path.txt shiny!`:                                                                      {200, ``, serverStateEmpty},
+	`GET /apps/sciencemesh/~tester/api/Download/some/file/path.txt `:                                                                           {200, `the contents of the file`, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/ListRevisions {"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"/some/path"}`: {200, `[{"key":"version-12", "size": 12345, "mtime": 1234567990, "etag": "deadb00f"}, {"key":"asdf", "size": 1235, "mtime": 1234567890, "etag": "deadbeef"}]`, serverStateEmpty},
 }
 
 // GetNextcloudServerMock returns a handler that pretends to be a remote Nextcloud server

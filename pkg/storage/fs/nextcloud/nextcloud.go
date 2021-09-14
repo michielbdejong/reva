@@ -423,22 +423,25 @@ func (nc *StorageDriver) ListRevisions(ctx context.Context, ref *provider.Refere
 	log.Info().Msgf("ListRevisions %s", bodyStr)
 
 	_, respBody, err := nc.do(ctx, Action{"ListRevisions", string(bodyStr)})
+	// fmt.Printf("ListRevisions respBody %s", respBody)
+
 	if err != nil {
 		return nil, err
 	}
-	var m []int
-	err = json.Unmarshal(respBody, &m)
+	var respMapArr []interface{}
+	err = json.Unmarshal(respBody, &respMapArr)
 	if err != nil {
 		return nil, err
 	}
-	revs := make([]*provider.FileVersion, len(m))
-	for i := 0; i < len(m); i++ {
+	revs := make([]*provider.FileVersion, len(respMapArr))
+	for i := 0; i < len(respMapArr); i++ {
+		respMap := respMapArr[i].(map[string]interface{})
 		revs[i] = &provider.FileVersion{
 			Opaque:               &types.Opaque{},
-			Key:                  fmt.Sprint(i),
-			Size:                 uint64(m[i]),
-			Mtime:                0,
-			Etag:                 "",
+			Key:                  respMap["key"].(string),
+			Size:                 uint64(respMap["size"].(float64)),
+			Mtime:                uint64(respMap["mtime"].(float64)),
+			Etag:                 respMap["etag"].(string),
 			XXX_NoUnkeyedLiteral: struct{}{},
 			XXX_unrecognized:     []byte{},
 			XXX_sizecache:        0,

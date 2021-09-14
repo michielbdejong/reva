@@ -287,7 +287,7 @@ var _ = Describe("Nextcloud", func() {
 
 	// InitiateUpload(ctx context.Context, ref *provider.Reference, uploadLength int64, metadata map[string]string) (map[string]string, error)
 	Describe("InitiateUpload", func() {
-		It("calls the ListFolder endpoint", func() {
+		It("calls the InitiateUpload endpoint", func() {
 			nc, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
 				EndPoint: "http://mock.com/apps/sciencemesh/",
 				MockHTTP: true,
@@ -380,6 +380,41 @@ var _ = Describe("Nextcloud", func() {
 	})
 
 	// ListRevisions(ctx context.Context, ref *provider.Reference) ([]*provider.FileVersion, error)
+	Describe("ListRevisions", func() {
+		It("calls the ListRevisions endpoint", func() {
+			nc, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
+				EndPoint: "http://mock.com/apps/sciencemesh/",
+				MockHTTP: true,
+			})
+			called := make([]string, 0)
+			h := nextcloud.GetNextcloudServerMock(&called)
+			mock, teardown := nextcloud.TestingHTTPClient(h)
+			defer teardown()
+			nc.SetHTTPClient(mock)
+			// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L550-L561
+			ref := &provider.Reference{
+				ResourceId: &provider.ResourceId{
+					StorageId: "storage-id",
+					OpaqueId:  "opaque-id",
+				},
+				Path: "/some/path",
+			}
+			results, err := nc.ListRevisions(ctx, ref)
+			Expect(err).ToNot(HaveOccurred())
+			// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L1003-L1023
+			Expect(len(results)).To(Equal(2))
+			Expect(results[0].Key).To(Equal("version-12"))
+			Expect(results[0].Size).To(Equal(uint64(12345)))
+			Expect(results[0].Mtime).To(Equal(uint64(1234567990)))
+			Expect(results[0].Etag).To(Equal("deadb00f"))
+			Expect(results[1].Key).To(Equal("asdf"))
+			Expect(results[1].Size).To(Equal(uint64(1235)))
+			Expect(results[1].Mtime).To(Equal(uint64(1234567890)))
+			Expect(results[1].Etag).To(Equal("deadbeef"))
+			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/ListRevisions {\"resource_id\":{\"storage_id\":\"storage-id\",\"opaque_id\":\"opaque-id\"},\"path\":\"/some/path\"}"))
+		})
+	})
+
 	// DownloadRevision(ctx context.Context, ref *provider.Reference, key string) (io.ReadCloser, error)
 	// RestoreRevision(ctx context.Context, ref *provider.Reference, key string) error
 	// ListRecycle(ctx context.Context, key, path string) ([]*provider.RecycleItem, error)
