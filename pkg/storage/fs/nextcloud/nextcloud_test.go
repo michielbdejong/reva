@@ -840,10 +840,10 @@ var _ = Describe("Nextcloud", func() {
 			mock, teardown := nextcloud.TestingHTTPClient(h)
 			defer teardown()
 			nc.SetHTTPClient(mock)
-			total, used, err := nc.GetQuota(ctx)
+			maxBytes, maxFiles, err := nc.GetQuota(ctx)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(total).To(Equal(uint64(456)))
-			Expect(used).To(Equal(uint64(123)))
+			Expect(maxBytes).To(Equal(uint64(456)))
+			Expect(maxFiles).To(Equal(uint64(123)))
 			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/GetQuota `))
 		})
 	})
@@ -945,5 +945,62 @@ var _ = Describe("Nextcloud", func() {
 	})
 
 	// ListStorageSpaces(ctx context.Context, filter []*provider.ListStorageSpacesRequest_Filter) ([]*provider.StorageSpace, error)
+	Describe("ListStorageSpaces", func() {
+		It("calls the ListStorageSpaces endpoint", func() {
+			nc, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
+				EndPoint: "http://mock.com/apps/sciencemesh/",
+				MockHTTP: true,
+			})
+			called := make([]string, 0)
+			h := nextcloud.GetNextcloudServerMock(&called)
+			mock, teardown := nextcloud.TestingHTTPClient(h)
+			defer teardown()
+			nc.SetHTTPClient(mock)
+			filter1 := &provider.ListStorageSpacesRequest_Filter{
+				Type: provider.ListStorageSpacesRequest_Filter_TYPE_OWNER,
+				Term: &provider.ListStorageSpacesRequest_Filter_Owner{
+					Owner: &userpb.UserId{
+						Idp:      "0.0.0.0:19000",
+						OpaqueId: "f7fbf8c8-139b-4376-b307-cf0a8c2d0d9c",
+						Type:     userpb.UserType_USER_TYPE_PRIMARY,
+					},
+				},
+			}
+			filter2 := &provider.ListStorageSpacesRequest_Filter{
+				Type: provider.ListStorageSpacesRequest_Filter_TYPE_ID,
+				Term: &provider.ListStorageSpacesRequest_Filter_Id{
+					Id: &provider.StorageSpaceId{
+						OpaqueId: "opaque-id",
+					},
+				},
+			}
+			filter3 := &provider.ListStorageSpacesRequest_Filter{
+				Type: provider.ListStorageSpacesRequest_Filter_TYPE_SPACE_TYPE,
+				Term: &provider.ListStorageSpacesRequest_Filter_SpaceType{
+					SpaceType: string("home"),
+				},
+			}
+			filters := []*provider.ListStorageSpacesRequest_Filter{filter1, filter2, filter3}
+			spaces, err := nc.ListStorageSpaces(ctx, filters)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(len(spaces)).To(Equal(1))
+			// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L1341-L1366
+			Expect(string(spaces[0].Opaque.Map["some-opaque-key"].Value)).To(Equal("some-opaque-value"))
+			Expect(spaces[0].Id.OpaqueId).To(Equal("storage-space-opaque-id"))
+			Expect(spaces[0].Owner.Id.Idp).To(Equal("0.0.0.0:19000"))
+			Expect(spaces[0].Owner.Id.OpaqueId).To(Equal("f7fbf8c8-139b-4376-b307-cf0a8c2d0d9c"))
+			Expect(spaces[0].Owner.Id.Type).To(Equal(userpb.UserType_USER_TYPE_PRIMARY))
+			Expect(spaces[0].Root.StorageId).To(Equal("root-storage-id"))
+			Expect(spaces[0].Root.OpaqueId).To(Equal("root-opaque-id"))
+			Expect(spaces[0].Name).To(Equal("My Home Space"))
+			Expect(spaces[0].Quota.QuotaMaxBytes).To(Equal(uint64(456)))
+			Expect(spaces[0].Quota.QuotaMaxFiles).To(Equal(uint64(123)))
+			Expect(spaces[0].SpaceType).To(Equal("home"))
+			Expect(spaces[0].Mtime.Seconds).To(Equal(uint64(1234567890)))
+
+			// Expect(spaces[1])
+			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/ListStorageSpaces {"filters":[{"type":3,"Term":{"Owner":{"idp":"0.0.0.0:19000","opaque_id":"f7fbf8c8-139b-4376-b307-cf0a8c2d0d9c","type":1}}},{"type":2,"Term":{"Id":{"opaque_id":"opaque-id"}}},{"type":4,"Term":{"SpaceType":"home"}}]}`))
+		})
+	})
 
 })
