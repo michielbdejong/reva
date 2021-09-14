@@ -743,8 +743,13 @@ func (nc *StorageDriver) GetQuota(ctx context.Context) (uint64, uint64, error) {
 	log := appctx.GetLogger(ctx)
 	log.Info().Msg("GetQuota")
 
-	_, _, err := nc.do(ctx, Action{"GetQuota", ""})
-	return 0, 0, err
+	_, respBody, err := nc.do(ctx, Action{"GetQuota", ""})
+	var respMap map[string]interface{}
+	err = json.Unmarshal(respBody, &respMap)
+	if err != nil {
+		return 0, 0, err
+	}
+	return uint64(respMap["total"].(float64)), uint64(respMap["used"].(float64)), err
 }
 
 // CreateReference as defined in the storage.FS interface

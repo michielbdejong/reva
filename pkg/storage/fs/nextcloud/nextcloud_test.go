@@ -828,6 +828,25 @@ var _ = Describe("Nextcloud", func() {
 	})
 
 	// GetQuota(ctx context.Context) (uint64, uint64, error)
+	Describe("GetQuota", func() {
+		It("calls the GetQuota endpoint", func() {
+			nc, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
+				EndPoint: "http://mock.com/apps/sciencemesh/",
+				MockHTTP: true,
+			})
+			called := make([]string, 0)
+			h := nextcloud.GetNextcloudServerMock(&called)
+			mock, teardown := nextcloud.TestingHTTPClient(h)
+			defer teardown()
+			nc.SetHTTPClient(mock)
+			total, used, err := nc.GetQuota(ctx)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(total).To(Equal(uint64(456)))
+			Expect(used).To(Equal(uint64(123)))
+			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/GetQuota `))
+		})
+	})
+
 	// CreateReference(ctx context.Context, path string, targetURI *url.URL) error
 	// Shutdown(ctx context.Context) error
 	// SetArbitraryMetadata(ctx context.Context, ref *provider.Reference, md *provider.ArbitraryMetadata) error
