@@ -149,6 +149,7 @@ var responses = map[string]Response{
 	`POST /apps/sciencemesh/~tester/api/ListRecycle {"path":"/some/file.txt","key":"asdf"}`:                                                    {200, `[{"key":"deleted-version","size":12345,"deletionTime":1234567890}]`, serverStateEmpty},
 	`POST /apps/sciencemesh/~tester/api/RestoreRecycleItem {"key":"asdf","path":"original/location/when/deleted.txt","restoreRef":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"}}`: {200, ``, serverStateEmpty},
 	`POST /apps/sciencemesh/~tester/api/PurgeRecycleItem {"key":"asdf","path":"original/location/when/deleted.txt"}`:                                                                                                                {200, ``, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/EmptyRecycle `: {200, ``, serverStateEmpty},
 }
 
 // GetNextcloudServerMock returns a handler that pretends to be a remote Nextcloud server
