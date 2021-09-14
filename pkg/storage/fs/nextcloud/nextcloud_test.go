@@ -474,6 +474,29 @@ var _ = Describe("Nextcloud", func() {
 	})
 
 	// ListRecycle(ctx context.Context, key, path string) ([]*provider.RecycleItem, error)
+	Describe("ListRecycle", func() {
+		It("calls the ListRecycle endpoint", func() {
+			nc, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
+				EndPoint: "http://mock.com/apps/sciencemesh/",
+				MockHTTP: true,
+			})
+			called := make([]string, 0)
+			h := nextcloud.GetNextcloudServerMock(&called)
+			mock, teardown := nextcloud.TestingHTTPClient(h)
+			defer teardown()
+			nc.SetHTTPClient(mock)
+
+			results, err := nc.ListRecycle(ctx, "asdf", "/some/file.txt")
+			Expect(err).ToNot(HaveOccurred())
+			// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L1085-L1110
+			Expect(len(results)).To(Equal(1))
+			Expect(results[0].Key).To(Equal("deleted-version"))
+			Expect(results[0].Size).To(Equal(uint64(12345)))
+			Expect(results[0].DeletionTime.Seconds).To(Equal(uint64(1234567890)))
+			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/ListRecycle {\"path\":\"/some/file.txt\",\"key\":\"asdf\"}"))
+		})
+	})
+
 	// RestoreRecycleItem(ctx context.Context, key, path string, restoreRef *provider.Reference) error
 	// PurgeRecycleItem(ctx context.Context, key, path string) error
 	// EmptyRecycle(ctx context.Context) error

@@ -504,31 +504,41 @@ func (nc *StorageDriver) RestoreRevision(ctx context.Context, ref *provider.Refe
 func (nc *StorageDriver) ListRecycle(ctx context.Context, key string, path string) ([]*provider.RecycleItem, error) {
 	log := appctx.GetLogger(ctx)
 	log.Info().Msg("ListRecycle")
-	_, respBody, err := nc.do(ctx, Action{"ListRecycle", ""})
+	type paramsObj struct {
+		Path string `json:"path"`
+		Key  string `json:"key"`
+	}
+	bodyObj := &paramsObj{
+		Path: path,
+		Key:  key,
+	}
+	bodyStr, _ := json.Marshal(bodyObj)
+
+	_, respBody, err := nc.do(ctx, Action{"ListRecycle", string(bodyStr)})
 
 	if err != nil {
 		return nil, err
 	}
-	var m []string
-	err = json.Unmarshal(respBody, &m)
+	var respMapArr []interface{}
+	err = json.Unmarshal(respBody, &respMapArr)
 	if err != nil {
 		return nil, err
 	}
-	items := make([]*provider.RecycleItem, len(m))
-	for i := 0; i < len(m); i++ {
+	items := make([]*provider.RecycleItem, len(respMapArr))
+	for i := 0; i < len(respMapArr); i++ {
+		respMap := respMapArr[i].(map[string]interface{})
 		items[i] = &provider.RecycleItem{
 			Opaque: &types.Opaque{},
-			Type:   0,
-			Key:    "",
+			Key:    respMap["key"].(string),
 			Ref: &provider.Reference{
 				ResourceId:           &provider.ResourceId{},
-				Path:                 m[i],
+				Path:                 path,
 				XXX_NoUnkeyedLiteral: struct{}{},
 				XXX_unrecognized:     []byte{},
 				XXX_sizecache:        0,
 			},
-			Size:                 0,
-			DeletionTime:         &types.Timestamp{},
+			Size:                 uint64(respMap["size"].(float64)),
+			DeletionTime:         &types.Timestamp{Seconds: uint64(respMap["deletionTime"].(float64))},
 			XXX_NoUnkeyedLiteral: struct{}{},
 			XXX_unrecognized:     []byte{},
 			XXX_sizecache:        0,
