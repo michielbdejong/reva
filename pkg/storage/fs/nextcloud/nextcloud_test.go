@@ -545,6 +545,23 @@ var _ = Describe("Nextcloud", func() {
 	})
 
 	// EmptyRecycle(ctx context.Context) error
+	Describe("EmpytRecycle", func() {
+		It("calls the EmpytRecycle endpoint", func() {
+			nc, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
+				EndPoint: "http://mock.com/apps/sciencemesh/",
+				MockHTTP: true,
+			})
+			called := make([]string, 0)
+			h := nextcloud.GetNextcloudServerMock(&called)
+			mock, teardown := nextcloud.TestingHTTPClient(h)
+			defer teardown()
+			nc.SetHTTPClient(mock)
+			err := nc.EmptyRecycle(ctx)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/EmptyRecycle "))
+		})
+	})
+
 	// GetPathByID(ctx context.Context, id *provider.ResourceId) (string, error)
 	// AddGrant(ctx context.Context, ref *provider.Reference, g *provider.Grant) error
 	// DenyGrant(ctx context.Context, ref *provider.Reference, g *provider.Grantee) error
