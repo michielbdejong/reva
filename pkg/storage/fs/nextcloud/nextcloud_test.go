@@ -888,6 +888,36 @@ var _ = Describe("Nextcloud", func() {
 	})
 
 	// SetArbitraryMetadata(ctx context.Context, ref *provider.Reference, md *provider.ArbitraryMetadata) error
+	Describe("SetArbitraryMetadata", func() {
+		It("calls the SetArbitraryMetadata endpoint", func() {
+			nc, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
+				EndPoint: "http://mock.com/apps/sciencemesh/",
+				MockHTTP: true,
+			})
+			called := make([]string, 0)
+			h := nextcloud.GetNextcloudServerMock(&called)
+			mock, teardown := nextcloud.TestingHTTPClient(h)
+			defer teardown()
+			nc.SetHTTPClient(mock)
+			ref := &provider.Reference{
+				ResourceId: &provider.ResourceId{
+					StorageId: "storage-id",
+					OpaqueId:  "opaque-id",
+				},
+				Path: "some/file/path.txt",
+			}
+			md := &provider.ArbitraryMetadata{
+				Metadata: map[string]string{
+					"arbi": "trary",
+					"meta": "data",
+				},
+			}
+			err := nc.SetArbitraryMetadata(ctx, ref, md)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/Shutdown `))
+		})
+	})
+
 	// UnsetArbitraryMetadata(ctx context.Context, ref *provider.Reference, keys []string) error
 	// ListStorageSpaces(ctx context.Context, filter []*provider.ListStorageSpacesRequest_Filter) ([]*provider.StorageSpace, error)
 

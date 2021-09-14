@@ -744,6 +744,10 @@ func (nc *StorageDriver) GetQuota(ctx context.Context) (uint64, uint64, error) {
 	log.Info().Msg("GetQuota")
 
 	_, respBody, err := nc.do(ctx, Action{"GetQuota", ""})
+	if err != nil {
+		return 0, 0, err
+	}
+
 	var respMap map[string]interface{}
 	err = json.Unmarshal(respBody, &respMap)
 	if err != nil {
@@ -779,7 +783,15 @@ func (nc *StorageDriver) Shutdown(ctx context.Context) error {
 
 // SetArbitraryMetadata as defined in the storage.FS interface
 func (nc *StorageDriver) SetArbitraryMetadata(ctx context.Context, ref *provider.Reference, md *provider.ArbitraryMetadata) error {
-	bodyStr, _ := json.Marshal(md)
+	type paramsObj struct {
+		Reference provider.Reference         `json:"reference"`
+		Metadata  provider.ArbitraryMetadata `json:"metadata"`
+	}
+	bodyObj := &paramsObj{
+		Reference: *ref,
+		Metadata:  *md,
+	}
+	bodyStr, _ := json.Marshal(bodyObj)
 	log := appctx.GetLogger(ctx)
 	log.Info().Msgf("SetArbitraryMetadata %s", bodyStr)
 
