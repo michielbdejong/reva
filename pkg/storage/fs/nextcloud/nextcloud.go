@@ -85,7 +85,8 @@ func (nc *StorageDriver) CreateStorageSpace(ctx context.Context, req *provider.C
 func NewStorageDriver(c *StorageDriverConfig) (*StorageDriver, error) {
 	var client *http.Client
 	if c.MockHTTP {
-		nextcloudServerMock := GetNextcloudServerMock()
+		called := make([]string, 0)
+		nextcloudServerMock := GetNextcloudServerMock(&called)
 		client, _ = TestingHTTPClient(nextcloudServerMock)
 	} else {
 		client = &http.Client{}
@@ -116,12 +117,13 @@ func (nc *StorageDriver) SetHTTPClient(c *http.Client) {
 	nc.client = c
 }
 
-func (nc *StorageDriver) doUpload(r io.ReadCloser) error {
-	filePath := "test.txt"
-
-	// initialize http client
-	client := &http.Client{}
-	url := nc.endPoint + "Upload/" + filePath
+func (nc *StorageDriver) doUpload(ctx context.Context, filePath string, r io.ReadCloser) error {
+	// log := appctx.GetLogger(ctx)
+	user, err := getUser(ctx)
+	if err != nil {
+		return err
+	}
+	url := nc.endPoint + "~" + user.Username + "/files/" + filePath
 	req, err := http.NewRequest(http.MethodPut, url, r)
 	if err != nil {
 		panic(err)
@@ -130,7 +132,7 @@ func (nc *StorageDriver) doUpload(r io.ReadCloser) error {
 	// set the request header Content-Type for the upload
 	// FIXME: get the actual content type from somewhere
 	req.Header.Set("Content-Type", "text/plain")
-	resp, err := client.Do(req)
+	resp, err := nc.client.Do(req)
 	if err != nil {
 		panic(err)
 	}
@@ -215,9 +217,9 @@ func (nc *StorageDriver) Delete(ctx context.Context, ref *provider.Reference) er
 
 // Move as defined in the storage.FS interface
 func (nc *StorageDriver) Move(ctx context.Context, oldRef, newRef *provider.Reference) error {
-	data := make(map[string]string)
-	data["from"] = oldRef.Path
-	data["to"] = newRef.Path
+	data := make(map[string]provider.Reference)
+	data["from"] = *oldRef
+	data["to"] = *newRef
 	bodyStr, _ := json.Marshal(data)
 	log := appctx.GetLogger(ctx)
 	log.Info().Msgf("Move %s", bodyStr)
@@ -228,13 +230,18 @@ func (nc *StorageDriver) Move(ctx context.Context, oldRef, newRef *provider.Refe
 
 // GetMD as defined in the storage.FS interface
 func (nc *StorageDriver) GetMD(ctx context.Context, ref *provider.Reference, mdKeys []string) (*provider.ResourceInfo, error) {
-	bodyStr, err := json.Marshal(ref)
+	type paramsObj struct {
+		Ref provider.Reference      `json:"ref"`
+		MdKeys []string `json:"mdKeys"`
+	}
+	bodyObj := &paramsObj{
+		Ref: *ref,
+		MdKeys: mdKeys,
+	}
+	bodyStr, _ := json.Marshal(bodyObj)
 	log := appctx.GetLogger(ctx)
 	log.Info().Msgf("GetMD %s", bodyStr)
 
-	if err != nil {
-		return nil, err
-	}
 	status, body, err := nc.do(ctx, Action{"GetMD", string(bodyStr)})
 	if err != nil {
 		return nil, err
@@ -258,10 +265,10 @@ func (nc *StorageDriver) GetMD(ctx context.Context, ref *provider.Reference, mdK
 	md := &provider.ResourceInfo{
 		Opaque:            &types.Opaque{},
 		Type:              provider.ResourceType_RESOURCE_TYPE_FILE,
-		Id:                &provider.ResourceId{OpaqueId: "fileid-" + url.QueryEscape(ref.Path)},
+		Id:                &provider.ResourceId{OpaqueId: "fileid-" + url.QueryEscape(respMap["path"].(string))},
 		Checksum:          &provider.ResourceChecksum{},
-		Etag:              "some-etag",
-		MimeType:          "application/octet-stream",
+		Etag:              respMap["etag"].(string),
+		MimeType:          respMap["mimetype"].(string),
 		Mtime:             &types.Timestamp{Seconds: 1234567890},
 		Path:              ref.Path,
 		PermissionSet:     &provider.ResourcePermissions{},
@@ -285,7 +292,15 @@ func (nc *StorageDriver) GetMD(ctx context.Context, ref *provider.Reference, mdK
 
 // ListFolder as defined in the storage.FS interface
 func (nc *StorageDriver) ListFolder(ctx context.Context, ref *provider.Reference, mdKeys []string) ([]*provider.ResourceInfo, error) {
-	bodyStr, err := json.Marshal(ref)
+	type paramsObj struct {
+		Ref provider.Reference      `json:"ref"`
+		MdKeys []string `json:"mdKeys"`
+	}
+	bodyObj := &paramsObj{
+		Ref: *ref,
+		MdKeys: mdKeys,
+	}
+	bodyStr, err := json.Marshal(bodyObj)
 	log := appctx.GetLogger(ctx)
 	log.Info().Msgf("LisfFolder %s", bodyStr)
 	if err != nil {
@@ -298,17 +313,22 @@ func (nc *StorageDriver) ListFolder(ctx context.Context, ref *provider.Reference
 	if status == 404 {
 		return nil, errtypes.NotFound("")
 	}
-	var bodyArr []string
-	err = json.Unmarshal(body, &bodyArr)
-	var infos = make([]*provider.ResourceInfo, len(bodyArr))
-	for i := 0; i < len(bodyArr); i++ {
+
+	var respMapArr []interface{}
+	err = json.Unmarshal(body, &respMapArr)
+	if err != nil {
+		return nil, err
+	}
+	var infos = make([]*provider.ResourceInfo, len(respMapArr))
+	for i := 0; i < len(respMapArr); i++ {
+		respMap := respMapArr[i].(map[string]interface{})
 		infos[i] = &provider.ResourceInfo{
 			Opaque:               &types.Opaque{},
 			Type:                 provider.ResourceType_RESOURCE_TYPE_CONTAINER,
-			Id:                   &provider.ResourceId{OpaqueId: "fileid-" + url.QueryEscape(bodyArr[i])},
+			Id:                   &provider.ResourceId{OpaqueId: "fileid-" + url.QueryEscape(respMap["path"].(string))},
 			Checksum:             &provider.ResourceChecksum{},
-			Etag:                 "some-etag",
-			MimeType:             "application/octet-stream",
+			Etag:                 respMap["etag"].(string),
+			MimeType:             respMap["mimetype"].(string),
 			Mtime:                &types.Timestamp{Seconds: 1234567890},
 			Path:                 "/subdir", // FIXME: bodyArr[i],
 			PermissionSet:        &provider.ResourcePermissions{},
@@ -327,7 +347,17 @@ func (nc *StorageDriver) ListFolder(ctx context.Context, ref *provider.Reference
 
 // InitiateUpload as defined in the storage.FS interface
 func (nc *StorageDriver) InitiateUpload(ctx context.Context, ref *provider.Reference, uploadLength int64, metadata map[string]string) (map[string]string, error) {
-	bodyStr, _ := json.Marshal(ref)
+	type paramsObj struct {
+		Ref provider.Reference      `json:"ref"`
+		UploadLength int64 `json:"uploadLength"`
+		Metadata map[string]string `json:"metadata"`
+	}
+	bodyObj := &paramsObj{
+		Ref: *ref,
+		UploadLength: uploadLength,
+		Metadata: metadata,
+	}
+	bodyStr, _ := json.Marshal(bodyObj)
 	log := appctx.GetLogger(ctx)
 	log.Info().Msgf("InitiateUpload %s", bodyStr)
 
@@ -349,12 +379,7 @@ func (nc *StorageDriver) Upload(ctx context.Context, ref *provider.Reference, r 
 	log := appctx.GetLogger(ctx)
 	log.Info().Msgf("Upload %s", bodyStr)
 
-	err := nc.doUpload(r)
-	if err != nil {
-		return err
-	}
-	_, _, err = nc.do(ctx, Action{"Upload", string(bodyStr)})
-	return err
+	return nc.doUpload(ctx, ref.Path, r)
 }
 
 // Download as defined in the storage.FS interface
