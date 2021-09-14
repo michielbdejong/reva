@@ -242,11 +242,12 @@ var _ = Describe("Nextcloud", func() {
 			}
 			mdKeys := []string{"val1", "val2", "val3"}
 			result, err := nc.GetMD(ctx, ref, mdKeys)
+			Expect(err).ToNot(HaveOccurred())
 			Expect(result.Etag).To(Equal("in-json-etag"))
 			Expect(result.MimeType).To(Equal("in-json-mimetype"))
-			resultJson, err := json.Marshal(result.ArbitraryMetadata)
+			resultJSON, err := json.Marshal(result.ArbitraryMetadata)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(string(resultJson)).To(Equal("{\"metadata\":{\"foo\":\"bar\"}}"))
+			Expect(string(resultJSON)).To(Equal("{\"metadata\":{\"foo\":\"bar\"}}"))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(len(called)).To(Equal(1))
 			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/GetMD {\"ref\":{\"resource_id\":{\"storage_id\":\"storage-id\",\"opaque_id\":\"opaque-id\"},\"path\":\"/some/path\"},\"mdKeys\":[\"val1\",\"val2\",\"val3\"]}"))
