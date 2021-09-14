@@ -883,7 +883,7 @@ var _ = Describe("Nextcloud", func() {
 			nc.SetHTTPClient(mock)
 			err := nc.Shutdown(ctx)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/CreateReference {"path":"some/file/path.txt","url":"http://bing.com/search?q=dotnet"}`))
+			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/Shutdown `))
 		})
 	})
 
