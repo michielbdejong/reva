@@ -604,7 +604,15 @@ func (nc *StorageDriver) GetPathByID(ctx context.Context, id *provider.ResourceI
 
 // AddGrant as defined in the storage.FS interface
 func (nc *StorageDriver) AddGrant(ctx context.Context, ref *provider.Reference, g *provider.Grant) error {
-	bodyStr, _ := json.Marshal(ref)
+	type paramsObj struct {
+		Reference provider.Reference `json:"reference"`
+		Grant     provider.Grant     `json:"grant"`
+	}
+	bodyObj := &paramsObj{
+		Reference: *ref,
+		Grant:     *g,
+	}
+	bodyStr, _ := json.Marshal(bodyObj)
 	log := appctx.GetLogger(ctx)
 	log.Info().Msgf("AggGrant %s", bodyStr)
 
@@ -614,7 +622,15 @@ func (nc *StorageDriver) AddGrant(ctx context.Context, ref *provider.Reference, 
 
 // RemoveGrant as defined in the storage.FS interface
 func (nc *StorageDriver) RemoveGrant(ctx context.Context, ref *provider.Reference, g *provider.Grant) error {
-	bodyStr, _ := json.Marshal(ref)
+	type paramsObj struct {
+		Reference provider.Reference `json:"reference"`
+		Grant     provider.Grant     `json:"grant"`
+	}
+	bodyObj := &paramsObj{
+		Reference: *ref,
+		Grant:     *g,
+	}
+	bodyStr, _ := json.Marshal(bodyObj)
 	log := appctx.GetLogger(ctx)
 	log.Info().Msgf("RemoveGrant %s", bodyStr)
 
@@ -624,7 +640,15 @@ func (nc *StorageDriver) RemoveGrant(ctx context.Context, ref *provider.Referenc
 
 // DenyGrant as defined in the storage.FS interface
 func (nc *StorageDriver) DenyGrant(ctx context.Context, ref *provider.Reference, g *provider.Grantee) error {
-	bodyStr, _ := json.Marshal(ref)
+	type paramsObj struct {
+		Reference provider.Reference `json:"reference"`
+		Grantee   provider.Grantee   `json:"grantee"`
+	}
+	bodyObj := &paramsObj{
+		Reference: *ref,
+		Grantee:   *g,
+	}
+	bodyStr, _ := json.Marshal(bodyObj)
 	log := appctx.GetLogger(ctx)
 	log.Info().Msgf("DenyGrant %s", bodyStr)
 
@@ -634,7 +658,15 @@ func (nc *StorageDriver) DenyGrant(ctx context.Context, ref *provider.Reference,
 
 // UpdateGrant as defined in the storage.FS interface
 func (nc *StorageDriver) UpdateGrant(ctx context.Context, ref *provider.Reference, g *provider.Grant) error {
-	bodyStr, _ := json.Marshal(ref)
+	type paramsObj struct {
+		Reference provider.Reference `json:"reference"`
+		Grant     provider.Grant     `json:"grant"`
+	}
+	bodyObj := &paramsObj{
+		Reference: *ref,
+		Grant:     *g,
+	}
+	bodyStr, _ := json.Marshal(bodyObj)
 	log := appctx.GetLogger(ctx)
 	log.Info().Msgf("UpdateGrant %s", bodyStr)
 

@@ -642,13 +642,13 @@ var _ = Describe("Nextcloud", func() {
 			}
 			err := nc.AddGrant(ctx, ref, grant)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/AddGrant {\"resource_id\":{\"storage_id\":\"storage-id\",\"opaque_id\":\"opaque-id\"},\"path\":\"some/file/path.txt\"}"))
+			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/AddGrant {"reference":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"},"grant":{"grantee":{"Id":{"UserId":{"idp":"0.0.0.0:19000","opaque_id":"f7fbf8c8-139b-4376-b307-cf0a8c2d0d9c","type":1}}},"permissions":{"add_grant":true,"create_container":true,"delete":true,"get_path":true,"get_quota":true,"initiate_file_download":true,"initiate_file_upload":true,"list_grants":true,"list_container":true,"list_file_versions":true,"list_recycle":true,"move":true,"remove_grant":true,"purge_recycle":true,"restore_file_version":true,"restore_recycle_item":true,"stat":true,"update_grant":true,"deny_grant":true}}}`))
 		})
 	})
 
 	// DenyGrant(ctx context.Context, ref *provider.Reference, g *provider.Grantee) error
-	Describe("AddGrant", func() {
-		It("calls the AddGrant endpoint", func() {
+	Describe("DenyGrant", func() {
+		It("calls the DenyGrant endpoint", func() {
 			nc, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
 				EndPoint: "http://mock.com/apps/sciencemesh/",
 				MockHTTP: true,
@@ -677,7 +677,7 @@ var _ = Describe("Nextcloud", func() {
 			}
 			err := nc.DenyGrant(ctx, ref, grantee)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/DenyGrant {"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"}`))
+			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/DenyGrant {"reference":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"},"grantee":{"Id":{"UserId":{"idp":"0.0.0.0:19000","opaque_id":"f7fbf8c8-139b-4376-b307-cf0a8c2d0d9c","type":1}}}}`))
 		})
 	})
 
@@ -737,7 +737,7 @@ var _ = Describe("Nextcloud", func() {
 			}
 			err := nc.RemoveGrant(ctx, ref, grant)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/RemoveGrant {\"resource_id\":{\"storage_id\":\"storage-id\",\"opaque_id\":\"opaque-id\"},\"path\":\"some/file/path.txt\"}"))
+			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/RemoveGrant {"reference":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"},"grant":{"grantee":{"Id":{"UserId":{"idp":"0.0.0.0:19000","opaque_id":"f7fbf8c8-139b-4376-b307-cf0a8c2d0d9c","type":1}}},"permissions":{"add_grant":true,"create_container":true,"delete":true,"get_path":true,"get_quota":true,"initiate_file_download":true,"initiate_file_upload":true,"list_grants":true,"list_container":true,"list_file_versions":true,"list_recycle":true,"move":true,"remove_grant":true,"purge_recycle":true,"restore_file_version":true,"restore_recycle_item":true,"stat":true,"update_grant":true,"deny_grant":true}}}`))
 		})
 	})
 
@@ -797,11 +797,36 @@ var _ = Describe("Nextcloud", func() {
 			}
 			err := nc.UpdateGrant(ctx, ref, grant)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/UpdateGrant {\"resource_id\":{\"storage_id\":\"storage-id\",\"opaque_id\":\"opaque-id\"},\"path\":\"some/file/path.txt\"}"))
+			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/UpdateGrant {"reference":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"},"grant":{"grantee":{"Id":{"UserId":{"idp":"0.0.0.0:19000","opaque_id":"f7fbf8c8-139b-4376-b307-cf0a8c2d0d9c","type":1}}},"permissions":{"add_grant":true,"create_container":true,"delete":true,"get_path":true,"get_quota":true,"initiate_file_download":true,"initiate_file_upload":true,"list_grants":true,"list_container":true,"list_file_versions":true,"list_recycle":true,"move":true,"remove_grant":true,"purge_recycle":true,"restore_file_version":true,"restore_recycle_item":true,"stat":true,"update_grant":true,"deny_grant":true}}}`))
 		})
 	})
 
 	// ListGrants(ctx context.Context, ref *provider.Reference) ([]*provider.Grant, error)
+	Describe("ListGrants", func() {
+		It("calls the ListGrants endpoint", func() {
+			nc, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
+				EndPoint: "http://mock.com/apps/sciencemesh/",
+				MockHTTP: true,
+			})
+			called := make([]string, 0)
+			h := nextcloud.GetNextcloudServerMock(&called)
+			mock, teardown := nextcloud.TestingHTTPClient(h)
+			defer teardown()
+			nc.SetHTTPClient(mock)
+			ref := &provider.Reference{
+				ResourceId: &provider.ResourceId{
+					StorageId: "storage-id",
+					OpaqueId:  "opaque-id",
+				},
+				Path: "some/file/path.txt",
+			}
+			grants, err := nc.ListGrants(ctx, ref)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(len(grants)).To(Equal(1))
+			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/ListGrants {\"resource_id\":{\"storage_id\":\"storage-id\",\"opaque_id\":\"opaque-id\"},\"path\":\"some/file/path.txt\"}"))
+		})
+	})
+
 	// GetQuota(ctx context.Context) (uint64, uint64, error)
 	// CreateReference(ctx context.Context, path string, targetURI *url.URL) error
 	// Shutdown(ctx context.Context) error
