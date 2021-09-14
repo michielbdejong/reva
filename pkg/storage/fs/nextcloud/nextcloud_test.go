@@ -498,6 +498,32 @@ var _ = Describe("Nextcloud", func() {
 	})
 
 	// RestoreRecycleItem(ctx context.Context, key, path string, restoreRef *provider.Reference) error
+	Describe("RestoreRecycleItem", func() {
+		It("calls the RestoreRecycleItem endpoint", func() {
+			nc, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
+				EndPoint: "http://mock.com/apps/sciencemesh/",
+				MockHTTP: true,
+			})
+			called := make([]string, 0)
+			h := nextcloud.GetNextcloudServerMock(&called)
+			mock, teardown := nextcloud.TestingHTTPClient(h)
+			defer teardown()
+			nc.SetHTTPClient(mock)
+			// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L550-L561
+			restoreRef := &provider.Reference{
+				ResourceId: &provider.ResourceId{
+					StorageId: "storage-id",
+					OpaqueId:  "opaque-id",
+				},
+				Path: "some/file/path.txt",
+			}
+			path := "original/location/when/deleted.txt"
+			key := "asdf"
+			err := nc.RestoreRecycleItem(ctx, path, key, restoreRef)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/RestoreRevision {\"path\":\"some/file/path.txt\",\"key\":\"asdf\",\"ref\":{\"resource_id\":{\"storage_id\":\"storage-id\",\"opaque_id\":\"opaque-id\"},\"path\":\"/some/path\"}}"))
+		})
+	})
 	// PurgeRecycleItem(ctx context.Context, key, path string) error
 	// EmptyRecycle(ctx context.Context) error
 	// GetPathByID(ctx context.Context, id *provider.ResourceId) (string, error)
