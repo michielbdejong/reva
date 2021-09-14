@@ -346,11 +346,11 @@ var _ = Describe("Nextcloud", func() {
 			stringReadCloser := io.NopCloser(stringReader)
 			err := nc.Upload(ctx, ref, stringReadCloser)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(called[0]).To(Equal("PUT /apps/sciencemesh/~tester/files/some/file/path.txt shiny!"))
+			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/Upload/some/file/path.txt shiny!"))
 		})
 	})
 	// Download(ctx context.Context, ref *provider.Reference) (io.ReadCloser, error)
-	PDescribe("Download", func() {
+	Describe("Download", func() {
 		It("calls the files API with GET", func() {
 			nc, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
 				EndPoint: "http://mock.com/apps/sciencemesh/",
@@ -371,11 +371,11 @@ var _ = Describe("Nextcloud", func() {
 			}
 			reader, err := nc.Download(ctx, ref)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(called[0]).To(Equal("GET /apps/sciencemesh/~tester/files/some/file/path.txt !"))
-			buf := new(strings.Builder)
-			_, err = io.Copy(buf, reader)
+			Expect(called[0]).To(Equal("GET /apps/sciencemesh/~tester/api/Download/some/file/path.txt "))
+			defer reader.Close()
+			body, err := io.ReadAll(reader)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(buf.String()).To(Equal("the contents of the file"))
+			Expect(string(body)).To(Equal("the contents of the file"))
 		})
 	})
 

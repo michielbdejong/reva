@@ -123,8 +123,10 @@ func (nc *StorageDriver) doUpload(ctx context.Context, filePath string, r io.Rea
 	if err != nil {
 		return err
 	}
-	url := nc.endPoint + "~" + user.Username + "/files/" + filePath
-	req, err := http.NewRequest(http.MethodPut, url, r)
+	// See https://github.com/pondersource/nc-sciencemesh/issues/5
+	// url := nc.endPoint + "~" + user.Username + "/files/" + filePath
+	url := nc.endPoint + "~" + user.Username + "/api/Upload/" + filePath
+	req, err := http.NewRequest(http.MethodPost, url, r)
 	if err != nil {
 		panic(err)
 	}
@@ -140,6 +142,30 @@ func (nc *StorageDriver) doUpload(ctx context.Context, filePath string, r io.Rea
 	defer resp.Body.Close()
 	_, err = io.ReadAll(resp.Body)
 	return err
+}
+
+func (nc *StorageDriver) doDownload(ctx context.Context, filePath string) (io.ReadCloser, error) {
+	user, err := getUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+	// See https://github.com/pondersource/nc-sciencemesh/issues/5
+	// url := nc.endPoint + "~" + user.Username + "/files/" + filePath
+	url := nc.endPoint + "~" + user.Username + "/api/Download/" + filePath
+	req, err := http.NewRequest(http.MethodGet, url, strings.NewReader(""))
+	if err != nil {
+		panic(err)
+	}
+
+	resp, err := nc.client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	if resp.StatusCode != 200 {
+		panic("No 200 response code in download request")
+	}
+
+	return resp.Body, err
 }
 
 func (nc *StorageDriver) do(ctx context.Context, a Action) (int, []byte, error) {
@@ -384,12 +410,10 @@ func (nc *StorageDriver) Upload(ctx context.Context, ref *provider.Reference, r 
 
 // Download as defined in the storage.FS interface
 func (nc *StorageDriver) Download(ctx context.Context, ref *provider.Reference) (io.ReadCloser, error) {
-	bodyStr, _ := json.Marshal(ref)
 	log := appctx.GetLogger(ctx)
-	log.Info().Msgf("Download %s", bodyStr)
+	log.Info().Msgf("Download %s", ref.Path)
 
-	_, _, err := nc.do(ctx, Action{"Download", string(bodyStr)})
-	return nil, err
+	return nc.doDownload(ctx, ref.Path)
 }
 
 // ListRevisions as defined in the storage.FS interface
