@@ -442,12 +442,12 @@ func (nc *StorageDriver) ListRecycle(ctx context.Context, key string, path strin
 	log := appctx.GetLogger(ctx)
 	log.Info().Msg("ListRecycle")
 	type paramsObj struct {
-		Path string `json:"path"`
 		Key  string `json:"key"`
+		Path string `json:"path"`
 	}
 	bodyObj := &paramsObj{
-		Path: path,
 		Key:  key,
+		Path: path,
 	}
 	bodyStr, _ := json.Marshal(bodyObj)
 
@@ -456,30 +456,14 @@ func (nc *StorageDriver) ListRecycle(ctx context.Context, key string, path strin
 	if err != nil {
 		return nil, err
 	}
-	var respMapArr []interface{}
+	var respMapArr []provider.RecycleItem
 	err = json.Unmarshal(respBody, &respMapArr)
 	if err != nil {
 		return nil, err
 	}
 	items := make([]*provider.RecycleItem, len(respMapArr))
 	for i := 0; i < len(respMapArr); i++ {
-		respMap := respMapArr[i].(map[string]interface{})
-		items[i] = &provider.RecycleItem{
-			Opaque: &types.Opaque{},
-			Key:    respMap["key"].(string),
-			Ref: &provider.Reference{
-				ResourceId:           &provider.ResourceId{},
-				Path:                 path,
-				XXX_NoUnkeyedLiteral: struct{}{},
-				XXX_unrecognized:     []byte{},
-				XXX_sizecache:        0,
-			},
-			Size:                 uint64(respMap["size"].(float64)),
-			DeletionTime:         &types.Timestamp{Seconds: uint64(respMap["deletionTime"].(float64))},
-			XXX_NoUnkeyedLiteral: struct{}{},
-			XXX_unrecognized:     []byte{},
-			XXX_sizecache:        0,
-		}
+		items[i] = &respMapArr[i]
 	}
 	return items, err
 }
