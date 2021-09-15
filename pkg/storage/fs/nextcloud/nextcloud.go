@@ -597,44 +597,7 @@ func (nc *StorageDriver) UpdateGrant(ctx context.Context, ref *provider.Referenc
 
 // ListGrants as defined in the storage.FS interface
 func (nc *StorageDriver) ListGrants(ctx context.Context, ref *provider.Reference) ([]*provider.Grant, error) {
-	bodyStr, _ := json.Marshal(provider.Grant{
-		Grantee: &provider.Grantee{
-			Id: &provider.Grantee_UserId{
-				UserId: &user.UserId{
-					Idp:      "some-idp",
-					OpaqueId: "some-opaque-id",
-					Type:     user.UserType_USER_TYPE_PRIMARY,
-				},
-			},
-		},
-		Permissions: &provider.ResourcePermissions{
-			AddGrant:             true,
-			CreateContainer:      true,
-			Delete:               true,
-			GetPath:              true,
-			GetQuota:             true,
-			InitiateFileDownload: true,
-			InitiateFileUpload:   true,
-			ListGrants:           true,
-			ListContainer:        false,
-			ListFileVersions:     false,
-			ListRecycle:          false,
-			Move:                 false,
-			RemoveGrant:          false,
-			PurgeRecycle:         false,
-			RestoreFileVersion:   false,
-			RestoreRecycleItem:   false,
-			Stat:                 false,
-			UpdateGrant:          false,
-			XXX_NoUnkeyedLiteral: struct{}{},
-			XXX_unrecognized:     []byte{},
-			XXX_sizecache:        0,
-		},
-		XXX_NoUnkeyedLiteral: struct{}{},
-		XXX_unrecognized:     []byte{},
-		XXX_sizecache:        0,
-	},
-	)
+	bodyStr, _ := json.Marshal(ref)
 	log := appctx.GetLogger(ctx)
 	log.Info().Msgf("ListGrants %s", bodyStr)
 
@@ -701,12 +664,12 @@ func (nc *StorageDriver) Shutdown(ctx context.Context) error {
 // SetArbitraryMetadata as defined in the storage.FS interface
 func (nc *StorageDriver) SetArbitraryMetadata(ctx context.Context, ref *provider.Reference, md *provider.ArbitraryMetadata) error {
 	type paramsObj struct {
-		Reference provider.Reference         `json:"reference"`
-		Metadata  provider.ArbitraryMetadata `json:"metadata"`
+		Ref provider.Reference         `json:"ref"`
+		Md  provider.ArbitraryMetadata `json:"md"`
 	}
 	bodyObj := &paramsObj{
-		Reference: *ref,
-		Metadata:  *md,
+		Ref: *ref,
+		Md:  *md,
 	}
 	bodyStr, _ := json.Marshal(bodyObj)
 	log := appctx.GetLogger(ctx)
@@ -719,12 +682,12 @@ func (nc *StorageDriver) SetArbitraryMetadata(ctx context.Context, ref *provider
 // UnsetArbitraryMetadata as defined in the storage.FS interface
 func (nc *StorageDriver) UnsetArbitraryMetadata(ctx context.Context, ref *provider.Reference, keys []string) error {
 	type paramsObj struct {
-		Reference provider.Reference `json:"reference"`
-		Keys      []string           `json:"keys"`
+		Ref  provider.Reference `json:"ref"`
+		Keys []string           `json:"keys"`
 	}
 	bodyObj := &paramsObj{
-		Reference: *ref,
-		Keys:      keys,
+		Ref:  *ref,
+		Keys: keys,
 	}
 	bodyStr, _ := json.Marshal(bodyObj)
 	log := appctx.GetLogger(ctx)
