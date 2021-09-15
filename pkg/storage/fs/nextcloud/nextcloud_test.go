@@ -20,7 +20,6 @@ package nextcloud_test
 
 import (
 	"context"
-	"encoding/json"
 	"io"
 	"net/url"
 	"os"
@@ -30,6 +29,7 @@ import (
 
 	userpb "github.com/cs3org/go-cs3apis/cs3/identity/user/v1beta1"
 	provider "github.com/cs3org/go-cs3apis/cs3/storage/provider/v1beta1"
+	types "github.com/cs3org/go-cs3apis/cs3/types/v1beta1"
 	"github.com/cs3org/reva/pkg/auth/scope"
 	ctxpkg "github.com/cs3org/reva/pkg/ctx"
 	"github.com/cs3org/reva/pkg/storage/fs/nextcloud"
@@ -217,7 +217,7 @@ var _ = Describe("Nextcloud", func() {
 			err := nc.Move(ctx, ref1, ref2)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(len(called)).To(Equal(1))
-			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/Move {\"from\":{\"resource_id\":{\"storage_id\":\"storage-id-1\",\"opaque_id\":\"opaque-id-1\"},\"path\":\"/some/old/path\"},\"to\":{\"resource_id\":{\"storage_id\":\"storage-id-2\",\"opaque_id\":\"opaque-id-2\"},\"path\":\"/some/new/path\"}}"))
+			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/Move {\"oldRef\":{\"resource_id\":{\"storage_id\":\"storage-id-1\",\"opaque_id\":\"opaque-id-1\"},\"path\":\"/some/old/path\"},\"newRef\":{\"resource_id\":{\"storage_id\":\"storage-id-2\",\"opaque_id\":\"opaque-id-2\"},\"path\":\"/some/new/path\"}}"))
 		})
 	})
 
@@ -244,12 +244,81 @@ var _ = Describe("Nextcloud", func() {
 			mdKeys := []string{"val1", "val2", "val3"}
 			result, err := nc.GetMD(ctx, ref, mdKeys)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(result.Etag).To(Equal("in-json-etag"))
-			Expect(result.MimeType).To(Equal("in-json-mimetype"))
-			resultJSON, err := json.Marshal(result.ArbitraryMetadata)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(string(resultJSON)).To(Equal("{\"metadata\":{\"foo\":\"bar\"}}"))
-			Expect(err).ToNot(HaveOccurred())
+			Expect(*result).To(Equal(provider.ResourceInfo{
+				Opaque: &types.Opaque{
+					Map:                  nil,
+					XXX_NoUnkeyedLiteral: struct{}{},
+					XXX_unrecognized:     nil,
+					XXX_sizecache:        0,
+				},
+				Type: provider.ResourceType_RESOURCE_TYPE_FILE,
+				Id: &provider.ResourceId{
+					StorageId:            "",
+					OpaqueId:             "fileid-/some/path",
+					XXX_NoUnkeyedLiteral: struct{}{},
+					XXX_unrecognized:     nil,
+					XXX_sizecache:        0,
+				},
+				Checksum: &provider.ResourceChecksum{
+					Type:                 0,
+					Sum:                  "",
+					XXX_NoUnkeyedLiteral: struct{}{},
+					XXX_unrecognized:     nil,
+					XXX_sizecache:        0,
+				},
+				Etag:     "deadbeef",
+				MimeType: "text/plain",
+				Mtime: &types.Timestamp{
+					Seconds:              1234567890,
+					Nanos:                0,
+					XXX_NoUnkeyedLiteral: struct{}{},
+					XXX_unrecognized:     nil,
+					XXX_sizecache:        0,
+				},
+				Path: "/some/path",
+				PermissionSet: &provider.ResourcePermissions{
+					AddGrant:             false,
+					CreateContainer:      false,
+					Delete:               false,
+					GetPath:              false,
+					GetQuota:             false,
+					InitiateFileDownload: false,
+					InitiateFileUpload:   false,
+					ListGrants:           false,
+					ListContainer:        false,
+					ListFileVersions:     false,
+					ListRecycle:          false,
+					Move:                 false,
+					RemoveGrant:          false,
+					PurgeRecycle:         false,
+					RestoreFileVersion:   false,
+					RestoreRecycleItem:   false,
+					Stat:                 false,
+					UpdateGrant:          false,
+					DenyGrant:            false,
+					XXX_NoUnkeyedLiteral: struct{}{},
+					XXX_unrecognized:     nil,
+					XXX_sizecache:        0,
+				},
+				Size:   12345,
+				Owner:  nil,
+				Target: "",
+				CanonicalMetadata: &provider.CanonicalMetadata{
+					Target:               nil,
+					XXX_NoUnkeyedLiteral: struct{}{},
+					XXX_unrecognized:     nil,
+					XXX_sizecache:        0,
+				},
+				ArbitraryMetadata: &provider.ArbitraryMetadata{
+					Metadata:             map[string]string{"some": "arbi", "trary": "meta", "da": "ta"},
+					XXX_NoUnkeyedLiteral: struct{}{},
+					XXX_unrecognized:     nil,
+					XXX_sizecache:        0,
+				},
+				XXX_NoUnkeyedLiteral: struct{}{},
+				XXX_unrecognized:     nil,
+				XXX_sizecache:        0,
+			}))
 			Expect(len(called)).To(Equal(1))
 			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/GetMD {\"ref\":{\"resource_id\":{\"storage_id\":\"storage-id\",\"opaque_id\":\"opaque-id\"},\"path\":\"/some/path\"},\"mdKeys\":[\"val1\",\"val2\",\"val3\"]}"))
 		})
@@ -277,11 +346,87 @@ var _ = Describe("Nextcloud", func() {
 			}
 			mdKeys := []string{"val1", "val2", "val3"}
 			results, err := nc.ListFolder(ctx, ref, mdKeys)
+			Expect(err).NotTo(HaveOccurred())
 			Expect(len(results)).To(Equal(1))
-			Expect(results[0].Etag).To(Equal("in-json-etag"))
-			Expect(results[0].MimeType).To(Equal("in-json-mimetype"))
-			Expect(err).ToNot(HaveOccurred())
-			Expect(len(called)).To(Equal(1))
+			Expect(*results[0]).To(Equal(provider.ResourceInfo{
+				Opaque: &types.Opaque{
+					Map:                  nil,
+					XXX_NoUnkeyedLiteral: struct{}{},
+					XXX_unrecognized:     nil,
+					XXX_sizecache:        0,
+				},
+				Type: provider.ResourceType_RESOURCE_TYPE_FILE,
+				Id: &provider.ResourceId{
+					StorageId:            "",
+					OpaqueId:             "fileid-/some/path",
+					XXX_NoUnkeyedLiteral: struct{}{},
+					XXX_unrecognized:     nil,
+					XXX_sizecache:        0,
+				},
+				Checksum: &provider.ResourceChecksum{
+					Type:                 0,
+					Sum:                  "",
+					XXX_NoUnkeyedLiteral: struct{}{},
+					XXX_unrecognized:     nil,
+					XXX_sizecache:        0,
+				},
+				Etag:     "deadbeef",
+				MimeType: "text/plain",
+				Mtime: &types.Timestamp{
+					Seconds:              1234567890,
+					Nanos:                0,
+					XXX_NoUnkeyedLiteral: struct{}{},
+					XXX_unrecognized:     nil,
+					XXX_sizecache:        0,
+				},
+				Path: "/some/path",
+				PermissionSet: &provider.ResourcePermissions{
+					AddGrant:             false,
+					CreateContainer:      false,
+					Delete:               false,
+					GetPath:              false,
+					GetQuota:             false,
+					InitiateFileDownload: false,
+					InitiateFileUpload:   false,
+					ListGrants:           false,
+					ListContainer:        false,
+					ListFileVersions:     false,
+					ListRecycle:          false,
+					Move:                 false,
+					RemoveGrant:          false,
+					PurgeRecycle:         false,
+					RestoreFileVersion:   false,
+					RestoreRecycleItem:   false,
+					Stat:                 false,
+					UpdateGrant:          false,
+					DenyGrant:            false,
+					XXX_NoUnkeyedLiteral: struct{}{},
+					XXX_unrecognized:     nil,
+					XXX_sizecache:        0,
+				},
+				Size:   12345,
+				Owner:  nil,
+				Target: "",
+				CanonicalMetadata: &provider.CanonicalMetadata{
+					Target:               nil,
+					XXX_NoUnkeyedLiteral: struct{}{},
+					XXX_unrecognized:     nil,
+					XXX_sizecache:        0,
+				},
+				ArbitraryMetadata: &provider.ArbitraryMetadata{
+					Metadata:             map[string]string{"some": "arbi", "trary": "meta", "da": "ta"},
+					XXX_NoUnkeyedLiteral: struct{}{},
+					XXX_unrecognized:     nil,
+					XXX_sizecache:        0,
+				},
+				XXX_NoUnkeyedLiteral: struct{}{},
+				XXX_unrecognized:     nil,
+				XXX_sizecache:        0,
+			}))
+			// Expect(results[0].Etag).To(Equal("in-json-etag"))
+			// Expect(results[0].MimeType).To(Equal("in-json-mimetype"))
+			// Expect(err).ToNot(HaveOccurred())
+			// Expect(len(called)).To(Equal(1))
 			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/ListFolder {\"ref\":{\"resource_id\":{\"storage_id\":\"storage-id\",\"opaque_id\":\"opaque-id\"},\"path\":\"/some/path\"},\"mdKeys\":[\"val1\",\"val2\",\"val3\"]}"))
 		})
 	})

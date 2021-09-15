@@ -266,10 +266,15 @@ func (nc *StorageDriver) Delete(ctx context.Context, ref *provider.Reference) er
 
 // Move as defined in the storage.FS interface
 func (nc *StorageDriver) Move(ctx context.Context, oldRef, newRef *provider.Reference) error {
-	data := make(map[string]provider.Reference)
-	data["from"] = *oldRef
-	data["to"] = *newRef
-	bodyStr, _ := json.Marshal(data)
+	type paramsObj struct {
+		OldRef provider.Reference `json:"oldRef"`
+		NewRef provider.Reference `json:"newRef"`
+	}
+	bodyObj := &paramsObj{
+		OldRef: *oldRef,
+		NewRef: *newRef,
+	}
+	bodyStr, _ := json.Marshal(bodyObj)
 	log := appctx.GetLogger(ctx)
 	log.Info().Msgf("Move %s", bodyStr)
 
@@ -282,10 +287,35 @@ func (nc *StorageDriver) GetMD(ctx context.Context, ref *provider.Reference, mdK
 	type paramsObj struct {
 		Ref    provider.Reference `json:"ref"`
 		MdKeys []string           `json:"mdKeys"`
+		// MetaData provider.ResourceInfo `json:"metaData"`
 	}
 	bodyObj := &paramsObj{
 		Ref:    *ref,
 		MdKeys: mdKeys,
+		// MetaData: provider.ResourceInfo{
+		// 	Opaque:            &types.Opaque{},
+		// 	Type:              provider.ResourceType_RESOURCE_TYPE_FILE,
+		// 	Id:                &provider.ResourceId{OpaqueId: "fileid-/some/path"},
+		// 	Checksum:          &provider.ResourceChecksum{},
+		// 	Etag:              "deadbeef",
+		// 	MimeType:          "text/plain",
+		// 	Mtime:             &types.Timestamp{Seconds: 1234567890},
+		// 	Path:              ref.Path,
+		// 	PermissionSet:     &provider.ResourcePermissions{},
+		// 	Size:              uint64(12345),
+		// 	Owner:             nil,
+		// 	Target:            "",
+		// 	CanonicalMetadata: &provider.CanonicalMetadata{},
+		// 	ArbitraryMetadata: &provider.ArbitraryMetadata{
+		// 		Metadata:             map[string]string{"some": "arbi", "trary": "meta", "da": "ta"},
+		// 		XXX_NoUnkeyedLiteral: struct{}{},
+		// 		XXX_unrecognized:     []byte{},
+		// 		XXX_sizecache:        0,
+		// 	},
+		// 	XXX_NoUnkeyedLiteral: struct{}{},
+		// 	XXX_unrecognized:     []byte{},
+		// 	XXX_sizecache:        0,
+		// },
 	}
 	bodyStr, _ := json.Marshal(bodyObj)
 	log := appctx.GetLogger(ctx)
@@ -298,45 +328,45 @@ func (nc *StorageDriver) GetMD(ctx context.Context, ref *provider.Reference, mdK
 	if status == 404 {
 		return nil, errtypes.NotFound("")
 	}
-	var respMap map[string]interface{}
-	err = json.Unmarshal(body, &respMap)
+	var respObj provider.ResourceInfo
+	err = json.Unmarshal(body, &respObj)
 	if err != nil {
 		return nil, err
 	}
-	size := int(respMap["size"].(float64))
-	mdMap, ok := respMap["metadata"].(map[string]interface{})
-	mdMapString := make(map[string]string)
-	if ok {
-		for key, value := range mdMap {
-			mdMapString[key] = value.(string)
-		}
-	}
-	md := &provider.ResourceInfo{
-		Opaque:            &types.Opaque{},
-		Type:              provider.ResourceType_RESOURCE_TYPE_FILE,
-		Id:                &provider.ResourceId{OpaqueId: "fileid-" + url.QueryEscape(respMap["path"].(string))},
-		Checksum:          &provider.ResourceChecksum{},
-		Etag:              respMap["etag"].(string),
-		MimeType:          respMap["mimetype"].(string),
-		Mtime:             &types.Timestamp{Seconds: 1234567890},
-		Path:              ref.Path,
-		PermissionSet:     &provider.ResourcePermissions{},
-		Size:              uint64(size),
-		Owner:             nil,
-		Target:            "",
-		CanonicalMetadata: &provider.CanonicalMetadata{},
-		ArbitraryMetadata: &provider.ArbitraryMetadata{
-			Metadata:             mdMapString,
-			XXX_NoUnkeyedLiteral: struct{}{},
-			XXX_unrecognized:     []byte{},
-			XXX_sizecache:        0,
-		},
-		XXX_NoUnkeyedLiteral: struct{}{},
-		XXX_unrecognized:     []byte{},
-		XXX_sizecache:        0,
-	}
+	// size := int(respMap["size"].(float64))
+	// mdMap, ok := respMap["metadata"].(map[string]interface{})
+	// mdMapString := make(map[string]string)
+	// if ok {
+	// 	for key, value := range mdMap {
+	// 		mdMapString[key] = value.(string)
+	// 	}
+	// }
+	// md := &provider.ResourceInfo{
+	// 	Opaque:            &types.Opaque{},
+	// 	Type:              provider.ResourceType_RESOURCE_TYPE_FILE,
+	// 	Id:                &provider.ResourceId{OpaqueId: "fileid-" + url.QueryEscape(respMap["path"].(string))},
+	// 	Checksum:          &provider.ResourceChecksum{},
+	// 	Etag:              respMap["etag"].(string),
+	// 	MimeType:          respMap["mimetype"].(string),
+	// 	Mtime:             &types.Timestamp{Seconds: 1234567890},
+	// 	Path:              ref.Path,
+	// 	PermissionSet:     &provider.ResourcePermissions{},
+	// 	Size:              uint64(size),
+	// 	Owner:             nil,
+	// 	Target:            "",
+	// 	CanonicalMetadata: &provider.CanonicalMetadata{},
+	// 	ArbitraryMetadata: &provider.ArbitraryMetadata{
+	// 		Metadata:             mdMapString,
+	// 		XXX_NoUnkeyedLiteral: struct{}{},
+	// 		XXX_unrecognized:     []byte{},
+	// 		XXX_sizecache:        0,
+	// 	},
+	// 	XXX_NoUnkeyedLiteral: struct{}{},
+	// 	XXX_unrecognized:     []byte{},
+	// 	XXX_sizecache:        0,
+	// }
 
-	return md, nil
+	return &respObj, nil
 }
 
 // ListFolder as defined in the storage.FS interface
@@ -363,35 +393,36 @@ func (nc *StorageDriver) ListFolder(ctx context.Context, ref *provider.Reference
 		return nil, errtypes.NotFound("")
 	}
 
-	var respMapArr []interface{}
+	var respMapArr []provider.ResourceInfo
 	err = json.Unmarshal(body, &respMapArr)
 	if err != nil {
 		return nil, err
 	}
-	var infos = make([]*provider.ResourceInfo, len(respMapArr))
+	var pointers = make([]*provider.ResourceInfo, len(respMapArr))
 	for i := 0; i < len(respMapArr); i++ {
-		respMap := respMapArr[i].(map[string]interface{})
-		infos[i] = &provider.ResourceInfo{
-			Opaque:               &types.Opaque{},
-			Type:                 provider.ResourceType_RESOURCE_TYPE_CONTAINER,
-			Id:                   &provider.ResourceId{OpaqueId: "fileid-" + url.QueryEscape(respMap["path"].(string))},
-			Checksum:             &provider.ResourceChecksum{},
-			Etag:                 respMap["etag"].(string),
-			MimeType:             respMap["mimetype"].(string),
-			Mtime:                &types.Timestamp{Seconds: 1234567890},
-			Path:                 "/subdir", // FIXME: bodyArr[i],
-			PermissionSet:        &provider.ResourcePermissions{},
-			Size:                 0,
-			Owner:                &user.UserId{OpaqueId: "f7fbf8c8-139b-4376-b307-cf0a8c2d0d9c"},
-			Target:               "",
-			CanonicalMetadata:    &provider.CanonicalMetadata{},
-			ArbitraryMetadata:    nil,
-			XXX_NoUnkeyedLiteral: struct{}{},
-			XXX_unrecognized:     []byte{},
-			XXX_sizecache:        0,
-		}
+		pointers[i] = &respMapArr[i]
+		// 	respMap := respMapArr[i].(map[string]interface{})
+		// 	infos[i] = &provider.ResourceInfo{
+		// 		Opaque:               &types.Opaque{},
+		// 		Type:                 provider.ResourceType_RESOURCE_TYPE_CONTAINER,
+		// 		Id:                   &provider.ResourceId{OpaqueId: "fileid-" + url.QueryEscape(respMap["path"].(string))},
+		// 		Checksum:             &provider.ResourceChecksum{},
+		// 		Etag:                 respMap["etag"].(string),
+		// 		MimeType:             respMap["mimetype"].(string),
+		// 		Mtime:                &types.Timestamp{Seconds: 1234567890},
+		// 		Path:                 "/subdir", // FIXME: bodyArr[i],
+		// 		PermissionSet:        &provider.ResourcePermissions{},
+		// 		Size:                 0,
+		// 		Owner:                &user.UserId{OpaqueId: "f7fbf8c8-139b-4376-b307-cf0a8c2d0d9c"},
+		// 		Target:               "",
+		// 		CanonicalMetadata:    &provider.CanonicalMetadata{},
+		// 		ArbitraryMetadata:    nil,
+		// 		XXX_NoUnkeyedLiteral: struct{}{},
+		// 		XXX_unrecognized:     []byte{},
+		// 		XXX_sizecache:        0,
+		// 	}
 	}
-	return infos, err
+	return pointers, err
 }
 
 // InitiateUpload as defined in the storage.FS interface
