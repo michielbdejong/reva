@@ -422,12 +422,12 @@ func (nc *StorageDriver) DownloadRevision(ctx context.Context, ref *provider.Ref
 // RestoreRevision as defined in the storage.FS interface
 func (nc *StorageDriver) RestoreRevision(ctx context.Context, ref *provider.Reference, key string) error {
 	type paramsObj struct {
-		Path string `json:"path"`
-		Key  string `json:"key"`
+		Ref provider.Reference `json:"ref"`
+		Key string             `json:"key"`
 	}
 	bodyObj := &paramsObj{
-		Path: ref.Path,
-		Key:  key,
+		Ref: *ref,
+		Key: key,
 	}
 	bodyStr, _ := json.Marshal(bodyObj)
 	log := appctx.GetLogger(ctx)
