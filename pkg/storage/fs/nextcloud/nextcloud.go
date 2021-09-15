@@ -526,16 +526,16 @@ func (nc *StorageDriver) GetPathByID(ctx context.Context, id *provider.ResourceI
 // AddGrant as defined in the storage.FS interface
 func (nc *StorageDriver) AddGrant(ctx context.Context, ref *provider.Reference, g *provider.Grant) error {
 	type paramsObj struct {
-		Reference provider.Reference `json:"reference"`
-		Grant     provider.Grant     `json:"grant"`
+		Ref provider.Reference `json:"ref"`
+		G   provider.Grant     `json:"g"`
 	}
 	bodyObj := &paramsObj{
-		Reference: *ref,
-		Grant:     *g,
+		Ref: *ref,
+		G:   *g,
 	}
 	bodyStr, _ := json.Marshal(bodyObj)
 	log := appctx.GetLogger(ctx)
-	log.Info().Msgf("AggGrant %s", bodyStr)
+	log.Info().Msgf("AddGrant %s", bodyStr)
 
 	_, _, err := nc.do(ctx, Action{"AddGrant", string(bodyStr)})
 	return err
