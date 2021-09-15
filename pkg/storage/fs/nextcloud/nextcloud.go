@@ -29,6 +29,7 @@ import (
 
 	user "github.com/cs3org/go-cs3apis/cs3/identity/user/v1beta1"
 	provider "github.com/cs3org/go-cs3apis/cs3/storage/provider/v1beta1"
+	types "github.com/cs3org/go-cs3apis/cs3/types/v1beta1"
 	"github.com/cs3org/reva/pkg/appctx"
 	ctxpkg "github.com/cs3org/reva/pkg/ctx"
 	"github.com/cs3org/reva/pkg/errtypes"
@@ -771,12 +772,41 @@ func (nc *StorageDriver) ListStorageSpaces(ctx context.Context, f []*provider.Li
 
 // CreateStorageSpace creates a storage space
 func (nc *StorageDriver) CreateStorageSpace(ctx context.Context, req *provider.CreateStorageSpaceRequest) (*provider.CreateStorageSpaceResponse, error) {
-	bodyStr, _ := json.Marshal(req)
+	bodyStr, _ := json.Marshal(provider.StorageSpace{
+		Opaque: &types.Opaque{
+			Map: map[string](*types.OpaqueEntry){
+				"bar": &types.OpaqueEntry{Value: []byte("sama")},
+				"foo": &types.OpaqueEntry{Value: []byte("sama")},
+			},
+		},
+		Id: &provider.StorageSpaceId{OpaqueId: "some-opaque-storage-space-id"},
+		Owner: &user.User{
+			Id: &user.UserId{
+				Idp:      "some-idp",
+				OpaqueId: "some-opaque-user-id",
+				Type:     user.UserType_USER_TYPE_PRIMARY,
+			},
+		},
+		Root: &provider.ResourceId{
+			StorageId: "some-storage-ud",
+			OpaqueId:  "some-opaque-root-id",
+		},
+		Name: "My Storage Space",
+		Quota: &provider.Quota{
+			QuotaMaxBytes: uint64(456),
+			QuotaMaxFiles: uint64(123),
+		},
+		SpaceType: "home",
+		Mtime: &types.Timestamp{
+			Seconds: uint64(1234567890),
+		},
+	})
 	_, respBody, err := nc.do(ctx, Action{"CreateStorageSpace", string(bodyStr)})
 	if err != nil {
 		return nil, err
 	}
 	var respObj provider.CreateStorageSpaceResponse
+	fmt.Println(string(respBody))
 	err = json.Unmarshal(respBody, &respObj)
 	if err != nil {
 		return nil, err
