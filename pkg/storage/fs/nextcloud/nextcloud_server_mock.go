@@ -132,10 +132,40 @@ var responses = map[string]Response{
 	`POST /apps/sciencemesh/~einstein/api/UnsetArbitraryMetadata {"path":"/subdir"}`: {200, ``, serverStateSubdir},
 
 	`POST /apps/sciencemesh/~einstein/api/UpdateGrant {"path":"/subdir"}`: {200, ``, serverStateGrantUpdated},
+
+	`POST /apps/sciencemesh/~tester/api/GetHome `:    {200, `yes we are`, serverStateHome},
+	`POST /apps/sciencemesh/~tester/api/CreateHome `: {201, ``, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/CreateDir {"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"/some/path"}`:                                                                                                                  {201, ``, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/Delete {"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"/some/path"}`:                                                                                                                     {200, ``, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/Move {"from":{"resource_id":{"storage_id":"storage-id-1","opaque_id":"opaque-id-1"},"path":"/some/old/path"},"to":{"resource_id":{"storage_id":"storage-id-2","opaque_id":"opaque-id-2"},"path":"/some/new/path"}}`: {200, ``, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/GetMD {"ref":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"/some/path"},"mdKeys":["val1","val2","val3"]}`:                                                                              {200, `{ "size": 1, "path":"/some/path", "metadata": { "foo": "bar" }, "etag": "in-json-etag", "mimetype": "in-json-mimetype" }`, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/ListFolder {"ref":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"/some/path"},"mdKeys":["val1","val2","val3"]}`:                                                                         {200, `[{ "size": 1, "path":"/some/path", "metadata": { "foo": "bar" }, "etag": "in-json-etag", "mimetype": "in-json-mimetype" }]`, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/InitiateUpload {"ref":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"/some/path"},"uploadLength":12345,"metadata":{"key1":"val1","key2":"val2","key3":"val3"}}`:                         {200, `{ "not":"sure", "what": "should be", "returned": "here" }`, serverStateEmpty},
+	`PUT /apps/sciencemesh/~tester/api/Upload/some/file/path.txt shiny!`:                                                                       {200, ``, serverStateEmpty},
+	`GET /apps/sciencemesh/~tester/api/Download/some/file/path.txt `:                                                                           {200, `the contents of the file`, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/ListRevisions {"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"/some/path"}`: {200, `[{"key":"version-12", "size": 12345, "mtime": 1234567990, "etag": "deadb00f"}, {"key":"asdf", "size": 1235, "mtime": 1234567890, "etag": "deadbeef"}]`, serverStateEmpty},
+	`GET /apps/sciencemesh/~tester/api/DownloadRevision/some%2Frevision/some/file/path.txt `:                                                   {200, `the contents of that revision`, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/RestoreRevision {"path":"some/file/path.txt","key":"asdf"}`:                                            {200, ``, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/ListRecycle {"path":"/some/file.txt","key":"asdf"}`:                                                    {200, `[{"key":"deleted-version","size":12345,"deletionTime":1234567890}]`, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/RestoreRecycleItem {"key":"asdf","path":"original/location/when/deleted.txt","restoreRef":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"}}`: {200, ``, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/PurgeRecycleItem {"key":"asdf","path":"original/location/when/deleted.txt"}`:                                                                                                                {200, ``, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/EmptyRecycle `:                                                   {200, ``, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/GetPathByID {"storage_id":"storage-id","opaque_id":"opaque-id"}`: {200, `the/path/for/that/id.txt`, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/AddGrant {"reference":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"},"grant":{"grantee":{"Id":{"UserId":{"idp":"0.0.0.0:19000","opaque_id":"f7fbf8c8-139b-4376-b307-cf0a8c2d0d9c","type":1}}},"permissions":{"add_grant":true,"create_container":true,"delete":true,"get_path":true,"get_quota":true,"initiate_file_download":true,"initiate_file_upload":true,"list_grants":true,"list_container":true,"list_file_versions":true,"list_recycle":true,"move":true,"remove_grant":true,"purge_recycle":true,"restore_file_version":true,"restore_recycle_item":true,"stat":true,"update_grant":true,"deny_grant":true}}}`: {200, ``, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/DenyGrant {"reference":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"},"grantee":{"Id":{"UserId":{"idp":"0.0.0.0:19000","opaque_id":"f7fbf8c8-139b-4376-b307-cf0a8c2d0d9c","type":1}}}}`: {200, ``, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/RemoveGrant {"reference":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"},"grant":{"grantee":{"Id":{"UserId":{"idp":"0.0.0.0:19000","opaque_id":"f7fbf8c8-139b-4376-b307-cf0a8c2d0d9c","type":1}}},"permissions":{"add_grant":true,"create_container":true,"delete":true,"get_path":true,"get_quota":true,"initiate_file_download":true,"initiate_file_upload":true,"list_grants":true,"list_container":true,"list_file_versions":true,"list_recycle":true,"move":true,"remove_grant":true,"purge_recycle":true,"restore_file_version":true,"restore_recycle_item":true,"stat":true,"update_grant":true,"deny_grant":true}}}`: {200, ``, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/UpdateGrant {"reference":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"},"grant":{"grantee":{"Id":{"UserId":{"idp":"0.0.0.0:19000","opaque_id":"f7fbf8c8-139b-4376-b307-cf0a8c2d0d9c","type":1}}},"permissions":{"add_grant":true,"create_container":true,"delete":true,"get_path":true,"get_quota":true,"initiate_file_download":true,"initiate_file_upload":true,"list_grants":true,"list_container":true,"list_file_versions":true,"list_recycle":true,"move":true,"remove_grant":true,"purge_recycle":true,"restore_file_version":true,"restore_recycle_item":true,"stat":true,"update_grant":true,"deny_grant":true}}}`: {200, ``, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/ListGrants {"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"}`: {200, `[{"grantee":{"Id":{"UserId":{"idp":"0.0.0.0:19000","opaque_id":"f7fbf8c8-139b-4376-b307-cf0a8c2d0d9c","type":1}}},"permissions":{"add_grant":true,"create_container":true,"delete":true,"get_path":true,"get_quota":true,"initiate_file_download":true,"initiate_file_upload":true,"list_grants":true,"list_container":true,"list_file_versions":true,"list_recycle":true,"move":true,"remove_grant":true,"purge_recycle":true,"restore_file_version":true,"restore_recycle_item":true,"stat":true,"update_grant":true,"deny_grant":true}}]`, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/GetQuota `: {200, `{"maxBytes":456,"maxFiles":123}`, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/CreateReference {"path":"some/file/path.txt","url":"http://bing.com/search?q=dotnet"}`: {200, ``, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/Shutdown `: {200, ``, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/SetArbitraryMetadata {"reference":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"},"metadata":{"metadata":{"arbi":"trary","meta":"data"}}}`: {200, ``, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/UnsetArbitraryMetadata {"reference":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"},"keys":["arbi"]}`:                                      {200, ``, serverStateEmpty},
+	`POST /apps/sciencemesh/~tester/api/ListStorageSpaces {"filters":[{"type":3,"Term":{"Owner":{"idp":"0.0.0.0:19000","opaque_id":"f7fbf8c8-139b-4376-b307-cf0a8c2d0d9c","type":1}}},{"type":2,"Term":{"Id":{"opaque_id":"opaque-id"}}},{"type":4,"Term":{"SpaceType":"home"}}]}`: {200, `	[{"opaque":{"some-opaque-key":"some-opaque-value"},"opaqueId":"storage-space-opaque-id","ownerIdp":"0.0.0.0:19000","ownerOpaqueId":"f7fbf8c8-139b-4376-b307-cf0a8c2d0d9c","rootStorageId":"root-storage-id","rootOpaqueId":"root-opaque-id","name":"My Home Space","quotaMaxBytes":456,"quotaMaxFiles":123,"spaceType":"home","mTimeSeconds":1234567890}]`, serverStateEmpty},
 }
 
 // GetNextcloudServerMock returns a handler that pretends to be a remote Nextcloud server
-func GetNextcloudServerMock() http.Handler {
+func GetNextcloudServerMock(called *[]string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		buf := new(strings.Builder)
 		_, err := io.Copy(buf, r.Body)
@@ -143,11 +173,14 @@ func GetNextcloudServerMock() http.Handler {
 			panic("Error reading response into buffer")
 		}
 		var key = fmt.Sprintf("%s %s %s", r.Method, r.URL, buf.String())
+		fmt.Printf("Nextcloud Server Mock key components %s %d %s %d %s %d\n", r.Method, len(r.Method), r.URL.String(), len(r.URL.String()), buf.String(), len(buf.String()))
 		fmt.Printf("Nextcloud Server Mock key %s\n", key)
+		*called = append(*called, key)
 		response := responses[key]
 		if (response == Response{}) {
 			key = fmt.Sprintf("%s %s %s %s", r.Method, r.URL, buf.String(), serverState)
 			fmt.Printf("Nextcloud Server Mock key with State %s\n", key)
+			// *called = append(*called, key)
 			response = responses[key]
 		}
 		if (response == Response{}) {
@@ -163,6 +196,7 @@ func GetNextcloudServerMock() http.Handler {
 			serverState = serverStateError
 		}
 		w.WriteHeader(response.code)
+		// w.Header().Set("Etag", "mocker-etag")
 		_, err = w.Write([]byte(responses[key].body))
 		if err != nil {
 			panic(err)
