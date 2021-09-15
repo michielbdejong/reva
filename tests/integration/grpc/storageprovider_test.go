@@ -229,68 +229,68 @@ var _ = Describe("storage providers", func() {
 		})
 	}
 
-	// assertGrants := func() {
-	// 	It("lists, adds and removes grants", func() {
-	// 		By("there are no grants initially")
-	// 		listRes, err := serviceClient.ListGrants(ctx, &storagep.ListGrantsRequest{Ref: subdirRef})
-	// 		Expect(err).ToNot(HaveOccurred())
-	// 		Expect(len(listRes.Grants)).To(Equal(0))
+	assertGrants := func() {
+		It("lists, adds and removes grants", func() {
+			By("there are no grants initially")
+			listRes, err := serviceClient.ListGrants(ctx, &storagep.ListGrantsRequest{Ref: subdirRef})
+			Expect(err).ToNot(HaveOccurred())
+			Expect(len(listRes.Grants)).To(Equal(0))
 
-	// 		By("adding a grant")
-	// 		grant := &storagep.Grant{
-	// 			Grantee: &storagep.Grantee{
-	// 				Type: storagep.GranteeType_GRANTEE_TYPE_USER,
-	// 				Id: &storagep.Grantee_UserId{
-	// 					UserId: &userpb.UserId{
-	// 						OpaqueId: "4c510ada-c86b-4815-8820-42cdf82c3d51",
-	// 					},
-	// 				},
-	// 			},
-	// 			Permissions: &storagep.ResourcePermissions{
-	// 				Stat:   true,
-	// 				Move:   true,
-	// 				Delete: false,
-	// 			},
-	// 		}
-	// 		addRes, err := serviceClient.AddGrant(ctx, &storagep.AddGrantRequest{Ref: subdirRef, Grant: grant})
-	// 		Expect(err).ToNot(HaveOccurred())
-	// 		Expect(addRes.Status.Code).To(Equal(rpcv1beta1.Code_CODE_OK))
+			By("adding a grant")
+			grant := &storagep.Grant{
+				Grantee: &storagep.Grantee{
+					Type: storagep.GranteeType_GRANTEE_TYPE_USER,
+					Id: &storagep.Grantee_UserId{
+						UserId: &userpb.UserId{
+							OpaqueId: "4c510ada-c86b-4815-8820-42cdf82c3d51",
+						},
+					},
+				},
+				Permissions: &storagep.ResourcePermissions{
+					Stat:   true,
+					Move:   true,
+					Delete: false,
+				},
+			}
+			addRes, err := serviceClient.AddGrant(ctx, &storagep.AddGrantRequest{Ref: subdirRef, Grant: grant})
+			Expect(err).ToNot(HaveOccurred())
+			Expect(addRes.Status.Code).To(Equal(rpcv1beta1.Code_CODE_OK))
 
-	// 		By("listing the new grant")
-	// 		listRes, err = serviceClient.ListGrants(ctx, &storagep.ListGrantsRequest{Ref: subdirRef})
-	// 		Expect(err).ToNot(HaveOccurred())
-	// 		Expect(len(listRes.Grants)).To(Equal(1))
-	// 		readGrant := listRes.Grants[0]
-	// 		Expect(readGrant.Permissions.Stat).To(BeTrue())
-	// 		Expect(readGrant.Permissions.Move).To(BeTrue())
-	// 		Expect(readGrant.Permissions.Delete).To(BeFalse())
+			By("listing the new grant")
+			listRes, err = serviceClient.ListGrants(ctx, &storagep.ListGrantsRequest{Ref: subdirRef})
+			Expect(err).ToNot(HaveOccurred())
+			Expect(len(listRes.Grants)).To(Equal(1))
+			readGrant := listRes.Grants[0]
+			Expect(readGrant.Permissions.Stat).To(BeTrue())
+			Expect(readGrant.Permissions.Move).To(BeTrue())
+			Expect(readGrant.Permissions.Delete).To(BeFalse())
 
-	// 		By("updating the grant")
-	// 		grant.Permissions.Delete = true
-	// 		updateRes, err := serviceClient.UpdateGrant(ctx, &storagep.UpdateGrantRequest{Ref: subdirRef, Grant: grant})
-	// 		Expect(err).ToNot(HaveOccurred())
-	// 		Expect(updateRes.Status.Code).To(Equal(rpcv1beta1.Code_CODE_OK))
+			By("updating the grant")
+			grant.Permissions.Delete = true
+			updateRes, err := serviceClient.UpdateGrant(ctx, &storagep.UpdateGrantRequest{Ref: subdirRef, Grant: grant})
+			Expect(err).ToNot(HaveOccurred())
+			Expect(updateRes.Status.Code).To(Equal(rpcv1beta1.Code_CODE_OK))
 
-	// 		By("listing the update grant")
-	// 		listRes, err = serviceClient.ListGrants(ctx, &storagep.ListGrantsRequest{Ref: subdirRef})
-	// 		Expect(err).ToNot(HaveOccurred())
-	// 		Expect(len(listRes.Grants)).To(Equal(1))
-	// 		readGrant = listRes.Grants[0]
-	// 		Expect(readGrant.Permissions.Stat).To(BeTrue())
-	// 		Expect(readGrant.Permissions.Move).To(BeTrue())
-	// 		Expect(readGrant.Permissions.Delete).To(BeTrue())
+			By("listing the update grant")
+			listRes, err = serviceClient.ListGrants(ctx, &storagep.ListGrantsRequest{Ref: subdirRef})
+			Expect(err).ToNot(HaveOccurred())
+			Expect(len(listRes.Grants)).To(Equal(1))
+			readGrant = listRes.Grants[0]
+			Expect(readGrant.Permissions.Stat).To(BeTrue())
+			Expect(readGrant.Permissions.Move).To(BeTrue())
+			Expect(readGrant.Permissions.Delete).To(BeTrue())
 
-	// 		By("deleting a grant")
-	// 		delRes, err := serviceClient.RemoveGrant(ctx, &storagep.RemoveGrantRequest{Ref: subdirRef, Grant: readGrant})
-	// 		Expect(err).ToNot(HaveOccurred())
-	// 		Expect(delRes.Status.Code).To(Equal(rpcv1beta1.Code_CODE_OK))
+			By("deleting a grant")
+			delRes, err := serviceClient.RemoveGrant(ctx, &storagep.RemoveGrantRequest{Ref: subdirRef, Grant: readGrant})
+			Expect(err).ToNot(HaveOccurred())
+			Expect(delRes.Status.Code).To(Equal(rpcv1beta1.Code_CODE_OK))
 
-	// 		By("the grant is gone")
-	// 		listRes, err = serviceClient.ListGrants(ctx, &storagep.ListGrantsRequest{Ref: subdirRef})
-	// 		Expect(err).ToNot(HaveOccurred())
-	// 		Expect(len(listRes.Grants)).To(Equal(0))
-	// 	})
-	// }
+			By("the grant is gone")
+			listRes, err = serviceClient.ListGrants(ctx, &storagep.ListGrantsRequest{Ref: subdirRef})
+			Expect(err).ToNot(HaveOccurred())
+			Expect(len(listRes.Grants)).To(Equal(0))
+		})
+	}
 
 	// assertUploads := func() {
 	// 	It("returns upload URLs for simple and tus", func() {
@@ -486,7 +486,7 @@ var _ = Describe("storage providers", func() {
 			assertGetPath()
 			assertDelete()
 			assertMove()
-			// assertGrants()
+			assertGrants()
 			// assertUploads()
 			// assertDownloads()
 			// assertRecycle()

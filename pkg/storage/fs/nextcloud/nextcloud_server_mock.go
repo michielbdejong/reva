@@ -52,7 +52,7 @@ const serverStateMetadata = "METADATA"
 var serverState = serverStateEmpty
 
 var responses = map[string]Response{
-	`POST /apps/sciencemesh/~einstein/api/storage/AddGrant {"path":"/subdir"}`: {200, ``, serverStateGrantAdded},
+	`POST /apps/sciencemesh/~einstein/api/storage/AddGrant {"ref":{"path":"/subdir"},"g":{"grantee":{"type":1,"Id":{"UserId":{"opaque_id":"4c510ada-c86b-4815-8820-42cdf82c3d51"}}},"permissions":{"move":true,"stat":true}}} EMPTY`: {200, ``, serverStateGrantAdded},
 
 	`POST /apps/sciencemesh/~einstein/api/storage/CreateDir {"path":"/subdir"} EMPTY`:  {200, ``, serverStateSubdir},
 	`POST /apps/sciencemesh/~einstein/api/storage/CreateDir {"path":"/subdir"} HOME`:   {200, ``, serverStateSubdir},
@@ -108,9 +108,9 @@ var responses = map[string]Response{
 	`POST /apps/sciencemesh/~einstein/api/storage/ListFolder {"ref":{"path":"/Shares"},"mdKeys":null} SUBDIR`:    {404, ``, serverStateSubdir},
 	`POST /apps/sciencemesh/~einstein/api/storage/ListFolder {"ref":{"path":"/Shares"},"mdKeys":null} REFERENCE`: {200, `[{ "size": 1, "path":"/Shares/reference", "metadata": { "foo": "bar" }, "etag": "in-json-etag", "mimetype": "in-json-mimetype" }]`, serverStateReference},
 
-	`POST /apps/sciencemesh/~einstein/api/storage/ListGrants {"ref":{"path":"/subdir"},"mdKeys":null} SUBDIR`:        {200, `[]`, serverStateEmpty},
-	`POST /apps/sciencemesh/~einstein/api/storage/ListGrants {"ref":{"path":"/subdir"},"mdKeys":null} GRANT-ADDED`:   {200, `[ { "stat": true, "move": true, "delete": false } ]`, serverStateEmpty},
-	`POST /apps/sciencemesh/~einstein/api/storage/ListGrants {"ref":{"path":"/subdir"},"mdKeys":null} GRANT-UPDATED`: {200, `[ { "stat": true, "move": true, "delete": true } ]`, serverStateEmpty},
+	`POST /apps/sciencemesh/~einstein/api/storage/ListGrants {"path":"/subdir"} SUBDIR`:        {200, `[]`, serverStateEmpty},
+	`POST /apps/sciencemesh/~einstein/api/storage/ListGrants {"path":"/subdir"} GRANT-ADDED`:   {200, `[ { "stat": true, "move": true, "delete": false } ]`, serverStateEmpty},
+	`POST /apps/sciencemesh/~einstein/api/storage/ListGrants {"path":"/subdir"} GRANT-UPDATED`: {200, `[ { "stat": true, "move": true, "delete": true } ]`, serverStateEmpty},
 
 	`POST /apps/sciencemesh/~einstein/api/storage/ListRecycle  EMPTY`:   {200, `[]`, serverStateEmpty},
 	`POST /apps/sciencemesh/~einstein/api/storage/ListRecycle  RECYCLE`: {200, `["/subdir"]`, serverStateRecycle},
