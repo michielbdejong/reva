@@ -684,6 +684,7 @@ func (nc *StorageDriver) GetQuota(ctx context.Context) (uint64, uint64, error) {
 	if err != nil {
 		return 0, 0, err
 	}
+	// FIXME: https://github.com/cs3org/reva/issues/2069
 	return uint64(respMap["maxBytes"].(float64)), uint64(respMap["maxFiles"].(float64)), err
 }
 
@@ -751,10 +752,39 @@ func (nc *StorageDriver) UnsetArbitraryMetadata(ctx context.Context, ref *provid
 // ListStorageSpaces :as defined in the storage.FS interface
 func (nc *StorageDriver) ListStorageSpaces(ctx context.Context, f []*provider.ListStorageSpacesRequest_Filter) ([]*provider.StorageSpace, error) {
 	type paramsObj struct {
-		Filters []*provider.ListStorageSpacesRequest_Filter `json:"filters"`
+		F []*provider.ListStorageSpacesRequest_Filter `json:"f"`
+		S provider.StorageSpace                       `json:"s"`
+	}
+	opaqueMap := map[string](*types.OpaqueEntry){
+		"foo": &types.OpaqueEntry{Value: []byte("sama")},
+		"bar": &types.OpaqueEntry{Value: []byte("sama")},
 	}
 	bodyObj := &paramsObj{
-		Filters: f,
+		F: f,
+		S: provider.StorageSpace{
+			Opaque: &types.Opaque{Map: opaqueMap},
+			Id:     &provider.StorageSpaceId{OpaqueId: "some-opaque-storage-space-id"},
+			Owner: &user.User{
+				Id: &user.UserId{
+					Idp:      "some-idp",
+					OpaqueId: "some-opaque-user-id",
+					Type:     user.UserType_USER_TYPE_PRIMARY,
+				},
+			},
+			Root: &provider.ResourceId{
+				StorageId: "some-storage-ud",
+				OpaqueId:  "some-opaque-root-id",
+			},
+			Name: "My Storage Space",
+			Quota: &provider.Quota{
+				QuotaMaxBytes: uint64(456),
+				QuotaMaxFiles: uint64(123),
+			},
+			SpaceType: "home",
+			Mtime: &types.Timestamp{
+				Seconds: uint64(1234567890),
+			},
+		},
 	}
 	bodyStr, _ := json.Marshal(bodyObj)
 	_, respBody, err := nc.do(ctx, Action{"ListStorageSpaces", string(bodyStr)})
@@ -763,43 +793,44 @@ func (nc *StorageDriver) ListStorageSpaces(ctx context.Context, f []*provider.Li
 	}
 
 	// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L1341-L1366
-	var respMapArr []interface{}
+	var respMapArr []provider.StorageSpace
 	err = json.Unmarshal(respBody, &respMapArr)
 	if err != nil {
 		return nil, err
 	}
 	var spaces = make([]*provider.StorageSpace, len(respMapArr))
 	for i := 0; i < len(respMapArr); i++ {
-		respMap := respMapArr[i].(map[string]interface{})
-		opaqueMap := make(map[string](*types.OpaqueEntry))
-		values := respMap["opaque"].(map[string]interface{})
-		for k, v := range values {
-			opaqueMap[k] = &types.OpaqueEntry{Value: []byte(v.(string))}
-		}
-		spaces[i] = &provider.StorageSpace{
-			Opaque: &types.Opaque{Map: opaqueMap},
-			Id:     &provider.StorageSpaceId{OpaqueId: respMap["opaqueId"].(string)},
-			Owner: &user.User{
-				Id: &user.UserId{
-					Idp:      respMap["ownerIdp"].(string),
-					OpaqueId: respMap["ownerOpaqueId"].(string),
-					Type:     user.UserType_USER_TYPE_PRIMARY,
-				},
-			},
-			Root: &provider.ResourceId{
-				StorageId: respMap["rootStorageId"].(string),
-				OpaqueId:  respMap["rootOpaqueId"].(string),
-			},
-			Name: respMap["name"].(string),
-			Quota: &provider.Quota{
-				QuotaMaxBytes: uint64(respMap["quotaMaxBytes"].(float64)),
-				QuotaMaxFiles: uint64(respMap["quotaMaxFiles"].(float64)),
-			},
-			SpaceType: respMap["spaceType"].(string),
-			Mtime: &types.Timestamp{
-				Seconds: uint64(respMap["mTimeSeconds"].(float64)),
-			},
-		}
+		spaces[i] = &respMapArr[i]
+		// respMap := respMapArr[i].(map[string]interface{})
+		// opaqueMap := make(map[string](*types.OpaqueEntry))
+		// values := respMap["opaque"].(map[string]interface{})
+		// for k, v := range values {
+		// 	opaqueMap[k] = &types.OpaqueEntry{Value: []byte(v.(string))}
+		// }
+		// spaces[i] = &provider.StorageSpace{
+		// 	Opaque: &types.Opaque{Map: opaqueMap},
+		// 	Id:     &provider.StorageSpaceId{OpaqueId: respMap["opaqueId"].(string)},
+		// 	Owner: &user.User{
+		// 		Id: &user.UserId{
+		// 			Idp:      respMap["ownerIdp"].(string),
+		// 			OpaqueId: respMap["ownerOpaqueId"].(string),
+		// 			Type:     user.UserType_USER_TYPE_PRIMARY,
+		// 		},
+		// 	},
+		// 	Root: &provider.ResourceId{
+		// 		StorageId: respMap["rootStorageId"].(string),
+		// 		OpaqueId:  respMap["rootOpaqueId"].(string),
+		// 	},
+		// 	Name: respMap["name"].(string),
+		// 	Quota: &provider.Quota{
+		// 		QuotaMaxBytes: uint64(respMap["quotaMaxBytes"].(float64)),
+		// 		QuotaMaxFiles: uint64(respMap["quotaMaxFiles"].(float64)),
+		// 	},
+		// 	SpaceType: respMap["spaceType"].(string),
+		// 	Mtime: &types.Timestamp{
+		// 		Seconds: uint64(respMap["mTimeSeconds"].(float64)),
+		// 	},
+		// }
 	}
 	return spaces, err
 }
