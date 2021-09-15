@@ -748,13 +748,8 @@ func (nc *StorageDriver) UnsetArbitraryMetadata(ctx context.Context, ref *provid
 	return err
 }
 
-// ListStorageSpaces :as defined in the storage.FS interface
+// ListStorageSpaces as defined in the storage.FS interface
 func (nc *StorageDriver) ListStorageSpaces(ctx context.Context, f []*provider.ListStorageSpacesRequest_Filter) ([]*provider.StorageSpace, error) {
-	// type paramsObj struct {
-	// 	F []*provider.ListStorageSpacesRequest_Filter `json:"f"`
-	// S provider.StorageSpace                       `json:"s"`
-	// }
-
 	bodyStr, _ := json.Marshal(f)
 	_, respBody, err := nc.do(ctx, Action{"ListStorageSpaces", string(bodyStr)})
 	if err != nil {
@@ -770,41 +765,21 @@ func (nc *StorageDriver) ListStorageSpaces(ctx context.Context, f []*provider.Li
 	var spaces = make([]*provider.StorageSpace, len(respMapArr))
 	for i := 0; i < len(respMapArr); i++ {
 		spaces[i] = &respMapArr[i]
-		// respMap := respMapArr[i].(map[string]interface{})
-		// opaqueMap := make(map[string](*types.OpaqueEntry))
-		// values := respMap["opaque"].(map[string]interface{})
-		// for k, v := range values {
-		// 	opaqueMap[k] = &types.OpaqueEntry{Value: []byte(v.(string))}
-		// }
-		// spaces[i] = &provider.StorageSpace{
-		// 	Opaque: &types.Opaque{Map: opaqueMap},
-		// 	Id:     &provider.StorageSpaceId{OpaqueId: respMap["opaqueId"].(string)},
-		// 	Owner: &user.User{
-		// 		Id: &user.UserId{
-		// 			Idp:      respMap["ownerIdp"].(string),
-		// 			OpaqueId: respMap["ownerOpaqueId"].(string),
-		// 			Type:     user.UserType_USER_TYPE_PRIMARY,
-		// 		},
-		// 	},
-		// 	Root: &provider.ResourceId{
-		// 		StorageId: respMap["rootStorageId"].(string),
-		// 		OpaqueId:  respMap["rootOpaqueId"].(string),
-		// 	},
-		// 	Name: respMap["name"].(string),
-		// 	Quota: &provider.Quota{
-		// 		QuotaMaxBytes: uint64(respMap["quotaMaxBytes"].(float64)),
-		// 		QuotaMaxFiles: uint64(respMap["quotaMaxFiles"].(float64)),
-		// 	},
-		// 	SpaceType: respMap["spaceType"].(string),
-		// 	Mtime: &types.Timestamp{
-		// 		Seconds: uint64(respMap["mTimeSeconds"].(float64)),
-		// 	},
-		// }
 	}
 	return spaces, err
 }
 
 // CreateStorageSpace creates a storage space
 func (nc *StorageDriver) CreateStorageSpace(ctx context.Context, req *provider.CreateStorageSpaceRequest) (*provider.CreateStorageSpaceResponse, error) {
-	return nil, fmt.Errorf("unimplemented: CreateStorageSpace")
+	bodyStr, _ := json.Marshal(req)
+	_, respBody, err := nc.do(ctx, Action{"CreateStorageSpace", string(bodyStr)})
+	if err != nil {
+		return nil, err
+	}
+	var respObj provider.CreateStorageSpaceResponse
+	err = json.Unmarshal(respBody, &respObj)
+	if err != nil {
+		return nil, err
+	}
+	return &respObj, nil
 }

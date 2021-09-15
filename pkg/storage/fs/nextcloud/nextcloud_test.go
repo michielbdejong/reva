@@ -1201,4 +1201,45 @@ var _ = Describe("Nextcloud", func() {
 		})
 	})
 
+	// CreateStorageSpace(ctx context.Context, req *provider.CreateStorageSpaceRequest) (*provider.CreateStorageSpaceResponse, error)
+	Describe("CreateStorageSpace", func() {
+		It("calls the CreateStorageSpace endpoint", func() {
+			nc, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
+				EndPoint: "http://mock.com/apps/sciencemesh/",
+				MockHTTP: true,
+			})
+			called := make([]string, 0)
+			h := nextcloud.GetNextcloudServerMock(&called)
+			mock, teardown := nextcloud.TestingHTTPClient(h)
+			defer teardown()
+			nc.SetHTTPClient(mock)
+			// https://github.com/cs3org/go-cs3apis/blob/03e4a408c1f3b2882916cf3fad4c71081a20711d/cs3/storage/provider/v1beta1/provider_api.pb.go#L3176-L3192
+			result, err := nc.CreateStorageSpace(ctx, &provider.CreateStorageSpaceRequest{
+				Opaque: &types.Opaque{
+					Map: map[string](*types.OpaqueEntry){
+						"foo": &types.OpaqueEntry{Value: []byte("sama")},
+						"bar": &types.OpaqueEntry{Value: []byte("sama")},
+					},
+				},
+				Owner: &userpb.User{
+					Id: &userpb.UserId{
+						Idp:      "some-idp",
+						OpaqueId: "some-opaque-user-id",
+						Type:     userpb.UserType_USER_TYPE_PRIMARY,
+					},
+				},
+				Name: "My Storage Space",
+				Quota: &provider.Quota{
+					QuotaMaxBytes: uint64(456),
+					QuotaMaxFiles: uint64(123),
+				},
+				Type: "home",
+			})
+			Expect(err).ToNot(HaveOccurred())
+			Expect(result).To(Equal(provider.CreateStorageSpaceResponse{}))
+			Expect(len(called)).To(Equal(1))
+			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/CreateHome `))
+		})
+	})
+
 })
