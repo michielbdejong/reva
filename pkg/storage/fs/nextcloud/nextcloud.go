@@ -119,7 +119,7 @@ func (nc *StorageDriver) doUpload(ctx context.Context, filePath string, r io.Rea
 	}
 	// See https://github.com/pondersource/nc-sciencemesh/issues/5
 	// url := nc.endPoint + "~" + user.Username + "/files/" + filePath
-	url := nc.endPoint + "~" + user.Username + "/api/Upload/" + filePath
+	url := nc.endPoint + "~" + user.Username + "/api/storage/Upload/" + filePath
 	req, err := http.NewRequest(http.MethodPut, url, r)
 	if err != nil {
 		panic(err)
@@ -145,7 +145,7 @@ func (nc *StorageDriver) doDownload(ctx context.Context, filePath string) (io.Re
 	}
 	// See https://github.com/pondersource/nc-sciencemesh/issues/5
 	// url := nc.endPoint + "~" + user.Username + "/files/" + filePath
-	url := nc.endPoint + "~" + user.Username + "/api/Download/" + filePath
+	url := nc.endPoint + "~" + user.Username + "/api/storage/Download/" + filePath
 	req, err := http.NewRequest(http.MethodGet, url, strings.NewReader(""))
 	if err != nil {
 		panic(err)
@@ -168,7 +168,7 @@ func (nc *StorageDriver) doDownloadRevision(ctx context.Context, filePath string
 		return nil, err
 	}
 	// See https://github.com/pondersource/nc-sciencemesh/issues/5
-	url := nc.endPoint + "~" + user.Username + "/api/DownloadRevision/" + url.QueryEscape(key) + "/" + filePath
+	url := nc.endPoint + "~" + user.Username + "/api/storage/DownloadRevision/" + url.QueryEscape(key) + "/" + filePath
 	req, err := http.NewRequest(http.MethodGet, url, strings.NewReader(""))
 	if err != nil {
 		panic(err)
@@ -191,7 +191,7 @@ func (nc *StorageDriver) do(ctx context.Context, a Action) (int, []byte, error) 
 	if err != nil {
 		return 0, nil, err
 	}
-	url := nc.endPoint + "~" + user.Username + "/api/" + a.verb
+	url := nc.endPoint + "~" + user.Username + "/api/storage/" + a.verb
 	log.Info().Msgf("nc.do %s", url)
 	req, err := http.NewRequest(http.MethodPost, url, strings.NewReader(a.argS))
 	if err != nil {
