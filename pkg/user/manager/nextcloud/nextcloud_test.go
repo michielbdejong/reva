@@ -20,6 +20,7 @@ package nextcloud_test
 
 import (
 	"context"
+	"encoding/json"
 	"io"
 	"net/url"
 	"os"
@@ -29,7 +30,6 @@ import (
 
 	userpb "github.com/cs3org/go-cs3apis/cs3/identity/user/v1beta1"
 	provider "github.com/cs3org/go-cs3apis/cs3/storage/provider/v1beta1"
-	types "github.com/cs3org/go-cs3apis/cs3/types/v1beta1"
 	"github.com/cs3org/reva/pkg/auth/scope"
 	ctxpkg "github.com/cs3org/reva/pkg/ctx"
 	"github.com/cs3org/reva/pkg/storage/fs/nextcloud"
@@ -110,7 +110,7 @@ var _ = Describe("Nextcloud", func() {
 			Expect(home).To(Equal("yes we are"))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(len(called)).To(Equal(1))
-			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/storage/GetHome `))
+			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/GetHome "))
 		})
 	})
 
@@ -129,7 +129,7 @@ var _ = Describe("Nextcloud", func() {
 			err := nc.CreateHome(ctx)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(len(called)).To(Equal(1))
-			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/storage/CreateHome `))
+			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/CreateHome "))
 		})
 	})
 
@@ -156,7 +156,7 @@ var _ = Describe("Nextcloud", func() {
 			err := nc.CreateDir(ctx, ref)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(len(called)).To(Equal(1))
-			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/storage/CreateDir {"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"/some/path"}`))
+			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/CreateDir {\"resource_id\":{\"storage_id\":\"storage-id\",\"opaque_id\":\"opaque-id\"},\"path\":\"/some/path\"}"))
 		})
 	})
 
@@ -183,7 +183,7 @@ var _ = Describe("Nextcloud", func() {
 			err := nc.Delete(ctx, ref)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(len(called)).To(Equal(1))
-			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/storage/Delete {"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"/some/path"}`))
+			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/Delete {\"resource_id\":{\"storage_id\":\"storage-id\",\"opaque_id\":\"opaque-id\"},\"path\":\"/some/path\"}"))
 		})
 	})
 
@@ -217,7 +217,7 @@ var _ = Describe("Nextcloud", func() {
 			err := nc.Move(ctx, ref1, ref2)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(len(called)).To(Equal(1))
-			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/storage/Move {"oldRef":{"resource_id":{"storage_id":"storage-id-1","opaque_id":"opaque-id-1"},"path":"/some/old/path"},"newRef":{"resource_id":{"storage_id":"storage-id-2","opaque_id":"opaque-id-2"},"path":"/some/new/path"}}`))
+			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/Move {\"from\":{\"resource_id\":{\"storage_id\":\"storage-id-1\",\"opaque_id\":\"opaque-id-1\"},\"path\":\"/some/old/path\"},\"to\":{\"resource_id\":{\"storage_id\":\"storage-id-2\",\"opaque_id\":\"opaque-id-2\"},\"path\":\"/some/new/path\"}}"))
 		})
 	})
 
@@ -244,83 +244,14 @@ var _ = Describe("Nextcloud", func() {
 			mdKeys := []string{"val1", "val2", "val3"}
 			result, err := nc.GetMD(ctx, ref, mdKeys)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(*result).To(Equal(provider.ResourceInfo{
-				Opaque: &types.Opaque{
-					Map:                  nil,
-					XXX_NoUnkeyedLiteral: struct{}{},
-					XXX_unrecognized:     nil,
-					XXX_sizecache:        0,
-				},
-				Type: provider.ResourceType_RESOURCE_TYPE_FILE,
-				Id: &provider.ResourceId{
-					StorageId:            "",
-					OpaqueId:             "fileid-/some/path",
-					XXX_NoUnkeyedLiteral: struct{}{},
-					XXX_unrecognized:     nil,
-					XXX_sizecache:        0,
-				},
-				Checksum: &provider.ResourceChecksum{
-					Type:                 0,
-					Sum:                  "",
-					XXX_NoUnkeyedLiteral: struct{}{},
-					XXX_unrecognized:     nil,
-					XXX_sizecache:        0,
-				},
-				Etag:     "deadbeef",
-				MimeType: "text/plain",
-				Mtime: &types.Timestamp{
-					Seconds:              1234567890,
-					Nanos:                0,
-					XXX_NoUnkeyedLiteral: struct{}{},
-					XXX_unrecognized:     nil,
-					XXX_sizecache:        0,
-				},
-				Path: "/some/path",
-				PermissionSet: &provider.ResourcePermissions{
-					AddGrant:             false,
-					CreateContainer:      false,
-					Delete:               false,
-					GetPath:              false,
-					GetQuota:             false,
-					InitiateFileDownload: false,
-					InitiateFileUpload:   false,
-					ListGrants:           false,
-					ListContainer:        false,
-					ListFileVersions:     false,
-					ListRecycle:          false,
-					Move:                 false,
-					RemoveGrant:          false,
-					PurgeRecycle:         false,
-					RestoreFileVersion:   false,
-					RestoreRecycleItem:   false,
-					Stat:                 false,
-					UpdateGrant:          false,
-					DenyGrant:            false,
-					XXX_NoUnkeyedLiteral: struct{}{},
-					XXX_unrecognized:     nil,
-					XXX_sizecache:        0,
-				},
-				Size:   12345,
-				Owner:  nil,
-				Target: "",
-				CanonicalMetadata: &provider.CanonicalMetadata{
-					Target:               nil,
-					XXX_NoUnkeyedLiteral: struct{}{},
-					XXX_unrecognized:     nil,
-					XXX_sizecache:        0,
-				},
-				ArbitraryMetadata: &provider.ArbitraryMetadata{
-					Metadata:             map[string]string{"some": "arbi", "trary": "meta", "da": "ta"},
-					XXX_NoUnkeyedLiteral: struct{}{},
-					XXX_unrecognized:     nil,
-					XXX_sizecache:        0,
-				},
-				XXX_NoUnkeyedLiteral: struct{}{},
-				XXX_unrecognized:     nil,
-				XXX_sizecache:        0,
-			}))
+			Expect(result.Etag).To(Equal("in-json-etag"))
+			Expect(result.MimeType).To(Equal("in-json-mimetype"))
+			resultJSON, err := json.Marshal(result.ArbitraryMetadata)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(string(resultJSON)).To(Equal("{\"metadata\":{\"foo\":\"bar\"}}"))
+			Expect(err).ToNot(HaveOccurred())
 			Expect(len(called)).To(Equal(1))
-			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/storage/GetMD {"ref":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"/some/path"},"mdKeys":["val1","val2","val3"]}`))
+			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/GetMD {\"ref\":{\"resource_id\":{\"storage_id\":\"storage-id\",\"opaque_id\":\"opaque-id\"},\"path\":\"/some/path\"},\"mdKeys\":[\"val1\",\"val2\",\"val3\"]}"))
 		})
 	})
 
@@ -346,88 +277,12 @@ var _ = Describe("Nextcloud", func() {
 			}
 			mdKeys := []string{"val1", "val2", "val3"}
 			results, err := nc.ListFolder(ctx, ref, mdKeys)
-			Expect(err).NotTo(HaveOccurred())
 			Expect(len(results)).To(Equal(1))
-			Expect(*results[0]).To(Equal(provider.ResourceInfo{
-				Opaque: &types.Opaque{
-					Map:                  nil,
-					XXX_NoUnkeyedLiteral: struct{}{},
-					XXX_unrecognized:     nil,
-					XXX_sizecache:        0,
-				},
-				Type: provider.ResourceType_RESOURCE_TYPE_FILE,
-				Id: &provider.ResourceId{
-					StorageId:            "",
-					OpaqueId:             "fileid-/some/path",
-					XXX_NoUnkeyedLiteral: struct{}{},
-					XXX_unrecognized:     nil,
-					XXX_sizecache:        0,
-				},
-				Checksum: &provider.ResourceChecksum{
-					Type:                 0,
-					Sum:                  "",
-					XXX_NoUnkeyedLiteral: struct{}{},
-					XXX_unrecognized:     nil,
-					XXX_sizecache:        0,
-				},
-				Etag:     "deadbeef",
-				MimeType: "text/plain",
-				Mtime: &types.Timestamp{
-					Seconds:              1234567890,
-					Nanos:                0,
-					XXX_NoUnkeyedLiteral: struct{}{},
-					XXX_unrecognized:     nil,
-					XXX_sizecache:        0,
-				},
-				Path: "/some/path",
-				PermissionSet: &provider.ResourcePermissions{
-					AddGrant:             false,
-					CreateContainer:      false,
-					Delete:               false,
-					GetPath:              false,
-					GetQuota:             false,
-					InitiateFileDownload: false,
-					InitiateFileUpload:   false,
-					ListGrants:           false,
-					ListContainer:        false,
-					ListFileVersions:     false,
-					ListRecycle:          false,
-					Move:                 false,
-					RemoveGrant:          false,
-					PurgeRecycle:         false,
-					RestoreFileVersion:   false,
-					RestoreRecycleItem:   false,
-					Stat:                 false,
-					UpdateGrant:          false,
-					DenyGrant:            false,
-					XXX_NoUnkeyedLiteral: struct{}{},
-					XXX_unrecognized:     nil,
-					XXX_sizecache:        0,
-				},
-				Size:   12345,
-				Owner:  nil,
-				Target: "",
-				CanonicalMetadata: &provider.CanonicalMetadata{
-					Target:               nil,
-					XXX_NoUnkeyedLiteral: struct{}{},
-					XXX_unrecognized:     nil,
-					XXX_sizecache:        0,
-				},
-				ArbitraryMetadata: &provider.ArbitraryMetadata{
-					Metadata:             map[string]string{"some": "arbi", "trary": "meta", "da": "ta"},
-					XXX_NoUnkeyedLiteral: struct{}{},
-					XXX_unrecognized:     nil,
-					XXX_sizecache:        0,
-				},
-				XXX_NoUnkeyedLiteral: struct{}{},
-				XXX_unrecognized:     nil,
-				XXX_sizecache:        0,
-			}))
-			// Expect(results[0].Etag).To(Equal("in-json-etag"))
-			// Expect(results[0].MimeType).To(Equal("in-json-mimetype"))
-			// Expect(err).ToNot(HaveOccurred())
-			// Expect(len(called)).To(Equal(1))
-			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/storage/ListFolder {"ref":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"/some/path"},"mdKeys":["val1","val2","val3"]}`))
+			Expect(results[0].Etag).To(Equal("in-json-etag"))
+			Expect(results[0].MimeType).To(Equal("in-json-mimetype"))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(len(called)).To(Equal(1))
+			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/ListFolder {\"ref\":{\"resource_id\":{\"storage_id\":\"storage-id\",\"opaque_id\":\"opaque-id\"},\"path\":\"/some/path\"},\"mdKeys\":[\"val1\",\"val2\",\"val3\"]}"))
 		})
 	})
 
@@ -464,7 +319,7 @@ var _ = Describe("Nextcloud", func() {
 				"what":     "should be",
 				"returned": "here",
 			}))
-			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/storage/InitiateUpload {"ref":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"/some/path"},"uploadLength":12345,"metadata":{"key1":"val1","key2":"val2","key3":"val3"}}`))
+			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/InitiateUpload {\"ref\":{\"resource_id\":{\"storage_id\":\"storage-id\",\"opaque_id\":\"opaque-id\"},\"path\":\"/some/path\"},\"uploadLength\":12345,\"metadata\":{\"key1\":\"val1\",\"key2\":\"val2\",\"key3\":\"val3\"}}"))
 		})
 	})
 
@@ -492,7 +347,7 @@ var _ = Describe("Nextcloud", func() {
 			stringReadCloser := io.NopCloser(stringReader)
 			err := nc.Upload(ctx, ref, stringReadCloser)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(called[0]).To(Equal(`PUT /apps/sciencemesh/~tester/api/storage/Upload/some/file/path.txt shiny!`))
+			Expect(called[0]).To(Equal("PUT /apps/sciencemesh/~tester/api/Upload/some/file/path.txt shiny!"))
 		})
 	})
 	// Download(ctx context.Context, ref *provider.Reference) (io.ReadCloser, error)
@@ -517,7 +372,7 @@ var _ = Describe("Nextcloud", func() {
 			}
 			reader, err := nc.Download(ctx, ref)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(called[0]).To(Equal(`GET /apps/sciencemesh/~tester/api/storage/Download/some/file/path.txt `))
+			Expect(called[0]).To(Equal("GET /apps/sciencemesh/~tester/api/Download/some/file/path.txt "))
 			defer reader.Close()
 			body, err := io.ReadAll(reader)
 			Expect(err).ToNot(HaveOccurred())
@@ -549,39 +404,15 @@ var _ = Describe("Nextcloud", func() {
 			Expect(err).ToNot(HaveOccurred())
 			// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L1003-L1023
 			Expect(len(results)).To(Equal(2))
-			Expect(*results[0]).To(Equal(provider.FileVersion{
-				Opaque: &types.Opaque{
-					Map: map[string]*types.OpaqueEntry{
-						"some": {
-							Value: []byte("data"),
-						},
-					},
-				},
-				Key:                  "version-12",
-				Size:                 uint64(12345),
-				Mtime:                uint64(1234567890),
-				Etag:                 "deadb00f",
-				XXX_NoUnkeyedLiteral: struct{}{},
-				XXX_unrecognized:     nil,
-				XXX_sizecache:        0,
-			}))
-			Expect(*results[1]).To(Equal(provider.FileVersion{
-				Opaque: &types.Opaque{
-					Map: map[string]*types.OpaqueEntry{
-						"different": {
-							Value: []byte("stuff"),
-						},
-					},
-				},
-				Key:                  "asdf",
-				Size:                 uint64(12345),
-				Mtime:                uint64(1234567890),
-				Etag:                 "deadbeef",
-				XXX_NoUnkeyedLiteral: struct{}{},
-				XXX_unrecognized:     nil,
-				XXX_sizecache:        0,
-			}))
-			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/storage/ListRevisions {"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"/some/path"}`))
+			Expect(results[0].Key).To(Equal("version-12"))
+			Expect(results[0].Size).To(Equal(uint64(12345)))
+			Expect(results[0].Mtime).To(Equal(uint64(1234567990)))
+			Expect(results[0].Etag).To(Equal("deadb00f"))
+			Expect(results[1].Key).To(Equal("asdf"))
+			Expect(results[1].Size).To(Equal(uint64(1235)))
+			Expect(results[1].Mtime).To(Equal(uint64(1234567890)))
+			Expect(results[1].Etag).To(Equal("deadbeef"))
+			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/ListRevisions {\"resource_id\":{\"storage_id\":\"storage-id\",\"opaque_id\":\"opaque-id\"},\"path\":\"/some/path\"}"))
 		})
 	})
 
@@ -608,7 +439,7 @@ var _ = Describe("Nextcloud", func() {
 			key := "some/revision"
 			reader, err := nc.DownloadRevision(ctx, ref, key)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(called[0]).To(Equal(`GET /apps/sciencemesh/~tester/api/storage/DownloadRevision/some%2Frevision/some/file/path.txt `))
+			Expect(called[0]).To(Equal("GET /apps/sciencemesh/~tester/api/DownloadRevision/some%2Frevision/some/file/path.txt "))
 			defer reader.Close()
 			body, err := io.ReadAll(reader)
 			Expect(err).ToNot(HaveOccurred())
@@ -639,7 +470,7 @@ var _ = Describe("Nextcloud", func() {
 			key := "asdf"
 			err := nc.RestoreRevision(ctx, ref, key)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/storage/RestoreRevision {"ref":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"},"key":"asdf"}`))
+			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/RestoreRevision {\"path\":\"some/file/path.txt\",\"key\":\"asdf\"}"))
 		})
 	})
 
@@ -660,23 +491,10 @@ var _ = Describe("Nextcloud", func() {
 			Expect(err).ToNot(HaveOccurred())
 			// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L1085-L1110
 			Expect(len(results)).To(Equal(1))
-			Expect(*results[0]).To(Equal(provider.RecycleItem{
-				Opaque: &types.Opaque{},
-				Key:    "some-deleted-version",
-				Ref: &provider.Reference{
-					ResourceId:           &provider.ResourceId{},
-					Path:                 "/some/file.txt",
-					XXX_NoUnkeyedLiteral: struct{}{},
-					XXX_unrecognized:     nil,
-					XXX_sizecache:        0,
-				},
-				Size:                 uint64(12345),
-				DeletionTime:         &types.Timestamp{Seconds: uint64(1234567890)},
-				XXX_NoUnkeyedLiteral: struct{}{},
-				XXX_unrecognized:     nil,
-				XXX_sizecache:        0,
-			}))
-			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/storage/ListRecycle {"key":"asdf","path":"/some/file.txt"}`))
+			Expect(results[0].Key).To(Equal("deleted-version"))
+			Expect(results[0].Size).To(Equal(uint64(12345)))
+			Expect(results[0].DeletionTime.Seconds).To(Equal(uint64(1234567890)))
+			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/ListRecycle {\"path\":\"/some/file.txt\",\"key\":\"asdf\"}"))
 		})
 	})
 
@@ -704,7 +522,7 @@ var _ = Describe("Nextcloud", func() {
 			key := "asdf"
 			err := nc.RestoreRecycleItem(ctx, key, path, restoreRef)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/storage/RestoreRecycleItem {"key":"asdf","path":"original/location/when/deleted.txt","restoreRef":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"}}`))
+			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/RestoreRecycleItem {\"key\":\"asdf\",\"path\":\"original/location/when/deleted.txt\",\"restoreRef\":{\"resource_id\":{\"storage_id\":\"storage-id\",\"opaque_id\":\"opaque-id\"},\"path\":\"some/file/path.txt\"}}"))
 		})
 	})
 	// PurgeRecycleItem(ctx context.Context, key, path string) error
@@ -723,7 +541,7 @@ var _ = Describe("Nextcloud", func() {
 			key := "asdf"
 			err := nc.PurgeRecycleItem(ctx, key, path)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/storage/PurgeRecycleItem {"key":"asdf","path":"original/location/when/deleted.txt"}`))
+			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/PurgeRecycleItem {\"key\":\"asdf\",\"path\":\"original/location/when/deleted.txt\"}"))
 		})
 	})
 
@@ -741,7 +559,7 @@ var _ = Describe("Nextcloud", func() {
 			nc.SetHTTPClient(mock)
 			err := nc.EmptyRecycle(ctx)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/storage/EmptyRecycle `))
+			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/EmptyRecycle "))
 		})
 	})
 
@@ -764,7 +582,7 @@ var _ = Describe("Nextcloud", func() {
 			}
 			path, err := nc.GetPathByID(ctx, id)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/storage/GetPathByID {"storage_id":"storage-id","opaque_id":"opaque-id"}`))
+			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/GetPathByID {\"storage_id\":\"storage-id\",\"opaque_id\":\"opaque-id\"}"))
 			Expect(path).To(Equal("the/path/for/that/id.txt"))
 		})
 	})
@@ -825,7 +643,7 @@ var _ = Describe("Nextcloud", func() {
 			}
 			err := nc.AddGrant(ctx, ref, grant)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/storage/AddGrant {"ref":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"},"g":{"grantee":{"Id":{"UserId":{"idp":"0.0.0.0:19000","opaque_id":"f7fbf8c8-139b-4376-b307-cf0a8c2d0d9c","type":1}}},"permissions":{"add_grant":true,"create_container":true,"delete":true,"get_path":true,"get_quota":true,"initiate_file_download":true,"initiate_file_upload":true,"list_grants":true,"list_container":true,"list_file_versions":true,"list_recycle":true,"move":true,"remove_grant":true,"purge_recycle":true,"restore_file_version":true,"restore_recycle_item":true,"stat":true,"update_grant":true,"deny_grant":true}}}`))
+			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/AddGrant {"reference":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"},"grant":{"grantee":{"Id":{"UserId":{"idp":"0.0.0.0:19000","opaque_id":"f7fbf8c8-139b-4376-b307-cf0a8c2d0d9c","type":1}}},"permissions":{"add_grant":true,"create_container":true,"delete":true,"get_path":true,"get_quota":true,"initiate_file_download":true,"initiate_file_upload":true,"list_grants":true,"list_container":true,"list_file_versions":true,"list_recycle":true,"move":true,"remove_grant":true,"purge_recycle":true,"restore_file_version":true,"restore_recycle_item":true,"stat":true,"update_grant":true,"deny_grant":true}}}`))
 		})
 	})
 
@@ -860,7 +678,7 @@ var _ = Describe("Nextcloud", func() {
 			}
 			err := nc.DenyGrant(ctx, ref, grantee)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/storage/DenyGrant {"ref":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"},"g":{"Id":{"UserId":{"idp":"0.0.0.0:19000","opaque_id":"f7fbf8c8-139b-4376-b307-cf0a8c2d0d9c","type":1}}}}`))
+			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/DenyGrant {"reference":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"},"grantee":{"Id":{"UserId":{"idp":"0.0.0.0:19000","opaque_id":"f7fbf8c8-139b-4376-b307-cf0a8c2d0d9c","type":1}}}}`))
 		})
 	})
 
@@ -920,7 +738,7 @@ var _ = Describe("Nextcloud", func() {
 			}
 			err := nc.RemoveGrant(ctx, ref, grant)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/storage/RemoveGrant {"ref":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"},"g":{"grantee":{"Id":{"UserId":{"idp":"0.0.0.0:19000","opaque_id":"f7fbf8c8-139b-4376-b307-cf0a8c2d0d9c","type":1}}},"permissions":{"add_grant":true,"create_container":true,"delete":true,"get_path":true,"get_quota":true,"initiate_file_download":true,"initiate_file_upload":true,"list_grants":true,"list_container":true,"list_file_versions":true,"list_recycle":true,"move":true,"remove_grant":true,"purge_recycle":true,"restore_file_version":true,"restore_recycle_item":true,"stat":true,"update_grant":true,"deny_grant":true}}}`))
+			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/RemoveGrant {"reference":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"},"grant":{"grantee":{"Id":{"UserId":{"idp":"0.0.0.0:19000","opaque_id":"f7fbf8c8-139b-4376-b307-cf0a8c2d0d9c","type":1}}},"permissions":{"add_grant":true,"create_container":true,"delete":true,"get_path":true,"get_quota":true,"initiate_file_download":true,"initiate_file_upload":true,"list_grants":true,"list_container":true,"list_file_versions":true,"list_recycle":true,"move":true,"remove_grant":true,"purge_recycle":true,"restore_file_version":true,"restore_recycle_item":true,"stat":true,"update_grant":true,"deny_grant":true}}}`))
 		})
 	})
 
@@ -980,7 +798,7 @@ var _ = Describe("Nextcloud", func() {
 			}
 			err := nc.UpdateGrant(ctx, ref, grant)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/storage/UpdateGrant {"ref":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"},"g":{"grantee":{"Id":{"UserId":{"idp":"0.0.0.0:19000","opaque_id":"f7fbf8c8-139b-4376-b307-cf0a8c2d0d9c","type":1}}},"permissions":{"add_grant":true,"create_container":true,"delete":true,"get_path":true,"get_quota":true,"initiate_file_download":true,"initiate_file_upload":true,"list_grants":true,"list_container":true,"list_file_versions":true,"list_recycle":true,"move":true,"remove_grant":true,"purge_recycle":true,"restore_file_version":true,"restore_recycle_item":true,"stat":true,"update_grant":true,"deny_grant":true}}}`))
+			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/UpdateGrant {"reference":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"},"grant":{"grantee":{"Id":{"UserId":{"idp":"0.0.0.0:19000","opaque_id":"f7fbf8c8-139b-4376-b307-cf0a8c2d0d9c","type":1}}},"permissions":{"add_grant":true,"create_container":true,"delete":true,"get_path":true,"get_quota":true,"initiate_file_download":true,"initiate_file_upload":true,"list_grants":true,"list_container":true,"list_file_versions":true,"list_recycle":true,"move":true,"remove_grant":true,"purge_recycle":true,"restore_file_version":true,"restore_recycle_item":true,"stat":true,"update_grant":true,"deny_grant":true}}}`))
 		})
 	})
 
@@ -1006,8 +824,7 @@ var _ = Describe("Nextcloud", func() {
 			grants, err := nc.ListGrants(ctx, ref)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(len(grants)).To(Equal(1))
-
-			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/storage/ListGrants {"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"}`))
+			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/ListGrants {\"resource_id\":{\"storage_id\":\"storage-id\",\"opaque_id\":\"opaque-id\"},\"path\":\"some/file/path.txt\"}"))
 		})
 	})
 
@@ -1027,7 +844,7 @@ var _ = Describe("Nextcloud", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(maxBytes).To(Equal(uint64(456)))
 			Expect(maxFiles).To(Equal(uint64(123)))
-			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/storage/GetQuota `))
+			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/GetQuota `))
 		})
 	})
 
@@ -1048,7 +865,7 @@ var _ = Describe("Nextcloud", func() {
 			Expect(err).ToNot(HaveOccurred())
 			err = nc.CreateReference(ctx, path, targetURI)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/storage/CreateReference {"path":"some/file/path.txt","url":"http://bing.com/search?q=dotnet"}`))
+			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/CreateReference {"path":"some/file/path.txt","url":"http://bing.com/search?q=dotnet"}`))
 		})
 	})
 
@@ -1066,7 +883,7 @@ var _ = Describe("Nextcloud", func() {
 			nc.SetHTTPClient(mock)
 			err := nc.Shutdown(ctx)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/storage/Shutdown `))
+			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/Shutdown `))
 		})
 	})
 
@@ -1097,7 +914,7 @@ var _ = Describe("Nextcloud", func() {
 			}
 			err := nc.SetArbitraryMetadata(ctx, ref, md)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/storage/SetArbitraryMetadata {"ref":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"},"md":{"metadata":{"arbi":"trary","meta":"data"}}}`))
+			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/SetArbitraryMetadata {"reference":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"},"metadata":{"metadata":{"arbi":"trary","meta":"data"}}}`))
 		})
 	})
 
@@ -1123,7 +940,7 @@ var _ = Describe("Nextcloud", func() {
 			keys := []string{"arbi"}
 			err := nc.UnsetArbitraryMetadata(ctx, ref, keys)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/storage/UnsetArbitraryMetadata {"ref":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"},"keys":["arbi"]}`))
+			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/UnsetArbitraryMetadata {"reference":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"},"keys":["arbi"]}`))
 		})
 	})
 
@@ -1168,109 +985,21 @@ var _ = Describe("Nextcloud", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(len(spaces)).To(Equal(1))
 			// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L1341-L1366
-			Expect(*spaces[0]).To(Equal(provider.StorageSpace{
-				Opaque: &types.Opaque{
-					Map: map[string](*types.OpaqueEntry){
-						"foo": &types.OpaqueEntry{Value: []byte("sama")},
-						"bar": &types.OpaqueEntry{Value: []byte("sama")},
-					},
-				},
-				Id: &provider.StorageSpaceId{OpaqueId: "some-opaque-storage-space-id"},
-				Owner: &userpb.User{
-					Id: &userpb.UserId{
-						Idp:      "some-idp",
-						OpaqueId: "some-opaque-user-id",
-						Type:     userpb.UserType_USER_TYPE_PRIMARY,
-					},
-				},
-				Root: &provider.ResourceId{
-					StorageId: "some-storage-ud",
-					OpaqueId:  "some-opaque-root-id",
-				},
-				Name: "My Storage Space",
-				Quota: &provider.Quota{
-					QuotaMaxBytes: uint64(456),
-					QuotaMaxFiles: uint64(123),
-				},
-				SpaceType: "home",
-				Mtime: &types.Timestamp{
-					Seconds: uint64(1234567890),
-				},
-			}))
-			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/storage/ListStorageSpaces [{"type":3,"Term":{"Owner":{"idp":"0.0.0.0:19000","opaque_id":"f7fbf8c8-139b-4376-b307-cf0a8c2d0d9c","type":1}}},{"type":2,"Term":{"Id":{"opaque_id":"opaque-id"}}},{"type":4,"Term":{"SpaceType":"home"}}]`))
-		})
-	})
+			Expect(string(spaces[0].Opaque.Map["some-opaque-key"].Value)).To(Equal("some-opaque-value"))
+			Expect(spaces[0].Id.OpaqueId).To(Equal("storage-space-opaque-id"))
+			Expect(spaces[0].Owner.Id.Idp).To(Equal("0.0.0.0:19000"))
+			Expect(spaces[0].Owner.Id.OpaqueId).To(Equal("f7fbf8c8-139b-4376-b307-cf0a8c2d0d9c"))
+			Expect(spaces[0].Owner.Id.Type).To(Equal(userpb.UserType_USER_TYPE_PRIMARY))
+			Expect(spaces[0].Root.StorageId).To(Equal("root-storage-id"))
+			Expect(spaces[0].Root.OpaqueId).To(Equal("root-opaque-id"))
+			Expect(spaces[0].Name).To(Equal("My Home Space"))
+			Expect(spaces[0].Quota.QuotaMaxBytes).To(Equal(uint64(456)))
+			Expect(spaces[0].Quota.QuotaMaxFiles).To(Equal(uint64(123)))
+			Expect(spaces[0].SpaceType).To(Equal("home"))
+			Expect(spaces[0].Mtime.Seconds).To(Equal(uint64(1234567890)))
 
-	// CreateStorageSpace(ctx context.Context, req *provider.CreateStorageSpaceRequest) (*provider.CreateStorageSpaceResponse, error)
-	Describe("CreateStorageSpace", func() {
-		It("calls the CreateStorageSpace endpoint", func() {
-			nc, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
-				EndPoint: "http://mock.com/apps/sciencemesh/",
-				MockHTTP: true,
-			})
-			called := make([]string, 0)
-			h := nextcloud.GetNextcloudServerMock(&called)
-			mock, teardown := nextcloud.TestingHTTPClient(h)
-			defer teardown()
-			nc.SetHTTPClient(mock)
-			// https://github.com/cs3org/go-cs3apis/blob/03e4a408c1f3b2882916cf3fad4c71081a20711d/cs3/storage/provider/v1beta1/provider_api.pb.go#L3176-L3192
-			result, err := nc.CreateStorageSpace(ctx, &provider.CreateStorageSpaceRequest{
-				Opaque: &types.Opaque{
-					Map: map[string](*types.OpaqueEntry){
-						"foo": &types.OpaqueEntry{Value: []byte("sama")},
-						"bar": &types.OpaqueEntry{Value: []byte("sama")},
-					},
-				},
-				Owner: &userpb.User{
-					Id: &userpb.UserId{
-						Idp:      "some-idp",
-						OpaqueId: "some-opaque-user-id",
-						Type:     userpb.UserType_USER_TYPE_PRIMARY,
-					},
-				},
-				Name: "My Storage Space",
-				Quota: &provider.Quota{
-					QuotaMaxBytes: uint64(456),
-					QuotaMaxFiles: uint64(123),
-				},
-				Type: "home",
-			})
-			Expect(err).ToNot(HaveOccurred())
-			Expect(*result).To(Equal(provider.CreateStorageSpaceResponse{
-				Opaque: nil,
-				Status: nil,
-				StorageSpace: &provider.StorageSpace{
-					Opaque: &types.Opaque{
-						Map: map[string](*types.OpaqueEntry){
-							"bar": &types.OpaqueEntry{Value: []byte("sama")},
-							"foo": &types.OpaqueEntry{Value: []byte("sama")},
-						},
-					},
-					Id: &provider.StorageSpaceId{OpaqueId: "some-opaque-storage-space-id"},
-					Owner: &userpb.User{
-						Id: &userpb.UserId{
-							Idp:      "some-idp",
-							OpaqueId: "some-opaque-user-id",
-							Type:     userpb.UserType_USER_TYPE_PRIMARY,
-						},
-					},
-					Root: &provider.ResourceId{
-						StorageId: "some-storage-ud",
-						OpaqueId:  "some-opaque-root-id",
-					},
-					Name: "My Storage Space",
-					Quota: &provider.Quota{
-						QuotaMaxBytes: uint64(456),
-						QuotaMaxFiles: uint64(123),
-					},
-					SpaceType: "home",
-					Mtime: &types.Timestamp{
-						Seconds: uint64(1234567890),
-					},
-				},
-			}))
-			Expect(len(called)).To(Equal(1))
-			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/storage/CreateStorageSpace {"opaque":{"map":{"bar":{"value":"c2FtYQ=="},"foo":{"value":"c2FtYQ=="}}},"owner":{"id":{"idp":"some-idp","opaque_id":"some-opaque-user-id","type":1}},"type":"home","name":"My Storage Space","quota":{"quota_max_bytes":456,"quota_max_files":123}}`))
+			// Expect(spaces[1])
+			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/ListStorageSpaces {"filters":[{"type":3,"Term":{"Owner":{"idp":"0.0.0.0:19000","opaque_id":"f7fbf8c8-139b-4376-b307-cf0a8c2d0d9c","type":1}}},{"type":2,"Term":{"Id":{"opaque_id":"opaque-id"}}},{"type":4,"Term":{"SpaceType":"home"}}]}`))
 		})
 	})
 
