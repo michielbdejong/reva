@@ -639,7 +639,7 @@ var _ = Describe("Nextcloud", func() {
 			key := "asdf"
 			err := nc.RestoreRevision(ctx, ref, key)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/RestoreRevision {\"path\":\"some/file/path.txt\",\"key\":\"asdf\"}"))
+			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/RestoreRevision {"ref":{"resource_id":{"storage_id":"storage-id","opaque_id":"opaque-id"},"path":"some/file/path.txt"},"key":"asdf"}`))
 		})
 	})
 
