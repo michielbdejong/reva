@@ -29,7 +29,6 @@ import (
 
 	user "github.com/cs3org/go-cs3apis/cs3/identity/user/v1beta1"
 	provider "github.com/cs3org/go-cs3apis/cs3/storage/provider/v1beta1"
-	types "github.com/cs3org/go-cs3apis/cs3/types/v1beta1"
 	"github.com/cs3org/reva/pkg/appctx"
 	ctxpkg "github.com/cs3org/reva/pkg/ctx"
 	"github.com/cs3org/reva/pkg/errtypes"
@@ -751,42 +750,12 @@ func (nc *StorageDriver) UnsetArbitraryMetadata(ctx context.Context, ref *provid
 
 // ListStorageSpaces :as defined in the storage.FS interface
 func (nc *StorageDriver) ListStorageSpaces(ctx context.Context, f []*provider.ListStorageSpacesRequest_Filter) ([]*provider.StorageSpace, error) {
-	type paramsObj struct {
-		F []*provider.ListStorageSpacesRequest_Filter `json:"f"`
-		S provider.StorageSpace                       `json:"s"`
-	}
-	opaqueMap := map[string](*types.OpaqueEntry){
-		"foo": &types.OpaqueEntry{Value: []byte("sama")},
-		"bar": &types.OpaqueEntry{Value: []byte("sama")},
-	}
-	bodyObj := &paramsObj{
-		F: f,
-		S: provider.StorageSpace{
-			Opaque: &types.Opaque{Map: opaqueMap},
-			Id:     &provider.StorageSpaceId{OpaqueId: "some-opaque-storage-space-id"},
-			Owner: &user.User{
-				Id: &user.UserId{
-					Idp:      "some-idp",
-					OpaqueId: "some-opaque-user-id",
-					Type:     user.UserType_USER_TYPE_PRIMARY,
-				},
-			},
-			Root: &provider.ResourceId{
-				StorageId: "some-storage-ud",
-				OpaqueId:  "some-opaque-root-id",
-			},
-			Name: "My Storage Space",
-			Quota: &provider.Quota{
-				QuotaMaxBytes: uint64(456),
-				QuotaMaxFiles: uint64(123),
-			},
-			SpaceType: "home",
-			Mtime: &types.Timestamp{
-				Seconds: uint64(1234567890),
-			},
-		},
-	}
-	bodyStr, _ := json.Marshal(bodyObj)
+	// type paramsObj struct {
+	// 	F []*provider.ListStorageSpacesRequest_Filter `json:"f"`
+	// S provider.StorageSpace                       `json:"s"`
+	// }
+
+	bodyStr, _ := json.Marshal(f)
 	_, respBody, err := nc.do(ctx, Action{"ListStorageSpaces", string(bodyStr)})
 	if err != nil {
 		return nil, err
