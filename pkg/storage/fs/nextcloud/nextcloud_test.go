@@ -985,7 +985,7 @@ var _ = Describe("Nextcloud", func() {
 	})
 
 	// ListGrants(ctx context.Context, ref *provider.Reference) ([]*provider.Grant, error)
-	PDescribe("ListGrants", func() {
+	Describe("ListGrants", func() {
 		It("calls the ListGrants endpoint", func() {
 			nc, _ := nextcloud.NewStorageDriver(&nextcloud.StorageDriverConfig{
 				EndPoint: "http://mock.com/apps/sciencemesh/",

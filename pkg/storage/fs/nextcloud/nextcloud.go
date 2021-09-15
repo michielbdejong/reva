@@ -76,11 +76,6 @@ func New(m map[string]interface{}) (storage.FS, error) {
 	return NewStorageDriver(conf)
 }
 
-// CreateStorageSpace creates a storage space
-func (nc *StorageDriver) CreateStorageSpace(ctx context.Context, req *provider.CreateStorageSpaceRequest) (*provider.CreateStorageSpaceResponse, error) {
-	return nil, fmt.Errorf("unimplemented: CreateStorageSpace")
-}
-
 // NewStorageDriver returns a new NextcloudStorageDriver
 func NewStorageDriver(c *StorageDriverConfig) (*StorageDriver, error) {
 	var client *http.Client
@@ -541,24 +536,6 @@ func (nc *StorageDriver) AddGrant(ctx context.Context, ref *provider.Reference, 
 	return err
 }
 
-// RemoveGrant as defined in the storage.FS interface
-func (nc *StorageDriver) RemoveGrant(ctx context.Context, ref *provider.Reference, g *provider.Grant) error {
-	type paramsObj struct {
-		Ref provider.Reference `json:"ref"`
-		G   provider.Grant     `json:"g"`
-	}
-	bodyObj := &paramsObj{
-		Ref: *ref,
-		G:   *g,
-	}
-	bodyStr, _ := json.Marshal(bodyObj)
-	log := appctx.GetLogger(ctx)
-	log.Info().Msgf("RemoveGrant %s", bodyStr)
-
-	_, _, err := nc.do(ctx, Action{"RemoveGrant", string(bodyStr)})
-	return err
-}
-
 // DenyGrant as defined in the storage.FS interface
 func (nc *StorageDriver) DenyGrant(ctx context.Context, ref *provider.Reference, g *provider.Grantee) error {
 	type paramsObj struct {
@@ -574,6 +551,24 @@ func (nc *StorageDriver) DenyGrant(ctx context.Context, ref *provider.Reference,
 	log.Info().Msgf("DenyGrant %s", bodyStr)
 
 	_, _, err := nc.do(ctx, Action{"DenyGrant", string(bodyStr)})
+	return err
+}
+
+// RemoveGrant as defined in the storage.FS interface
+func (nc *StorageDriver) RemoveGrant(ctx context.Context, ref *provider.Reference, g *provider.Grant) error {
+	type paramsObj struct {
+		Ref provider.Reference `json:"ref"`
+		G   provider.Grant     `json:"g"`
+	}
+	bodyObj := &paramsObj{
+		Ref: *ref,
+		G:   *g,
+	}
+	bodyStr, _ := json.Marshal(bodyObj)
+	log := appctx.GetLogger(ctx)
+	log.Info().Msgf("RemoveGrant %s", bodyStr)
+
+	_, _, err := nc.do(ctx, Action{"RemoveGrant", string(bodyStr)})
 	return err
 }
 
@@ -606,14 +601,70 @@ func (nc *StorageDriver) ListGrants(ctx context.Context, ref *provider.Reference
 		return nil, err
 	}
 
-	var respMapArr []provider.Grant
+	// To avoid this error:
+	// json: cannot unmarshal object into Go struct field Grantee.grantee.Id of type providerv1beta1.isGrantee_Id
+	// To test:
+	// bodyStr, _ := json.Marshal(provider.Grant{
+	// 	 Grantee: &provider.Grantee{
+	// 		 Type: provider.GranteeType_GRANTEE_TYPE_USER,
+	// 		 Id: &provider.Grantee_UserId{
+	// 			 UserId: &user.UserId{
+	// 				 Idp:      "some-idp",
+	// 				 OpaqueId: "some-opaque-id",
+	// 				 Type:     user.UserType_USER_TYPE_PRIMARY,
+	// 			 },
+	// 		 },
+	// 	 },
+	// 	 Permissions: &provider.ResourcePermissions{},
+	// })
+	// JSON example:
+	// [{"grantee":{"Id":{"UserId":{"idp":"some-idp","opaque_id":"some-opaque-id","type":1}}},"permissions":{"add_grant":true,"create_container":true,"delete":true,"get_path":true,"get_quota":true,"initiate_file_download":true,"initiate_file_upload":true,"list_grants":true}}]
+	fmt.Println(string(respBody))
+	var respMapArr []map[string]interface{}
 	err = json.Unmarshal(respBody, &respMapArr)
 	if err != nil {
 		return nil, err
 	}
 	grants := make([]*provider.Grant, len(respMapArr))
 	for i := 0; i < len(respMapArr); i++ {
-		grants[i] = &respMapArr[i]
+		granteeMap := respMapArr[i]["grantee"].(map[string]interface{})
+		granteeIdMap := granteeMap["Id"].(map[string]interface{})
+		granteeIdUserIdMap := granteeIdMap["UserId"].(map[string]interface{})
+
+		// if (granteeMap["Id"])
+		permsMap := respMapArr[i]["permissions"].(map[string]interface{})
+		grants[i] = &provider.Grant{
+			Grantee: &provider.Grantee{
+				Type: provider.GranteeType_GRANTEE_TYPE_USER, // FIXME: support groups too
+				Id: &provider.Grantee_UserId{
+					UserId: &user.UserId{
+						Idp:      granteeIdUserIdMap["idp"].(string),
+						OpaqueId: granteeIdUserIdMap["opaque_id"].(string),
+						Type:     user.UserType(granteeIdUserIdMap["type"].(float64)),
+					},
+				},
+			},
+			Permissions: &provider.ResourcePermissions{
+				AddGrant:             permsMap["add_grant"].(bool),
+				CreateContainer:      permsMap["create_container"].(bool),
+				Delete:               permsMap["delete"].(bool),
+				GetPath:              permsMap["get_path"].(bool),
+				GetQuota:             permsMap["get_quota"].(bool),
+				InitiateFileDownload: permsMap["initiate_file_download"].(bool),
+				InitiateFileUpload:   permsMap["initiate_file_upload"].(bool),
+				ListGrants:           permsMap["list_grants"].(bool),
+				ListContainer:        permsMap["list_container"].(bool),
+				ListFileVersions:     permsMap["list_file_versions"].(bool),
+				ListRecycle:          permsMap["list_recycle"].(bool),
+				Move:                 permsMap["move"].(bool),
+				RemoveGrant:          permsMap["remove_grant"].(bool),
+				PurgeRecycle:         permsMap["purge_recycle"].(bool),
+				RestoreFileVersion:   permsMap["restore_file_version"].(bool),
+				RestoreRecycleItem:   permsMap["restore_recycle_item"].(bool),
+				Stat:                 permsMap["stat"].(bool),
+				UpdateGrant:          permsMap["update_grant"].(bool),
+			},
+		}
 	}
 	return grants, err
 }
@@ -751,4 +802,9 @@ func (nc *StorageDriver) ListStorageSpaces(ctx context.Context, f []*provider.Li
 		}
 	}
 	return spaces, err
+}
+
+// CreateStorageSpace creates a storage space
+func (nc *StorageDriver) CreateStorageSpace(ctx context.Context, req *provider.CreateStorageSpaceRequest) (*provider.CreateStorageSpaceResponse, error) {
+	return nil, fmt.Errorf("unimplemented: CreateStorageSpace")
 }
