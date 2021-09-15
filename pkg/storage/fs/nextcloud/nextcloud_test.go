@@ -1237,42 +1237,37 @@ var _ = Describe("Nextcloud", func() {
 			})
 			Expect(err).ToNot(HaveOccurred())
 			Expect(*result).To(Equal(provider.CreateStorageSpaceResponse{
-				Opaque: &types.Opaque{
-					Map: map[string](*types.OpaqueEntry){
-						"bar": &types.OpaqueEntry{Value: []byte("sama")},
-						"foo": &types.OpaqueEntry{Value: []byte("sama")},
+				Opaque: nil,
+				Status: nil,
+				StorageSpace: &provider.StorageSpace{
+					Opaque: &types.Opaque{
+						Map: map[string](*types.OpaqueEntry){
+							"bar": &types.OpaqueEntry{Value: []byte("sama")},
+							"foo": &types.OpaqueEntry{Value: []byte("sama")},
+						},
+					},
+					Id: &provider.StorageSpaceId{OpaqueId: "some-opaque-storage-space-id"},
+					Owner: &userpb.User{
+						Id: &userpb.UserId{
+							Idp:      "some-idp",
+							OpaqueId: "some-opaque-user-id",
+							Type:     userpb.UserType_USER_TYPE_PRIMARY,
+						},
+					},
+					Root: &provider.ResourceId{
+						StorageId: "some-storage-ud",
+						OpaqueId:  "some-opaque-root-id",
+					},
+					Name: "My Storage Space",
+					Quota: &provider.Quota{
+						QuotaMaxBytes: uint64(456),
+						QuotaMaxFiles: uint64(123),
+					},
+					SpaceType: "home",
+					Mtime: &types.Timestamp{
+						Seconds: uint64(1234567890),
 					},
 				},
-				Status:       nil,
-				StorageSpace: nil, // &provider.StorageSpace{
-				// 	Opaque: &types.Opaque{
-				// 		Map: map[string](*types.OpaqueEntry){
-				// 			"bar": &types.OpaqueEntry{Value: []byte("sama")},
-				// 			"foo": &types.OpaqueEntry{Value: []byte("sama")},
-				// 		},
-				// 	},
-				// 	Id: &provider.StorageSpaceId{OpaqueId: "some-opaque-storage-space-id"},
-				// 	Owner: &userpb.User{
-				// 		Id: &userpb.UserId{
-				// 			Idp:      "some-idp",
-				// 			OpaqueId: "some-opaque-user-id",
-				// 			Type:     userpb.UserType_USER_TYPE_PRIMARY,
-				// 		},
-				// 	},
-				// 	Root: &provider.ResourceId{
-				// 		StorageId: "some-storage-ud",
-				// 		OpaqueId:  "some-opaque-root-id",
-				// 	},
-				// 	Name: "My Storage Space",
-				// 	Quota: &provider.Quota{
-				// 		QuotaMaxBytes: uint64(456),
-				// 		QuotaMaxFiles: uint64(123),
-				// 	},
-				// 	SpaceType: "home",
-				// 	Mtime: &types.Timestamp{
-				// 		Seconds: uint64(1234567890),
-				// 	},
-				// },
 			}))
 			Expect(len(called)).To(Equal(1))
 			Expect(called[0]).To(Equal(`POST /apps/sciencemesh/~tester/api/CreateStorageSpace {"opaque":{"map":{"bar":{"value":"c2FtYQ=="},"foo":{"value":"c2FtYQ=="}}},"owner":{"id":{"idp":"some-idp","opaque_id":"some-opaque-user-id","type":1}},"type":"home","name":"My Storage Space","quota":{"quota_max_bytes":456,"quota_max_files":123}}`))
