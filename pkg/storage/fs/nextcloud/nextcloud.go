@@ -544,12 +544,12 @@ func (nc *StorageDriver) AddGrant(ctx context.Context, ref *provider.Reference, 
 // RemoveGrant as defined in the storage.FS interface
 func (nc *StorageDriver) RemoveGrant(ctx context.Context, ref *provider.Reference, g *provider.Grant) error {
 	type paramsObj struct {
-		Reference provider.Reference `json:"reference"`
-		Grant     provider.Grant     `json:"grant"`
+		Ref provider.Reference `json:"ref"`
+		G   provider.Grant     `json:"g"`
 	}
 	bodyObj := &paramsObj{
-		Reference: *ref,
-		Grant:     *g,
+		Ref: *ref,
+		G:   *g,
 	}
 	bodyStr, _ := json.Marshal(bodyObj)
 	log := appctx.GetLogger(ctx)
@@ -562,12 +562,12 @@ func (nc *StorageDriver) RemoveGrant(ctx context.Context, ref *provider.Referenc
 // DenyGrant as defined in the storage.FS interface
 func (nc *StorageDriver) DenyGrant(ctx context.Context, ref *provider.Reference, g *provider.Grantee) error {
 	type paramsObj struct {
-		Reference provider.Reference `json:"reference"`
-		Grantee   provider.Grantee   `json:"grantee"`
+		Ref provider.Reference `json:"ref"`
+		G   provider.Grantee   `json:"g"`
 	}
 	bodyObj := &paramsObj{
-		Reference: *ref,
-		Grantee:   *g,
+		Ref: *ref,
+		G:   *g,
 	}
 	bodyStr, _ := json.Marshal(bodyObj)
 	log := appctx.GetLogger(ctx)
@@ -580,12 +580,12 @@ func (nc *StorageDriver) DenyGrant(ctx context.Context, ref *provider.Reference,
 // UpdateGrant as defined in the storage.FS interface
 func (nc *StorageDriver) UpdateGrant(ctx context.Context, ref *provider.Reference, g *provider.Grant) error {
 	type paramsObj struct {
-		Reference provider.Reference `json:"reference"`
-		Grant     provider.Grant     `json:"grant"`
+		Ref provider.Reference `json:"ref"`
+		G   provider.Grant     `json:"g"`
 	}
 	bodyObj := &paramsObj{
-		Reference: *ref,
-		Grant:     *g,
+		Ref: *ref,
+		G:   *g,
 	}
 	bodyStr, _ := json.Marshal(bodyObj)
 	log := appctx.GetLogger(ctx)
@@ -597,7 +597,44 @@ func (nc *StorageDriver) UpdateGrant(ctx context.Context, ref *provider.Referenc
 
 // ListGrants as defined in the storage.FS interface
 func (nc *StorageDriver) ListGrants(ctx context.Context, ref *provider.Reference) ([]*provider.Grant, error) {
-	bodyStr, _ := json.Marshal(ref)
+	bodyStr, _ := json.Marshal(provider.Grant{
+		Grantee: &provider.Grantee{
+			Id: &provider.Grantee_UserId{
+				UserId: &user.UserId{
+					Idp:      "some-idp",
+					OpaqueId: "some-opaque-id",
+					Type:     user.UserType_USER_TYPE_PRIMARY,
+				},
+			},
+		},
+		Permissions: &provider.ResourcePermissions{
+			AddGrant:             true,
+			CreateContainer:      true,
+			Delete:               true,
+			GetPath:              true,
+			GetQuota:             true,
+			InitiateFileDownload: true,
+			InitiateFileUpload:   true,
+			ListGrants:           true,
+			ListContainer:        false,
+			ListFileVersions:     false,
+			ListRecycle:          false,
+			Move:                 false,
+			RemoveGrant:          false,
+			PurgeRecycle:         false,
+			RestoreFileVersion:   false,
+			RestoreRecycleItem:   false,
+			Stat:                 false,
+			UpdateGrant:          false,
+			XXX_NoUnkeyedLiteral: struct{}{},
+			XXX_unrecognized:     []byte{},
+			XXX_sizecache:        0,
+		},
+		XXX_NoUnkeyedLiteral: struct{}{},
+		XXX_unrecognized:     []byte{},
+		XXX_sizecache:        0,
+	},
+	)
 	log := appctx.GetLogger(ctx)
 	log.Info().Msgf("ListGrants %s", bodyStr)
 
@@ -606,55 +643,14 @@ func (nc *StorageDriver) ListGrants(ctx context.Context, ref *provider.Reference
 		return nil, err
 	}
 
-	var respMapArr []interface{}
+	var respMapArr []provider.Grant
 	err = json.Unmarshal(respBody, &respMapArr)
 	if err != nil {
 		return nil, err
 	}
 	grants := make([]*provider.Grant, len(respMapArr))
 	for i := 0; i < len(respMapArr); i++ {
-		respMap := respMapArr[i].(map[string]interface{})
-		permsMap := respMap["permissions"].(map[string]interface{})
-		granteeMap := respMap["grantee"].(map[string]interface{})
-		granteeIDMap := granteeMap["Id"].(map[string]interface{})
-		granteeIDUserIDMap := granteeIDMap["UserId"].(map[string]interface{})
-		grants[i] = &provider.Grant{
-			Grantee: &provider.Grantee{
-				Id: &provider.Grantee_UserId{
-					UserId: &user.UserId{
-						Idp:      granteeIDUserIDMap["idp"].(string),
-						OpaqueId: granteeIDUserIDMap["opaque_id"].(string),
-						Type:     user.UserType_USER_TYPE_PRIMARY,
-					},
-				},
-			},
-			Permissions: &provider.ResourcePermissions{
-				AddGrant:             permsMap["add_grant"].(bool),
-				CreateContainer:      permsMap["create_container"].(bool),
-				Delete:               permsMap["delete"].(bool),
-				GetPath:              permsMap["get_path"].(bool),
-				GetQuota:             permsMap["get_quota"].(bool),
-				InitiateFileDownload: permsMap["initiate_file_download"].(bool),
-				InitiateFileUpload:   permsMap["initiate_file_upload"].(bool),
-				ListGrants:           permsMap["list_grants"].(bool),
-				ListContainer:        permsMap["list_container"].(bool),
-				ListFileVersions:     permsMap["list_file_versions"].(bool),
-				ListRecycle:          permsMap["list_recycle"].(bool),
-				Move:                 permsMap["move"].(bool),
-				RemoveGrant:          permsMap["remove_grant"].(bool),
-				PurgeRecycle:         permsMap["purge_recycle"].(bool),
-				RestoreFileVersion:   permsMap["restore_file_version"].(bool),
-				RestoreRecycleItem:   permsMap["restore_recycle_item"].(bool),
-				Stat:                 permsMap["stat"].(bool),
-				UpdateGrant:          permsMap["update_grant"].(bool),
-				XXX_NoUnkeyedLiteral: struct{}{},
-				XXX_unrecognized:     []byte{},
-				XXX_sizecache:        0,
-			},
-			XXX_NoUnkeyedLiteral: struct{}{},
-			XXX_unrecognized:     []byte{},
-			XXX_sizecache:        0,
-		}
+		grants[i] = &respMapArr[i]
 	}
 	return grants, err
 }
