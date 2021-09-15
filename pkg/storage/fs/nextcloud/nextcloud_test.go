@@ -549,14 +549,38 @@ var _ = Describe("Nextcloud", func() {
 			Expect(err).ToNot(HaveOccurred())
 			// https://github.com/cs3org/go-cs3apis/blob/970eec3/cs3/storage/provider/v1beta1/resources.pb.go#L1003-L1023
 			Expect(len(results)).To(Equal(2))
-			Expect(results[0].Key).To(Equal("version-12"))
-			Expect(results[0].Size).To(Equal(uint64(12345)))
-			Expect(results[0].Mtime).To(Equal(uint64(1234567990)))
-			Expect(results[0].Etag).To(Equal("deadb00f"))
-			Expect(results[1].Key).To(Equal("asdf"))
-			Expect(results[1].Size).To(Equal(uint64(1235)))
-			Expect(results[1].Mtime).To(Equal(uint64(1234567890)))
-			Expect(results[1].Etag).To(Equal("deadbeef"))
+			Expect(*results[0]).To(Equal(provider.FileVersion{
+				Opaque: &types.Opaque{
+					Map: map[string]*types.OpaqueEntry{
+						"some": {
+							Value: []byte("data"),
+						},
+					},
+				},
+				Key:                  "version-12",
+				Size:                 uint64(12345),
+				Mtime:                uint64(1234567890),
+				Etag:                 "deadb00f",
+				XXX_NoUnkeyedLiteral: struct{}{},
+				XXX_unrecognized:     nil,
+				XXX_sizecache:        0,
+			}))
+			Expect(*results[1]).To(Equal(provider.FileVersion{
+				Opaque: &types.Opaque{
+					Map: map[string]*types.OpaqueEntry{
+						"different": {
+							Value: []byte("stuff"),
+						},
+					},
+				},
+				Key:                  "asdf",
+				Size:                 uint64(12345),
+				Mtime:                uint64(1234567890),
+				Etag:                 "deadbeef",
+				XXX_NoUnkeyedLiteral: struct{}{},
+				XXX_unrecognized:     nil,
+				XXX_sizecache:        0,
+			}))
 			Expect(called[0]).To(Equal("POST /apps/sciencemesh/~tester/api/ListRevisions {\"resource_id\":{\"storage_id\":\"storage-id\",\"opaque_id\":\"opaque-id\"},\"path\":\"/some/path\"}"))
 		})
 	})

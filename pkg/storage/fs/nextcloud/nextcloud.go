@@ -309,39 +309,6 @@ func (nc *StorageDriver) GetMD(ctx context.Context, ref *provider.Reference, mdK
 	if err != nil {
 		return nil, err
 	}
-	// size := int(respMap["size"].(float64))
-	// mdMap, ok := respMap["metadata"].(map[string]interface{})
-	// mdMapString := make(map[string]string)
-	// if ok {
-	// 	for key, value := range mdMap {
-	// 		mdMapString[key] = value.(string)
-	// 	}
-	// }
-	// md := &provider.ResourceInfo{
-	// 	Opaque:            &types.Opaque{},
-	// 	Type:              provider.ResourceType_RESOURCE_TYPE_FILE,
-	// 	Id:                &provider.ResourceId{OpaqueId: "fileid-" + url.QueryEscape(respMap["path"].(string))},
-	// 	Checksum:          &provider.ResourceChecksum{},
-	// 	Etag:              respMap["etag"].(string),
-	// 	MimeType:          respMap["mimetype"].(string),
-	// 	Mtime:             &types.Timestamp{Seconds: 1234567890},
-	// 	Path:              ref.Path,
-	// 	PermissionSet:     &provider.ResourcePermissions{},
-	// 	Size:              uint64(size),
-	// 	Owner:             nil,
-	// 	Target:            "",
-	// 	CanonicalMetadata: &provider.CanonicalMetadata{},
-	// 	ArbitraryMetadata: &provider.ArbitraryMetadata{
-	// 		Metadata:             mdMapString,
-	// 		XXX_NoUnkeyedLiteral: struct{}{},
-	// 		XXX_unrecognized:     []byte{},
-	// 		XXX_sizecache:        0,
-	// 	},
-	// 	XXX_NoUnkeyedLiteral: struct{}{},
-	// 	XXX_unrecognized:     []byte{},
-	// 	XXX_sizecache:        0,
-	// }
-
 	return &respObj, nil
 }
 
@@ -377,26 +344,6 @@ func (nc *StorageDriver) ListFolder(ctx context.Context, ref *provider.Reference
 	var pointers = make([]*provider.ResourceInfo, len(respMapArr))
 	for i := 0; i < len(respMapArr); i++ {
 		pointers[i] = &respMapArr[i]
-		// 	respMap := respMapArr[i].(map[string]interface{})
-		// 	infos[i] = &provider.ResourceInfo{
-		// 		Opaque:               &types.Opaque{},
-		// 		Type:                 provider.ResourceType_RESOURCE_TYPE_CONTAINER,
-		// 		Id:                   &provider.ResourceId{OpaqueId: "fileid-" + url.QueryEscape(respMap["path"].(string))},
-		// 		Checksum:             &provider.ResourceChecksum{},
-		// 		Etag:                 respMap["etag"].(string),
-		// 		MimeType:             respMap["mimetype"].(string),
-		// 		Mtime:                &types.Timestamp{Seconds: 1234567890},
-		// 		Path:                 "/subdir", // FIXME: bodyArr[i],
-		// 		PermissionSet:        &provider.ResourcePermissions{},
-		// 		Size:                 0,
-		// 		Owner:                &user.UserId{OpaqueId: "f7fbf8c8-139b-4376-b307-cf0a8c2d0d9c"},
-		// 		Target:               "",
-		// 		CanonicalMetadata:    &provider.CanonicalMetadata{},
-		// 		ArbitraryMetadata:    nil,
-		// 		XXX_NoUnkeyedLiteral: struct{}{},
-		// 		XXX_unrecognized:     []byte{},
-		// 		XXX_sizecache:        0,
-		// 	}
 	}
 	return pointers, err
 }
@@ -431,18 +378,11 @@ func (nc *StorageDriver) InitiateUpload(ctx context.Context, ref *provider.Refer
 
 // Upload as defined in the storage.FS interface
 func (nc *StorageDriver) Upload(ctx context.Context, ref *provider.Reference, r io.ReadCloser) error {
-	bodyStr, _ := json.Marshal(ref)
-	log := appctx.GetLogger(ctx)
-	log.Info().Msgf("Upload %s", bodyStr)
-
 	return nc.doUpload(ctx, ref.Path, r)
 }
 
 // Download as defined in the storage.FS interface
 func (nc *StorageDriver) Download(ctx context.Context, ref *provider.Reference) (io.ReadCloser, error) {
-	log := appctx.GetLogger(ctx)
-	log.Info().Msgf("Download %s", ref.Path)
-
 	return nc.doDownload(ctx, ref.Path)
 }
 
@@ -458,24 +398,14 @@ func (nc *StorageDriver) ListRevisions(ctx context.Context, ref *provider.Refere
 	if err != nil {
 		return nil, err
 	}
-	var respMapArr []interface{}
+	var respMapArr []provider.FileVersion
 	err = json.Unmarshal(respBody, &respMapArr)
 	if err != nil {
 		return nil, err
 	}
 	revs := make([]*provider.FileVersion, len(respMapArr))
 	for i := 0; i < len(respMapArr); i++ {
-		respMap := respMapArr[i].(map[string]interface{})
-		revs[i] = &provider.FileVersion{
-			Opaque:               &types.Opaque{},
-			Key:                  respMap["key"].(string),
-			Size:                 uint64(respMap["size"].(float64)),
-			Mtime:                uint64(respMap["mtime"].(float64)),
-			Etag:                 respMap["etag"].(string),
-			XXX_NoUnkeyedLiteral: struct{}{},
-			XXX_unrecognized:     []byte{},
-			XXX_sizecache:        0,
-		}
+		revs[i] = &respMapArr[i]
 	}
 	return revs, err
 }
