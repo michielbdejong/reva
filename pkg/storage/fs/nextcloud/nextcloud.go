@@ -292,30 +292,6 @@ func (nc *StorageDriver) GetMD(ctx context.Context, ref *provider.Reference, mdK
 	bodyObj := &paramsObj{
 		Ref:    *ref,
 		MdKeys: mdKeys,
-		// MetaData: provider.ResourceInfo{
-		// 	Opaque:            &types.Opaque{},
-		// 	Type:              provider.ResourceType_RESOURCE_TYPE_FILE,
-		// 	Id:                &provider.ResourceId{OpaqueId: "fileid-/some/path"},
-		// 	Checksum:          &provider.ResourceChecksum{},
-		// 	Etag:              "deadbeef",
-		// 	MimeType:          "text/plain",
-		// 	Mtime:             &types.Timestamp{Seconds: 1234567890},
-		// 	Path:              ref.Path,
-		// 	PermissionSet:     &provider.ResourcePermissions{},
-		// 	Size:              uint64(12345),
-		// 	Owner:             nil,
-		// 	Target:            "",
-		// 	CanonicalMetadata: &provider.CanonicalMetadata{},
-		// 	ArbitraryMetadata: &provider.ArbitraryMetadata{
-		// 		Metadata:             map[string]string{"some": "arbi", "trary": "meta", "da": "ta"},
-		// 		XXX_NoUnkeyedLiteral: struct{}{},
-		// 		XXX_unrecognized:     []byte{},
-		// 		XXX_sizecache:        0,
-		// 	},
-		// 	XXX_NoUnkeyedLiteral: struct{}{},
-		// 	XXX_unrecognized:     []byte{},
-		// 	XXX_sizecache:        0,
-		// },
 	}
 	bodyStr, _ := json.Marshal(bodyObj)
 	log := appctx.GetLogger(ctx)
