@@ -72,37 +72,37 @@ var responses = map[string]Response{
 	`POST /apps/sciencemesh/~einstein/api/storage/EmptyRecycle `: {200, ``, serverStateEmpty},
 
 	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/"},"mdKeys":null} EMPTY`: {404, ``, serverStateEmpty},
-	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/"},"mdKeys":null} HOME`:  {200, `{ "size": 1, "path":"/", "metadata": { "foo": "bar" }, "etag": "in-json-etag", "mimetype": "in-json-mimetype" }`, serverStateHome},
+	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/"},"mdKeys":null} HOME`:  {200, `{"opaque":{},"type":1,"id":{"opaque_id":"fileid-/some/path"},"checksum":{},"etag":"deadbeef","mime_type":"text/plain","mtime":{"seconds":1234567890},"path":"/","permission_set":{},"size":12345,"canonical_metadata":{},"arbitrary_metadata":{"metadata":{"da":"ta","some":"arbi","trary":"meta"}}}`, serverStateHome},
 
 	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/newdir"},"mdKeys":null} EMPTY`:         {404, ``, serverStateEmpty},
 	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/newdir"},"mdKeys":null} HOME`:          {404, ``, serverStateHome},
 	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/newdir"},"mdKeys":null} SUBDIR`:        {404, ``, serverStateSubdir},
-	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/newdir"},"mdKeys":null} NEWDIR`:        {200, `{ "size": 1, "path":"/newdir", "metadata": { "foo": "bar" }, "etag": "in-json-etag", "mimetype": "in-json-mimetype" }`, serverStateNewdir},
-	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/newdir"},"mdKeys":null} SUBDIR-NEWDIR`: {200, `{ "size": 1, "path":"/newdir", "metadata": { "foo": "bar" }, "etag": "in-json-etag", "mimetype": "in-json-mimetype" }`, serverStateSubdirNewdir},
+	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/newdir"},"mdKeys":null} NEWDIR`:        {200, `{"opaque":{},"type":1,"id":{"opaque_id":"fileid-/some/path"},"checksum":{},"etag":"deadbeef","mime_type":"text/plain","mtime":{"seconds":1234567890},"path":"/newdir","permission_set":{},"size":12345,"canonical_metadata":{},"arbitrary_metadata":{"metadata":{"da":"ta","some":"arbi","trary":"meta"}}}`, serverStateNewdir},
+	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/newdir"},"mdKeys":null} SUBDIR-NEWDIR`: {200, `{"opaque":{},"type":1,"id":{"opaque_id":"fileid-/some/path"},"checksum":{},"etag":"deadbeef","mime_type":"text/plain","mtime":{"seconds":1234567890},"path":"/newdir","permission_set":{},"size":12345,"canonical_metadata":{},"arbitrary_metadata":{"metadata":{"da":"ta","some":"arbi","trary":"meta"}}}`, serverStateSubdirNewdir},
 
-	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/new_subdir"},"mdKeys":null}`: {200, `{ "size": 1 }`, serverStateEmpty},
+	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/new_subdir"},"mdKeys":null}`: {200, `{"opaque":{},"type":1,"id":{"opaque_id":"fileid-/some/path"},"checksum":{},"etag":"deadbeef","mime_type":"text/plain","mtime":{"seconds":1234567890},"path":"/new_subdir","permission_set":{},"size":12345,"canonical_metadata":{},"arbitrary_metadata":{"metadata":{"da":"ta","some":"arbi","trary":"meta"}}}`, serverStateEmpty},
 
 	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/subdir"},"mdKeys":null} EMPTY`:         {404, ``, serverStateEmpty},
 	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/subdir"},"mdKeys":null} HOME`:          {404, ``, serverStateEmpty},
 	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/subdir"},"mdKeys":null} NEWDIR`:        {404, ``, serverStateEmpty},
 	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/subdir"},"mdKeys":null} RECYCLE`:       {404, ``, serverStateRecycle},
-	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/subdir"},"mdKeys":null} SUBDIR`:        {200, `{ "size": 1, "path":"/subdir", "metadata": { "foo": "bar" }, "etag": "in-json-etag", "mimetype": "in-json-mimetype" }`, serverStateEmpty},
-	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/subdir"},"mdKeys":null} SUBDIR-NEWDIR`: {200, `{ "size": 1, "path":"/subdirh", "metadata": { "foo": "bar" }, "etag": "in-json-etag", "mimetype": "in-json-mimetype" }`, serverStateEmpty},
-	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/subdir"},"mdKeys":null} METADATA`:      {200, `{ "size": 1,, "path":"/subdir", "metadata": { "foo": "bar" }, "etag": "in-json-etag", "mimetype": "in-json-mimetype" }`, serverStateMetadata},
+	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/subdir"},"mdKeys":null} SUBDIR`:        {200, `{"opaque":{},"type":1,"id":{"opaque_id":"fileid-/some/path"},"checksum":{},"etag":"deadbeef","mime_type":"text/plain","mtime":{"seconds":1234567890},"path":"/subdir","permission_set":{},"size":12345,"canonical_metadata":{},"arbitrary_metadata":{"metadata":{"da":"ta","some":"arbi","trary":"meta"}}}`, serverStateEmpty},
+	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/subdir"},"mdKeys":null} SUBDIR-NEWDIR`: {200, `{"opaque":{},"type":1,"id":{"opaque_id":"fileid-/some/path"},"checksum":{},"etag":"deadbeef","mime_type":"text/plain","mtime":{"seconds":1234567890},"path":"/subdir","permission_set":{},"size":12345,"canonical_metadata":{},"arbitrary_metadata":{"metadata":{"da":"ta","some":"arbi","trary":"meta"}}}`, serverStateEmpty},
+	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/subdir"},"mdKeys":null} METADATA`:      {200, `{"opaque":{},"type":1,"id":{"opaque_id":"fileid-/some/path"},"checksum":{},"etag":"deadbeef","mime_type":"text/plain","mtime":{"seconds":1234567890},"path":"/subdir","permission_set":{},"size":12345,"canonical_metadata":{},"arbitrary_metadata":{"metadata":{"da":"ta","some":"arbi","trary":"meta"}}}`, serverStateMetadata},
 
 	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/subdirRestored"},"mdKeys":null} EMPTY`:         {404, ``, serverStateEmpty},
 	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/subdirRestored"},"mdKeys":null} RECYCLE`:       {404, ``, serverStateRecycle},
 	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/subdirRestored"},"mdKeys":null} SUBDIR`:        {404, ``, serverStateSubdir},
-	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/subdirRestored"},"mdKeys":null} FILE-RESTORED`: {200, `{ "size": 1, "path":"/subdirRestored", "metadata": { "foo": "bar" }, "etag": "in-json-etag", "mimetype": "in-json-mimetype" }`, serverStateFileRestored},
+	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/subdirRestored"},"mdKeys":null} FILE-RESTORED`: {200, `{"opaque":{},"type":1,"id":{"opaque_id":"fileid-/some/path"},"checksum":{},"etag":"deadbeef","mime_type":"text/plain","mtime":{"seconds":1234567890},"path":"/subdirRestored","permission_set":{},"size":12345,"canonical_metadata":{},"arbitrary_metadata":{"metadata":{"da":"ta","some":"arbi","trary":"meta"}}}`, serverStateFileRestored},
 
-	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/versionedFile"},"mdKeys":null} EMPTY`:         {200, `{ "size": 2, "path":"/versionedFile", "metadata": { "foo": "bar" }, "etag": "in-json-etag", "mimetype": "in-json-mimetype" }`, serverStateEmpty},
-	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/versionedFile"},"mdKeys":null} FILE-RESTORED`: {200, `{ "size": 1, "path":"/versionedFile", "metadata": { "foo": "bar" }, "etag": "in-json-etag", "mimetype": "in-json-mimetype" }`, serverStateFileRestored},
+	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/versionedFile"},"mdKeys":null} EMPTY`:         {200, `{"opaque":{},"type":1,"id":{"opaque_id":"fileid-/some/path"},"checksum":{},"etag":"deadbeef","mime_type":"text/plain","mtime":{"seconds":1234567890},"path":"/versionedFile","permission_set":{},"size":2,"canonical_metadata":{},"arbitrary_metadata":{"metadata":{"da":"ta","some":"arbi","trary":"meta"}}}`, serverStateEmpty},
+	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/versionedFile"},"mdKeys":null} FILE-RESTORED`: {200, `{"opaque":{},"type":1,"id":{"opaque_id":"fileid-/some/path"},"checksum":{},"etag":"deadbeef","mime_type":"text/plain","mtime":{"seconds":1234567890},"path":"/versionedFile","permission_set":{},"size":1,"canonical_metadata":{},"arbitrary_metadata":{"metadata":{"da":"ta","some":"arbi","trary":"meta"}}}`, serverStateFileRestored},
 
-	`POST /apps/sciencemesh/~einstein/api/storage/GetPathByID {"storage_id":"00000000-0000-0000-0000-000000000000","opaque_id":"fileid-%2Fsubdir"}`: {200, "/subdir", serverStateEmpty},
+	`POST /apps/sciencemesh/~einstein/api/storage/GetPathByID {"storage_id":"00000000-0000-0000-0000-000000000000","opaque_id":"fileid-/some/path"} EMPTY`: {200, "/subdir", serverStateEmpty},
 
 	`POST /apps/sciencemesh/~einstein/api/storage/InitiateUpload {"path":"/file"}`: {200, `{"simple": "yes","tus": "yes"}`, serverStateEmpty},
 
-	`POST /apps/sciencemesh/~einstein/api/storage/ListFolder {"ref":{"path":"/"},"mdKeys":null}`: {200, `[{ "size": 1, "path":"/subdir", "metadata": { "foo": "bar" }, "etag": "in-json-etag", "mimetype": "in-json-mimetype" }]`, serverStateEmpty},
+	`POST /apps/sciencemesh/~einstein/api/storage/ListFolder {"ref":{"path":"/"},"mdKeys":null}`: {200, `[{"opaque":{},"type":2,"id":{"opaque_id":"fileid-/some/path"},"checksum":{},"etag":"deadbeef","mime_type":"text/plain","mtime":{"seconds":1234567890},"path":"/subdir","permission_set":{},"size":12345,"canonical_metadata":{},"owner":{"opaque_id":"f7fbf8c8-139b-4376-b307-cf0a8c2d0d9c"},"arbitrary_metadata":{"metadata":{"da":"ta","some":"arbi","trary":"meta"}}}]`, serverStateEmpty},
 
 	`POST /apps/sciencemesh/~einstein/api/storage/ListFolder {"ref":{"path":"/Shares"},"mdKeys":null} EMPTY`:     {404, ``, serverStateEmpty},
 	`POST /apps/sciencemesh/~einstein/api/storage/ListFolder {"ref":{"path":"/Shares"},"mdKeys":null} SUBDIR`:    {404, ``, serverStateSubdir},
@@ -118,7 +118,7 @@ var responses = map[string]Response{
 	`POST /apps/sciencemesh/~einstein/api/storage/ListRevisions {"path":"/versionedFile"} EMPTY`:         {500, `[1]`, serverStateEmpty},
 	`POST /apps/sciencemesh/~einstein/api/storage/ListRevisions {"path":"/versionedFile"} FILE-RESTORED`: {500, `[1, 2]`, serverStateFileRestored},
 
-	`POST /apps/sciencemesh/~einstein/api/storage/Move {"from":"/subdir","to":"/new_subdir"}`: {200, ``, serverStateEmpty},
+	`POST /apps/sciencemesh/~einstein/api/storage/Move {"oldRef":{"path":"/subdir"},"newRef":{"path":"/new_subdir"}}`: {200, ``, serverStateEmpty},
 
 	`POST /apps/sciencemesh/~einstein/api/storage/RemoveGrant {"path":"/subdir"} GRANT-ADDED`: {200, ``, serverStateGrantUpdated},
 
