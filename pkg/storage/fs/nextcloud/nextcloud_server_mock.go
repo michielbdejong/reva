@@ -86,9 +86,9 @@ var responses = map[string]Response{
 	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/subdir"},"mdKeys":null} HOME`:          {404, ``, serverStateEmpty},
 	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/subdir"},"mdKeys":null} NEWDIR`:        {404, ``, serverStateEmpty},
 	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/subdir"},"mdKeys":null} RECYCLE`:       {404, ``, serverStateRecycle},
-	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/subdir"},"mdKeys":null} SUBDIR`:        {200, `{"opaque":{},"type":1,"id":{"opaque_id":"fileid-/some/path"},"checksum":{},"etag":"deadbeef","mime_type":"text/plain","mtime":{"seconds":1234567890},"path":"/subdir","permission_set":{},"size":12345,"canonical_metadata":{},"arbitrary_metadata":{"metadata":{"da":"ta","some":"arbi","trary":"meta"}}}`, serverStateEmpty},
-	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/subdir"},"mdKeys":null} SUBDIR-NEWDIR`: {200, `{"opaque":{},"type":1,"id":{"opaque_id":"fileid-/some/path"},"checksum":{},"etag":"deadbeef","mime_type":"text/plain","mtime":{"seconds":1234567890},"path":"/subdir","permission_set":{},"size":12345,"canonical_metadata":{},"arbitrary_metadata":{"metadata":{"da":"ta","some":"arbi","trary":"meta"}}}`, serverStateEmpty},
-	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/subdir"},"mdKeys":null} METADATA`:      {200, `{"opaque":{},"type":1,"id":{"opaque_id":"fileid-/some/path"},"checksum":{},"etag":"deadbeef","mime_type":"text/plain","mtime":{"seconds":1234567890},"path":"/subdir","permission_set":{},"size":12345,"canonical_metadata":{},"arbitrary_metadata":{"metadata":{"da":"ta","some":"arbi","trary":"meta"}}}`, serverStateMetadata},
+	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/subdir"},"mdKeys":null} SUBDIR`:        {200, `{"opaque":{},"type":1,"id":{"opaque_id":"fileid-/some/path"},"checksum":{},"etag":"deadbeef","mime_type":"text/plain","mtime":{"seconds":1234567890},"path":"/subdir","permission_set":{},"size":12345,"canonical_metadata":{},"arbitrary_metadata":{}}}`, serverStateEmpty},
+	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/subdir"},"mdKeys":null} SUBDIR-NEWDIR`: {200, `{"opaque":{},"type":1,"id":{"opaque_id":"fileid-/some/path"},"checksum":{},"etag":"deadbeef","mime_type":"text/plain","mtime":{"seconds":1234567890},"path":"/subdir","permission_set":{},"size":12345,"canonical_metadata":{},"arbitrary_metadata":{}}}`, serverStateEmpty},
+	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/subdir"},"mdKeys":null} METADATA`:      {200, `{"opaque":{},"type":1,"id":{"opaque_id":"fileid-/some/path"},"checksum":{},"etag":"deadbeef","mime_type":"text/plain","mtime":{"seconds":1234567890},"path":"/subdir","permission_set":{},"size":12345,"canonical_metadata":{},"arbitrary_metadata":{"metadata":{"foo":"bar"}}}`, serverStateMetadata},
 
 	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/subdirRestored"},"mdKeys":null} EMPTY`:         {404, ``, serverStateEmpty},
 	`POST /apps/sciencemesh/~einstein/api/storage/GetMD {"ref":{"path":"/subdirRestored"},"mdKeys":null} RECYCLE`:       {404, ``, serverStateRecycle},
@@ -109,14 +109,14 @@ var responses = map[string]Response{
 	`POST /apps/sciencemesh/~einstein/api/storage/ListFolder {"ref":{"path":"/Shares"},"mdKeys":null} REFERENCE`: {200, `[{ "size": 1, "path":"/Shares/reference", "metadata": { "foo": "bar" }, "etag": "in-json-etag", "mimetype": "in-json-mimetype" }]`, serverStateReference},
 
 	`POST /apps/sciencemesh/~einstein/api/storage/ListGrants {"path":"/subdir"} SUBDIR`:        {200, `[]`, serverStateEmpty},
-	`POST /apps/sciencemesh/~einstein/api/storage/ListGrants {"path":"/subdir"} GRANT-ADDED`:   {200, `[ { "stat": true, "move": true, "delete": false } ]`, serverStateEmpty},
-	`POST /apps/sciencemesh/~einstein/api/storage/ListGrants {"path":"/subdir"} GRANT-UPDATED`: {200, `[ { "stat": true, "move": true, "delete": true } ]`, serverStateEmpty},
+	`POST /apps/sciencemesh/~einstein/api/storage/ListGrants {"path":"/subdir"} GRANT-ADDED`:   {200, `[{"grantee":{"type":1,"Id":{"UserId":{"idp":"some-idp","opaque_id":"some-opaque-id","type":1}}},"permissions":{"add_grant":true,"create_container":true,"delete":true,"get_path":true,"get_quota":true,"initiate_file_download":true,"initiate_file_upload":true,"list_grants":true,"list_container":true,"list_file_versions":true,"list_recycle":true,"move":true,"remove_grant":true,"purge_recycle":true,"restore_file_version":true,"restore_recycle_item":true,"stat":true,"update_grant":true,"deny_grant":true}}]`, serverStateEmpty},
+	`POST /apps/sciencemesh/~einstein/api/storage/ListGrants {"path":"/subdir"} GRANT-UPDATED`: {200, `[{"grantee":{"type":1,"Id":{"UserId":{"idp":"some-idp","opaque_id":"some-opaque-id","type":1}}},"permissions":{"add_grant":true,"create_container":true,"delete":true,"get_path":true,"get_quota":true,"initiate_file_download":true,"initiate_file_upload":true,"list_grants":true,"list_container":true,"list_file_versions":true,"list_recycle":true,"move":true,"remove_grant":true,"purge_recycle":true,"restore_file_version":true,"restore_recycle_item":true,"stat":true,"update_grant":true,"deny_grant":true}}]`, serverStateEmpty},
 
 	`POST /apps/sciencemesh/~einstein/api/storage/ListRecycle {"key":"","path":"/"} EMPTY`:   {200, `[]`, serverStateEmpty},
-	`POST /apps/sciencemesh/~einstein/api/storage/ListRecycle {"key":"","path":"/"} RECYCLE`: {200, `["/subdir"]`, serverStateRecycle},
+	`POST /apps/sciencemesh/~einstein/api/storage/ListRecycle {"key":"","path":"/"} RECYCLE`: {200, `[{"opaque":{},"key":"some-deleted-version","ref":{"resource_id":{},"path":"/subdir"},"size":12345,"deletion_time":{"seconds":1234567890}}]`, serverStateRecycle},
 
-	`POST /apps/sciencemesh/~einstein/api/storage/ListRevisions {"path":"/versionedFile"} EMPTY`:         {200, `[{"opaque":{"map":{"some":{"value":"ZGF0YQ=="}}},"key":"version-12","size":12345,"mtime":1234567890,"etag":"deadb00f"},{"opaque":{"map":{"different":{"value":"c3R1ZmY="}}},"key":"asdf","size":12345,"mtime":1234567890,"etag":"deadbeef"}]`, serverStateEmpty},
-	`POST /apps/sciencemesh/~einstein/api/storage/ListRevisions {"path":"/versionedFile"} FILE-RESTORED`: {200, `[{"opaque":{"map":{"some":{"value":"ZGF0YQ=="}}},"key":"version-12","size":12345,"mtime":1234567890,"etag":"deadb00f"},{"opaque":{"map":{"different":{"value":"c3R1ZmY="}}},"key":"asdf","size":12345,"mtime":1234567890,"etag":"deadbeef"}]`, serverStateFileRestored},
+	`POST /apps/sciencemesh/~einstein/api/storage/ListRevisions {"path":"/versionedFile"} EMPTY`:         {200, `[{"opaque":{"map":{"some":{"value":"ZGF0YQ=="}}},"key":"version-12","size":1,"mtime":1234567890,"etag":"deadb00f"}]`, serverStateEmpty},
+	`POST /apps/sciencemesh/~einstein/api/storage/ListRevisions {"path":"/versionedFile"} FILE-RESTORED`: {200, `[{"opaque":{"map":{"some":{"value":"ZGF0YQ=="}}},"key":"version-12","size":1,"mtime":1234567890,"etag":"deadb00f"},{"opaque":{"map":{"different":{"value":"c3R1ZmY="}}},"key":"asdf","size":2,"mtime":1234567890,"etag":"deadbeef"}]`, serverStateFileRestored},
 
 	`POST /apps/sciencemesh/~einstein/api/storage/Move {"oldRef":{"path":"/subdir"},"newRef":{"path":"/new_subdir"}}`: {200, ``, serverStateEmpty},
 
@@ -125,7 +125,7 @@ var responses = map[string]Response{
 	`POST /apps/sciencemesh/~einstein/api/storage/RestoreRecycleItem null`:                       {200, ``, serverStateSubdir},
 	`POST /apps/sciencemesh/~einstein/api/storage/RestoreRecycleItem {"path":"/subdirRestored"}`: {200, ``, serverStateFileRestored},
 
-	`POST /apps/sciencemesh/~einstein/api/storage/RestoreRevision {"path":"/versionedFile"}`: {200, ``, serverStateFileRestored},
+	`POST /apps/sciencemesh/~einstein/api/storage/RestoreRevision {"ref":{"path":"/versionedFile"},"key":"version-12"}`: {200, ``, serverStateFileRestored},
 
 	`POST /apps/sciencemesh/~einstein/api/storage/SetArbitraryMetadata {"ref":{"path":"/subdir"},"md":{"metadata":{"foo":"bar"}}}`: {200, ``, serverStateMetadata},
 
