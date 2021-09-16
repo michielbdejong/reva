@@ -210,7 +210,7 @@ func (nc *StorageDriver) do(ctx context.Context, a Action) (int, []byte, error) 
 		return 0, nil, err
 	}
 
-	fmt.Printf("nc.do response %d %s\n", resp.StatusCode, body)
+	// fmt.Printf("nc.do response %d %s\n", resp.StatusCode, body)
 	return resp.StatusCode, body, nil
 }
 
@@ -331,17 +331,14 @@ func (nc *StorageDriver) ListFolder(ctx context.Context, ref *provider.Reference
 	}
 
 	var respMapArr []provider.ResourceInfo
-	fmt.Println("respMapArr xi")
 	err = json.Unmarshal(body, &respMapArr)
 	if err != nil {
 		return nil, err
 	}
 	var pointers = make([]*provider.ResourceInfo, len(respMapArr))
-	fmt.Println("looping xi")
 	for i := 0; i < len(respMapArr); i++ {
 		pointers[i] = &respMapArr[i]
 	}
-	fmt.Println("returning xi")
 	return pointers, err
 }
 
@@ -467,27 +464,23 @@ func (nc *StorageDriver) ListRecycle(ctx context.Context, key string, path strin
 
 // RestoreRecycleItem as defined in the storage.FS interface
 func (nc *StorageDriver) RestoreRecycleItem(ctx context.Context, key string, path string, restoreRef *provider.Reference) error {
-	fmt.Printf("RestoreRecycleItem! %s %s\n\n", key, path)
+	// fmt.Printf("RestoreRecycleItem! %s %s\n\n", key, path)
 	type paramsObj struct {
 		Key        string              `json:"key"`
 		Path       string              `json:"path"`
 		RestoreRef *provider.Reference `json:"restoreRef"`
 	}
-	fmt.Println("RestoreRecycleItem create bodyObj")
 	bodyObj := &paramsObj{
 		Key:        key,
 		Path:       path,
 		RestoreRef: restoreRef,
 	}
-	fmt.Println("RestoreRecycleItem created bodyObj")
 	bodyStr, _ := json.Marshal(bodyObj)
-	fmt.Println("RestoreRecycleItem created bodyStr")
 
 	log := appctx.GetLogger(ctx)
 	log.Info().Msgf("RestoreRecycleItem %s", bodyStr)
 
 	_, _, err := nc.do(ctx, Action{"RestoreRecycleItem", string(bodyStr)})
-	fmt.Println("RestoreRecycleItem done!")
 
 	return err
 }
