@@ -45,6 +45,7 @@ const serverStateSubdirNewdir = "SUBDIR-NEWDIR"
 const serverStateFileRestored = "FILE-RESTORED"
 const serverStateGrantAdded = "GRANT-ADDED"
 const serverStateGrantUpdated = "GRANT-UPDATED"
+const serverStateGrantRemoved = "GRANT-REMOVED"
 const serverStateRecycle = "RECYCLE"
 const serverStateReference = "REFERENCE"
 const serverStateMetadata = "METADATA"
@@ -110,7 +111,8 @@ var responses = map[string]Response{
 
 	`POST /apps/sciencemesh/~einstein/api/storage/ListGrants {"path":"/subdir"} SUBDIR`:        {200, `[]`, serverStateEmpty},
 	`POST /apps/sciencemesh/~einstein/api/storage/ListGrants {"path":"/subdir"} GRANT-ADDED`:   {200, `[{"grantee":{"type":1,"Id":{"UserId":{"idp":"some-idp","opaque_id":"some-opaque-id","type":1}}},"permissions":{"add_grant":true,"create_container":true,"delete":false,"get_path":true,"get_quota":true,"initiate_file_download":true,"initiate_file_upload":true,"list_grants":true,"list_container":true,"list_file_versions":true,"list_recycle":true,"move":true,"remove_grant":true,"purge_recycle":true,"restore_file_version":true,"restore_recycle_item":true,"stat":true,"update_grant":true,"deny_grant":true}}]`, serverStateEmpty},
-	`POST /apps/sciencemesh/~einstein/api/storage/ListGrants {"path":"/subdir"} GRANT-UPDATED`: {200, `[{"grantee":{"type":1,"Id":{"UserId":{"idp":"some-idp","opaque_id":"some-opaque-id","type":1}}},"permissions":{"add_grant":true,"create_container":true,"delete":false,"get_path":true,"get_quota":true,"initiate_file_download":true,"initiate_file_upload":true,"list_grants":true,"list_container":true,"list_file_versions":true,"list_recycle":true,"move":true,"remove_grant":true,"purge_recycle":true,"restore_file_version":true,"restore_recycle_item":true,"stat":true,"update_grant":true,"deny_grant":true}}]`, serverStateEmpty},
+	`POST /apps/sciencemesh/~einstein/api/storage/ListGrants {"path":"/subdir"} GRANT-UPDATED`: {200, `[{"grantee":{"type":1,"Id":{"UserId":{"idp":"some-idp","opaque_id":"some-opaque-id","type":1}}},"permissions":{"add_grant":true,"create_container":true,"delete":true,"get_path":true,"get_quota":true,"initiate_file_download":true,"initiate_file_upload":true,"list_grants":true,"list_container":true,"list_file_versions":true,"list_recycle":true,"move":true,"remove_grant":true,"purge_recycle":true,"restore_file_version":true,"restore_recycle_item":true,"stat":true,"update_grant":true,"deny_grant":true}}]`, serverStateEmpty},
+	`POST /apps/sciencemesh/~einstein/api/storage/ListGrants {"path":"/subdir"} GRANT-REMOVED`: {200, `[]`, serverStateEmpty},
 
 	`POST /apps/sciencemesh/~einstein/api/storage/ListRecycle {"key":"","path":"/"} EMPTY`:   {200, `[]`, serverStateEmpty},
 	`POST /apps/sciencemesh/~einstein/api/storage/ListRecycle {"key":"","path":"/"} RECYCLE`: {200, `[{"opaque":{},"key":"some-deleted-version","ref":{"resource_id":{},"path":"/subdir"},"size":12345,"deletion_time":{"seconds":1234567890}}]`, serverStateRecycle},
@@ -120,18 +122,19 @@ var responses = map[string]Response{
 
 	`POST /apps/sciencemesh/~einstein/api/storage/Move {"oldRef":{"path":"/subdir"},"newRef":{"path":"/new_subdir"}}`: {200, ``, serverStateEmpty},
 
-	`POST /apps/sciencemesh/~einstein/api/storage/RemoveGrant {"path":"/subdir"} GRANT-ADDED`: {200, ``, serverStateGrantUpdated},
+	`POST /apps/sciencemesh/~einstein/api/storage/RemoveGrant {"path":"/subdir"} GRANT-ADDED`: {200, ``, serverStateGrantRemoved},
 
 	`POST /apps/sciencemesh/~einstein/api/storage/RestoreRecycleItem null`:                                                                              {200, ``, serverStateSubdir},
 	`POST /apps/sciencemesh/~einstein/api/storage/RestoreRecycleItem {"key":"some-deleted-version","path":"/","restoreRef":{"path":"/subdirRestored"}}`: {200, ``, serverStateFileRestored},
+	`POST /apps/sciencemesh/~einstein/api/storage/RestoreRecycleItem {"key":"some-deleted-version","path":"/","restoreRef":null}`:                       {200, ``, serverStateFileRestored},
 
 	`POST /apps/sciencemesh/~einstein/api/storage/RestoreRevision {"ref":{"path":"/versionedFile"},"key":"version-12"}`: {200, ``, serverStateFileRestored},
 
 	`POST /apps/sciencemesh/~einstein/api/storage/SetArbitraryMetadata {"ref":{"path":"/subdir"},"md":{"metadata":{"foo":"bar"}}}`: {200, ``, serverStateMetadata},
 
-	`POST /apps/sciencemesh/~einstein/api/storage/UnsetArbitraryMetadata {"path":"/subdir"}`: {200, ``, serverStateSubdir},
+	`POST /apps/sciencemesh/~einstein/api/storage/UnsetArbitraryMetadata {"ref":{"path":"/subdir"},"keys":["foo"]}`: {200, ``, serverStateSubdir},
 
-	`POST /apps/sciencemesh/~einstein/api/storage/UpdateGrant {"path":"/subdir"}`: {200, ``, serverStateGrantUpdated},
+	`POST /apps/sciencemesh/~einstein/api/storage/UpdateGrant {"ref":{"path":"/subdir"},"g":{"grantee":{"type":1,"Id":{"UserId":{"opaque_id":"4c510ada-c86b-4815-8820-42cdf82c3d51"}}},"permissions":{"delete":true,"move":true,"stat":true}}}`: {200, ``, serverStateGrantUpdated},
 
 	`POST /apps/sciencemesh/~tester/api/storage/GetHome `:    {200, `yes we are`, serverStateHome},
 	`POST /apps/sciencemesh/~tester/api/storage/CreateHome `: {201, ``, serverStateEmpty},

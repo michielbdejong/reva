@@ -261,12 +261,12 @@ func (nc *StorageDriver) Delete(ctx context.Context, ref *provider.Reference) er
 // Move as defined in the storage.FS interface
 func (nc *StorageDriver) Move(ctx context.Context, oldRef, newRef *provider.Reference) error {
 	type paramsObj struct {
-		OldRef provider.Reference `json:"oldRef"`
-		NewRef provider.Reference `json:"newRef"`
+		OldRef *provider.Reference `json:"oldRef"`
+		NewRef *provider.Reference `json:"newRef"`
 	}
 	bodyObj := &paramsObj{
-		OldRef: *oldRef,
-		NewRef: *newRef,
+		OldRef: oldRef,
+		NewRef: newRef,
 	}
 	bodyStr, _ := json.Marshal(bodyObj)
 	log := appctx.GetLogger(ctx)
@@ -279,12 +279,12 @@ func (nc *StorageDriver) Move(ctx context.Context, oldRef, newRef *provider.Refe
 // GetMD as defined in the storage.FS interface
 func (nc *StorageDriver) GetMD(ctx context.Context, ref *provider.Reference, mdKeys []string) (*provider.ResourceInfo, error) {
 	type paramsObj struct {
-		Ref    provider.Reference `json:"ref"`
-		MdKeys []string           `json:"mdKeys"`
+		Ref    *provider.Reference `json:"ref"`
+		MdKeys []string            `json:"mdKeys"`
 		// MetaData provider.ResourceInfo `json:"metaData"`
 	}
 	bodyObj := &paramsObj{
-		Ref:    *ref,
+		Ref:    ref,
 		MdKeys: mdKeys,
 	}
 	bodyStr, _ := json.Marshal(bodyObj)
@@ -309,11 +309,11 @@ func (nc *StorageDriver) GetMD(ctx context.Context, ref *provider.Reference, mdK
 // ListFolder as defined in the storage.FS interface
 func (nc *StorageDriver) ListFolder(ctx context.Context, ref *provider.Reference, mdKeys []string) ([]*provider.ResourceInfo, error) {
 	type paramsObj struct {
-		Ref    provider.Reference `json:"ref"`
-		MdKeys []string           `json:"mdKeys"`
+		Ref    *provider.Reference `json:"ref"`
+		MdKeys []string            `json:"mdKeys"`
 	}
 	bodyObj := &paramsObj{
-		Ref:    *ref,
+		Ref:    ref,
 		MdKeys: mdKeys,
 	}
 	bodyStr, err := json.Marshal(bodyObj)
@@ -331,26 +331,29 @@ func (nc *StorageDriver) ListFolder(ctx context.Context, ref *provider.Reference
 	}
 
 	var respMapArr []provider.ResourceInfo
+	fmt.Println("respMapArr xi")
 	err = json.Unmarshal(body, &respMapArr)
 	if err != nil {
 		return nil, err
 	}
 	var pointers = make([]*provider.ResourceInfo, len(respMapArr))
+	fmt.Println("looping xi")
 	for i := 0; i < len(respMapArr); i++ {
 		pointers[i] = &respMapArr[i]
 	}
+	fmt.Println("returning xi")
 	return pointers, err
 }
 
 // InitiateUpload as defined in the storage.FS interface
 func (nc *StorageDriver) InitiateUpload(ctx context.Context, ref *provider.Reference, uploadLength int64, metadata map[string]string) (map[string]string, error) {
 	type paramsObj struct {
-		Ref          provider.Reference `json:"ref"`
-		UploadLength int64              `json:"uploadLength"`
-		Metadata     map[string]string  `json:"metadata"`
+		Ref          *provider.Reference `json:"ref"`
+		UploadLength int64               `json:"uploadLength"`
+		Metadata     map[string]string   `json:"metadata"`
 	}
 	bodyObj := &paramsObj{
-		Ref:          *ref,
+		Ref:          ref,
 		UploadLength: uploadLength,
 		Metadata:     metadata,
 	}
@@ -416,11 +419,11 @@ func (nc *StorageDriver) DownloadRevision(ctx context.Context, ref *provider.Ref
 // RestoreRevision as defined in the storage.FS interface
 func (nc *StorageDriver) RestoreRevision(ctx context.Context, ref *provider.Reference, key string) error {
 	type paramsObj struct {
-		Ref provider.Reference `json:"ref"`
-		Key string             `json:"key"`
+		Ref *provider.Reference `json:"ref"`
+		Key string              `json:"key"`
 	}
 	bodyObj := &paramsObj{
-		Ref: *ref,
+		Ref: ref,
 		Key: key,
 	}
 	bodyStr, _ := json.Marshal(bodyObj)
@@ -464,22 +467,28 @@ func (nc *StorageDriver) ListRecycle(ctx context.Context, key string, path strin
 
 // RestoreRecycleItem as defined in the storage.FS interface
 func (nc *StorageDriver) RestoreRecycleItem(ctx context.Context, key string, path string, restoreRef *provider.Reference) error {
+	fmt.Printf("RestoreRecycleItem! %s %s\n\n", key, path)
 	type paramsObj struct {
-		Key        string             `json:"key"`
-		Path       string             `json:"path"`
-		RestoreRef provider.Reference `json:"restoreRef"`
+		Key        string              `json:"key"`
+		Path       string              `json:"path"`
+		RestoreRef *provider.Reference `json:"restoreRef"`
 	}
+	fmt.Println("RestoreRecycleItem create bodyObj")
 	bodyObj := &paramsObj{
 		Key:        key,
 		Path:       path,
-		RestoreRef: *restoreRef,
+		RestoreRef: restoreRef,
 	}
+	fmt.Println("RestoreRecycleItem created bodyObj")
 	bodyStr, _ := json.Marshal(bodyObj)
+	fmt.Println("RestoreRecycleItem created bodyStr")
 
 	log := appctx.GetLogger(ctx)
 	log.Info().Msgf("RestoreRecycleItem %s", bodyStr)
 
 	_, _, err := nc.do(ctx, Action{"RestoreRecycleItem", string(bodyStr)})
+	fmt.Println("RestoreRecycleItem done!")
+
 	return err
 }
 
@@ -520,12 +529,12 @@ func (nc *StorageDriver) GetPathByID(ctx context.Context, id *provider.ResourceI
 // AddGrant as defined in the storage.FS interface
 func (nc *StorageDriver) AddGrant(ctx context.Context, ref *provider.Reference, g *provider.Grant) error {
 	type paramsObj struct {
-		Ref provider.Reference `json:"ref"`
-		G   provider.Grant     `json:"g"`
+		Ref *provider.Reference `json:"ref"`
+		G   *provider.Grant     `json:"g"`
 	}
 	bodyObj := &paramsObj{
-		Ref: *ref,
-		G:   *g,
+		Ref: ref,
+		G:   g,
 	}
 	bodyStr, _ := json.Marshal(bodyObj)
 	log := appctx.GetLogger(ctx)
@@ -538,12 +547,12 @@ func (nc *StorageDriver) AddGrant(ctx context.Context, ref *provider.Reference, 
 // DenyGrant as defined in the storage.FS interface
 func (nc *StorageDriver) DenyGrant(ctx context.Context, ref *provider.Reference, g *provider.Grantee) error {
 	type paramsObj struct {
-		Ref provider.Reference `json:"ref"`
-		G   provider.Grantee   `json:"g"`
+		Ref *provider.Reference `json:"ref"`
+		G   *provider.Grantee   `json:"g"`
 	}
 	bodyObj := &paramsObj{
-		Ref: *ref,
-		G:   *g,
+		Ref: ref,
+		G:   g,
 	}
 	bodyStr, _ := json.Marshal(bodyObj)
 	log := appctx.GetLogger(ctx)
@@ -556,12 +565,12 @@ func (nc *StorageDriver) DenyGrant(ctx context.Context, ref *provider.Reference,
 // RemoveGrant as defined in the storage.FS interface
 func (nc *StorageDriver) RemoveGrant(ctx context.Context, ref *provider.Reference, g *provider.Grant) error {
 	type paramsObj struct {
-		Ref provider.Reference `json:"ref"`
-		G   provider.Grant     `json:"g"`
+		Ref *provider.Reference `json:"ref"`
+		G   *provider.Grant     `json:"g"`
 	}
 	bodyObj := &paramsObj{
-		Ref: *ref,
-		G:   *g,
+		Ref: ref,
+		G:   g,
 	}
 	bodyStr, _ := json.Marshal(bodyObj)
 	log := appctx.GetLogger(ctx)
@@ -574,12 +583,12 @@ func (nc *StorageDriver) RemoveGrant(ctx context.Context, ref *provider.Referenc
 // UpdateGrant as defined in the storage.FS interface
 func (nc *StorageDriver) UpdateGrant(ctx context.Context, ref *provider.Reference, g *provider.Grant) error {
 	type paramsObj struct {
-		Ref provider.Reference `json:"ref"`
-		G   provider.Grant     `json:"g"`
+		Ref *provider.Reference `json:"ref"`
+		G   *provider.Grant     `json:"g"`
 	}
 	bodyObj := &paramsObj{
-		Ref: *ref,
-		G:   *g,
+		Ref: ref,
+		G:   g,
 	}
 	bodyStr, _ := json.Marshal(bodyObj)
 	log := appctx.GetLogger(ctx)
@@ -715,12 +724,12 @@ func (nc *StorageDriver) Shutdown(ctx context.Context) error {
 // SetArbitraryMetadata as defined in the storage.FS interface
 func (nc *StorageDriver) SetArbitraryMetadata(ctx context.Context, ref *provider.Reference, md *provider.ArbitraryMetadata) error {
 	type paramsObj struct {
-		Ref provider.Reference         `json:"ref"`
-		Md  provider.ArbitraryMetadata `json:"md"`
+		Ref *provider.Reference         `json:"ref"`
+		Md  *provider.ArbitraryMetadata `json:"md"`
 	}
 	bodyObj := &paramsObj{
-		Ref: *ref,
-		Md:  *md,
+		Ref: ref,
+		Md:  md,
 	}
 	bodyStr, _ := json.Marshal(bodyObj)
 	log := appctx.GetLogger(ctx)
@@ -733,11 +742,11 @@ func (nc *StorageDriver) SetArbitraryMetadata(ctx context.Context, ref *provider
 // UnsetArbitraryMetadata as defined in the storage.FS interface
 func (nc *StorageDriver) UnsetArbitraryMetadata(ctx context.Context, ref *provider.Reference, keys []string) error {
 	type paramsObj struct {
-		Ref  provider.Reference `json:"ref"`
-		Keys []string           `json:"keys"`
+		Ref  *provider.Reference `json:"ref"`
+		Keys []string            `json:"keys"`
 	}
 	bodyObj := &paramsObj{
-		Ref:  *ref,
+		Ref:  ref,
 		Keys: keys,
 	}
 	bodyStr, _ := json.Marshal(bodyObj)
