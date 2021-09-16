@@ -65,7 +65,7 @@ var responses = map[string]Response{
 	`POST /apps/sciencemesh/~einstein/api/storage/CreateHome `:   {200, ``, serverStateHome},
 	`POST /apps/sciencemesh/~einstein/api/storage/CreateHome {}`: {200, ``, serverStateHome},
 
-	`POST /apps/sciencemesh/~einstein/api/storage/CreateReference {"path":"/Shares/reference"}`: {200, `[]`, serverStateReference},
+	`POST /apps/sciencemesh/~einstein/api/storage/CreateReference {"path":"/Shares/reference","url":"scheme://target"}`: {200, `[]`, serverStateReference},
 
 	`POST /apps/sciencemesh/~einstein/api/storage/Delete {"path":"/subdir"}`: {200, ``, serverStateRecycle},
 
@@ -100,7 +100,7 @@ var responses = map[string]Response{
 
 	`POST /apps/sciencemesh/~einstein/api/storage/GetPathByID {"storage_id":"00000000-0000-0000-0000-000000000000","opaque_id":"fileid-/some/path"} EMPTY`: {200, "/subdir", serverStateEmpty},
 
-	`POST /apps/sciencemesh/~einstein/api/storage/InitiateUpload {"path":"/file"}`: {200, `{"simple": "yes","tus": "yes"}`, serverStateEmpty},
+	`POST /apps/sciencemesh/~einstein/api/storage/InitiateUpload {"ref":{"path":"/file"},"uploadLength":0,"metadata":{}}`: {200, `{"simple": "yes","tus": "yes"}`, serverStateEmpty},
 
 	`POST /apps/sciencemesh/~einstein/api/storage/ListFolder {"ref":{"path":"/"},"mdKeys":null}`: {200, `[{"opaque":{},"type":2,"id":{"opaque_id":"fileid-/some/path"},"checksum":{},"etag":"deadbeef","mime_type":"text/plain","mtime":{"seconds":1234567890},"path":"/subdir","permission_set":{},"size":12345,"canonical_metadata":{},"owner":{"opaque_id":"f7fbf8c8-139b-4376-b307-cf0a8c2d0d9c"},"arbitrary_metadata":{"metadata":{"da":"ta","some":"arbi","trary":"meta"}}}]`, serverStateEmpty},
 
@@ -112,11 +112,11 @@ var responses = map[string]Response{
 	`POST /apps/sciencemesh/~einstein/api/storage/ListGrants {"path":"/subdir"} GRANT-ADDED`:   {200, `[ { "stat": true, "move": true, "delete": false } ]`, serverStateEmpty},
 	`POST /apps/sciencemesh/~einstein/api/storage/ListGrants {"path":"/subdir"} GRANT-UPDATED`: {200, `[ { "stat": true, "move": true, "delete": true } ]`, serverStateEmpty},
 
-	`POST /apps/sciencemesh/~einstein/api/storage/ListRecycle  EMPTY`:   {200, `[]`, serverStateEmpty},
-	`POST /apps/sciencemesh/~einstein/api/storage/ListRecycle  RECYCLE`: {200, `["/subdir"]`, serverStateRecycle},
+	`POST /apps/sciencemesh/~einstein/api/storage/ListRecycle {"key":"","path":"/"} EMPTY`:   {200, `[]`, serverStateEmpty},
+	`POST /apps/sciencemesh/~einstein/api/storage/ListRecycle {"key":"","path":"/"} RECYCLE`: {200, `["/subdir"]`, serverStateRecycle},
 
-	`POST /apps/sciencemesh/~einstein/api/storage/ListRevisions {"path":"/versionedFile"} EMPTY`:         {500, `[1]`, serverStateEmpty},
-	`POST /apps/sciencemesh/~einstein/api/storage/ListRevisions {"path":"/versionedFile"} FILE-RESTORED`: {500, `[1, 2]`, serverStateFileRestored},
+	`POST /apps/sciencemesh/~einstein/api/storage/ListRevisions {"path":"/versionedFile"} EMPTY`:         {200, `[{"opaque":{"map":{"some":{"value":"ZGF0YQ=="}}},"key":"version-12","size":12345,"mtime":1234567890,"etag":"deadb00f"},{"opaque":{"map":{"different":{"value":"c3R1ZmY="}}},"key":"asdf","size":12345,"mtime":1234567890,"etag":"deadbeef"}]`, serverStateEmpty},
+	`POST /apps/sciencemesh/~einstein/api/storage/ListRevisions {"path":"/versionedFile"} FILE-RESTORED`: {200, `[{"opaque":{"map":{"some":{"value":"ZGF0YQ=="}}},"key":"version-12","size":12345,"mtime":1234567890,"etag":"deadb00f"},{"opaque":{"map":{"different":{"value":"c3R1ZmY="}}},"key":"asdf","size":12345,"mtime":1234567890,"etag":"deadbeef"}]`, serverStateFileRestored},
 
 	`POST /apps/sciencemesh/~einstein/api/storage/Move {"oldRef":{"path":"/subdir"},"newRef":{"path":"/new_subdir"}}`: {200, ``, serverStateEmpty},
 
@@ -127,7 +127,7 @@ var responses = map[string]Response{
 
 	`POST /apps/sciencemesh/~einstein/api/storage/RestoreRevision {"path":"/versionedFile"}`: {200, ``, serverStateFileRestored},
 
-	`POST /apps/sciencemesh/~einstein/api/storage/SetArbitraryMetadata {"metadata":{"foo":"bar"}}`: {200, ``, serverStateMetadata},
+	`POST /apps/sciencemesh/~einstein/api/storage/SetArbitraryMetadata {"ref":{"path":"/subdir"},"md":{"metadata":{"foo":"bar"}}}`: {200, ``, serverStateMetadata},
 
 	`POST /apps/sciencemesh/~einstein/api/storage/UnsetArbitraryMetadata {"path":"/subdir"}`: {200, ``, serverStateSubdir},
 
