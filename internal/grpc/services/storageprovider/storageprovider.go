@@ -716,6 +716,7 @@ func (s *service) ListContainer(ctx context.Context, req *provider.ListContainer
 	}
 
 	mds, err := s.storage.ListFolder(ctx, newRef, req.ArbitraryMetadataKeys)
+	fmt.Println("called ListFolder, mds, err")
 	if err != nil {
 		var st *rpc.Status
 		switch err.(type) {
@@ -733,7 +734,10 @@ func (s *service) ListContainer(ctx context.Context, req *provider.ListContainer
 
 	var infos = make([]*provider.ResourceInfo, 0, len(mds))
 	prefixMountpoint := utils.IsAbsoluteReference(req.Ref)
+	fmt.Println("ListContainer before loop")
+
 	for _, md := range mds {
+		fmt.Println("ListContainer in loop")
 		if err := s.wrap(ctx, md, prefixMountpoint); err != nil {
 			return &provider.ListContainerResponse{
 				Status: status.NewInternal(ctx, err, "error wrapping path"),
@@ -741,6 +745,7 @@ func (s *service) ListContainer(ctx context.Context, req *provider.ListContainer
 		}
 		infos = append(infos, md)
 	}
+	fmt.Println("ListContainer after loop")
 	res := &provider.ListContainerResponse{
 		Status: status.NewOK(ctx),
 		Infos:  infos,
