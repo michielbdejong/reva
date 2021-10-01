@@ -728,7 +728,7 @@ var _ = Describe("Nextcloud", func() {
 		})
 	})
 
-	// UpdateReceivedShare(ctx context.Context, ref *collaboration.ShareReference, f *collaboration.UpdateReceivedShareRequest_UpdateField) (*collaboration.ReceivedShare, error)
+	// UpdateReceivedShare(ctx context.Context, receivedShare *collaboration.ReceivedShare, fieldMask *field_mask.FieldMask) (*collaboration.ReceivedShare, error)
 	Describe("UpdateReceivedShare", func() {
 		It("calls the UpdateReceivedShare endpoint", func() {
 			called := make([]string, 0)
