@@ -406,13 +406,13 @@ func (sm *mgr) GetReceivedShare(ctx context.Context, ref *collaboration.ShareRef
 // UpdateReceivedShare updates the received share with share state.
 func (sm *mgr) UpdateReceivedShare(ctx context.Context, receivedShare *collaboration.ReceivedShare, fieldMask *field_mask.FieldMask) (*collaboration.ReceivedShare, error) {
 	type paramsObj struct {
-		Ref       *collaboration.ShareReference `json:"ref"`
-		FieldMask *field_mask.FieldMask         `json:"fieldMask"`
+		ReceivedShare *collaboration.ReceivedShare `json:"received_share"`
+		FieldMask     *field_mask.FieldMask        `json:"field_mask"`
 	}
 
 	bodyObj := &paramsObj{
-		Ref:       &collaboration.ShareReference{Spec: &collaboration.ShareReference_Id{Id: receivedShare.Share.Id}},
-		FieldMask: fieldMask,
+		ReceivedShare: receivedShare,
+		FieldMask:     fieldMask,
 	}
 	bodyStr, err := json.Marshal(bodyObj)
 	if err != nil {
