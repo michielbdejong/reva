@@ -405,29 +405,14 @@ func (sm *mgr) GetReceivedShare(ctx context.Context, ref *collaboration.ShareRef
 
 // UpdateReceivedShare updates the received share with share state.
 func (sm *mgr) UpdateReceivedShare(ctx context.Context, receivedShare *collaboration.ReceivedShare, fieldMask *field_mask.FieldMask) (*collaboration.ReceivedShare, error) {
-	type updateField struct {
-		State collaboration.ShareState `json:"state"`
-		// TODO: Add support for the new mountpoint field
-	}
 	type paramsObj struct {
-		Ref *collaboration.ShareReference `json:"ref"`
-		F   *updateField                  `json:"f"`
-	}
-
-	f := &updateField{}
-	for i := range fieldMask.Paths {
-		switch fieldMask.Paths[i] {
-		case "state":
-			f.State = receivedShare.State
-		// TODO case "mount_point":
-		default:
-			return nil, errtypes.NotSupported("updating " + fieldMask.Paths[i] + " is not supported")
-		}
+		Ref       *collaboration.ShareReference `json:"ref"`
+		FieldMask *field_mask.FieldMask         `json:"fieldMask"`
 	}
 
 	bodyObj := &paramsObj{
-		Ref: &collaboration.ShareReference{Spec: &collaboration.ShareReference_Id{Id: receivedShare.Share.Id}},
-		F:   f,
+		Ref:       &collaboration.ShareReference{Spec: &collaboration.ShareReference_Id{Id: receivedShare.Share.Id}},
+		FieldMask: fieldMask,
 	}
 	bodyStr, err := json.Marshal(bodyObj)
 	if err != nil {
