@@ -312,7 +312,7 @@ var _ = Describe("Nextcloud", func() {
 	})
 
 	// ListFolder(ctx context.Context, ref *provider.Reference, mdKeys []string) ([]*provider.ResourceInfo, error)
-	FDescribe("ListFolder", func() {
+	Describe("ListFolder", func() {
 		It("calls the ListFolder endpoint", func() {
 			nc, called, teardown := setUpNextcloudServer()
 			defer teardown()
