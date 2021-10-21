@@ -47,7 +47,8 @@ type manager struct {
 }
 
 type config struct {
-	GatewayAddr string `mapstructure:"gateway_addr"`
+	GatewayAddr     string `mapstructure:"gateway_addr"`
+	GatewayCertFile string `mapstructure:"gateway_certfile"`
 }
 
 func parseConfig(m map[string]interface{}) (*config, error) {
@@ -79,7 +80,7 @@ func (m *manager) Configure(ml map[string]interface{}) error {
 }
 
 func (m *manager) Authenticate(ctx context.Context, token, secret string) (*user.User, map[string]*authpb.Scope, error) {
-	gwConn, err := pool.GetGatewayServiceClient(m.c.GatewayAddr)
+	gwConn, err := pool.GetGatewayServiceClient(m.c.GatewayAddr, m.c.GatewayCertFile)
 	if err != nil {
 		return nil, nil, err
 	}

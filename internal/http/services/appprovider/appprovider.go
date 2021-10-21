@@ -59,8 +59,9 @@ func init() {
 
 // Config holds the config options that need to be passed down to all ocdav handlers
 type Config struct {
-	Prefix     string `mapstructure:"prefix"`
-	GatewaySvc string `mapstructure:"gatewaysvc"`
+	Prefix          string `mapstructure:"prefix"`
+	GatewaySvc      string `mapstructure:"gatewaysvc"`
+	GatewayCertFile string `mapstructure:"gatewaycertfile"`
 }
 
 func (c *Config) init() {
@@ -68,6 +69,7 @@ func (c *Config) init() {
 		c.Prefix = "app"
 	}
 	c.GatewaySvc = sharedconf.GetGatewaySVC(c.GatewaySvc)
+	c.GatewayCertFile = sharedconf.GetGatewayCertFile(c.GatewayCertFile)
 }
 
 type svc struct {
@@ -133,7 +135,7 @@ func (s *svc) Handler() http.Handler {
 func (s *svc) handleNew(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	client, err := pool.GetGatewayServiceClient(s.conf.GatewaySvc)
+	client, err := pool.GetGatewayServiceClient(s.conf.GatewaySvc, s.conf.GatewayCertFile)
 	if err != nil {
 		ocmd.WriteError(w, r, ocmd.APIErrorServerError, "error getting grpc gateway client", err)
 		return
@@ -228,7 +230,7 @@ func (s *svc) handleNew(w http.ResponseWriter, r *http.Request) {
 
 func (s *svc) handleList(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	client, err := pool.GetGatewayServiceClient(s.conf.GatewaySvc)
+	client, err := pool.GetGatewayServiceClient(s.conf.GatewaySvc, s.conf.GatewayCertFile)
 	if err != nil {
 		ocmd.WriteError(w, r, ocmd.APIErrorServerError, "error getting grpc gateway client", err)
 		return
@@ -262,7 +264,7 @@ func (s *svc) handleList(w http.ResponseWriter, r *http.Request) {
 func (s *svc) handleOpen(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	client, err := pool.GetGatewayServiceClient(s.conf.GatewaySvc)
+	client, err := pool.GetGatewayServiceClient(s.conf.GatewaySvc, s.conf.GatewayCertFile)
 	if err != nil {
 		ocmd.WriteError(w, r, ocmd.APIErrorServerError, "error getting grpc gateway client", err)
 		return

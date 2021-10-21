@@ -37,7 +37,8 @@ import (
 
 // Handler renders user data for the user id given in the url path
 type Handler struct {
-	gatewayAddr string
+	gatewayAddr     string
+	gatewayCertFile string
 }
 
 // Init initializes this and any contained handlers
@@ -95,7 +96,7 @@ func (h *Handler) GetUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	gc, err := pool.GetGatewayServiceClient(h.gatewayAddr)
+	gc, err := pool.GetGatewayServiceClient(h.gatewayAddr, h.gatewayCertFile)
 	if err != nil {
 		sublog.Error().Err(err).Msg("error getting gateway client")
 		w.WriteHeader(http.StatusInternalServerError)

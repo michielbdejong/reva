@@ -40,12 +40,14 @@ type Config struct {
 	Prefix           string                      `mapstructure:"prefix"`
 	Host             string                      `mapstructure:"host"`
 	GatewaySvc       string                      `mapstructure:"gatewaysvc"`
+	GatewayCertFile  string                      `mapstructure:"gatewaycertfile"`
 	MeshDirectoryURL string                      `mapstructure:"mesh_directory_url"`
 	Config           configData                  `mapstructure:"config"`
 }
 
 func (c *Config) init() {
 	c.GatewaySvc = sharedconf.GetGatewaySVC(c.GatewaySvc)
+	c.GatewayCertFile = sharedconf.GetGatewaySVC(c.GatewayCertFile)
 
 	// if c.Prefix == "" {
 	// 	c.Prefix = "ocm"

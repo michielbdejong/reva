@@ -29,6 +29,7 @@ type Config struct {
 	Config                  data.ConfigData                   `mapstructure:"config"`
 	Capabilities            data.CapabilitiesData             `mapstructure:"capabilities"`
 	GatewaySvc              string                            `mapstructure:"gatewaysvc"`
+	GatewayCertFile         string                            `mapstructure:"gatewaycertfile"`
 	DefaultUploadProtocol   string                            `mapstructure:"default_upload_protocol"`
 	UserAgentChunkingMap    map[string]string                 `mapstructure:"user_agent_chunking_map"`
 	SharePrefix             string                            `mapstructure:"share_prefix"`
@@ -67,4 +68,5 @@ func (c *Config) Init() {
 	}
 
 	c.GatewaySvc = sharedconf.GetGatewaySVC(c.GatewaySvc)
+	c.GatewayCertFile = sharedconf.GetGatewayCertFile(c.GatewayCertFile)
 }

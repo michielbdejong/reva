@@ -52,13 +52,14 @@ func init() {
 }
 
 type config struct {
-	GatewayAddr    string `mapstructure:"gateway_addr"`
-	StorageMountID string `mapstructure:"storage_mount_id"`
-	DbUsername     string `mapstructure:"db_username"`
-	DbPassword     string `mapstructure:"db_password"`
-	DbHost         string `mapstructure:"db_host"`
-	DbPort         int    `mapstructure:"db_port"`
-	DbName         string `mapstructure:"db_name"`
+	GatewayAddr     string `mapstructure:"gateway_addr"`
+	GatewayCertFile string `mapstructure:"gateway_certfile"`
+	StorageMountID  string `mapstructure:"storage_mount_id"`
+	DbUsername      string `mapstructure:"db_username"`
+	DbPassword      string `mapstructure:"db_password"`
+	DbHost          string `mapstructure:"db_host"`
+	DbPort          int    `mapstructure:"db_port"`
+	DbName          string `mapstructure:"db_name"`
 }
 
 type mgr struct {
@@ -81,7 +82,7 @@ func NewMysql(m map[string]interface{}) (share.Manager, error) {
 		return nil, err
 	}
 
-	userConverter := NewGatewayUserConverter(c.GatewayAddr)
+	userConverter := NewGatewayUserConverter(c.GatewayAddr, c.GatewayCertFile)
 
 	return New("mysql", db, c.StorageMountID, userConverter)
 }

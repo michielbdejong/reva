@@ -49,11 +49,12 @@ type service struct {
 }
 
 type config struct {
-	Driver         string                            `mapstructure:"driver"`
-	Drivers        map[string]map[string]interface{} `mapstructure:"drivers"`
-	AppProviderURL string                            `mapstructure:"app_provider_url"`
-	GatewaySvc     string                            `mapstructure:"gatewaysvc"`
-	MimeTypes      []string                          `mapstructure:"mime_types"` // define the mimetypes supported by the AppProvider
+	Driver          string                            `mapstructure:"driver"`
+	Drivers         map[string]map[string]interface{} `mapstructure:"drivers"`
+	AppProviderURL  string                            `mapstructure:"app_provider_url"`
+	GatewaySvc      string                            `mapstructure:"gatewaysvc"`
+	GatewayCertFile string                            `mapstructure:"gatewaycertfile"`
+	MimeTypes       []string                          `mapstructure:"mime_types"` // define the mimetypes supported by the AppProvider
 }
 
 func (c *config) init() {
@@ -62,6 +63,7 @@ func (c *config) init() {
 	}
 	c.AppProviderURL = sharedconf.GetGatewaySVC(c.AppProviderURL)
 	c.GatewaySvc = sharedconf.GetGatewaySVC(c.GatewaySvc)
+	c.GatewayCertFile = sharedconf.GetGatewayCertFile(c.GatewayCertFile)
 }
 
 func parseConfig(m map[string]interface{}) (*config, error) {
@@ -113,7 +115,7 @@ func (s *service) registerProvider() {
 		log.Debug().Msg("app provider: overridden mimetype")
 	}
 
-	client, err := pool.GetGatewayServiceClient(s.conf.GatewaySvc)
+	client, err := pool.GetGatewayServiceClient(s.conf.GatewaySvc, s.conf.GatewayCertFile)
 	if err != nil {
 		log.Error().Err(err).Msgf("error registering app provider: could not get gateway client")
 		return

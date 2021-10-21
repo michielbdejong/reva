@@ -39,11 +39,13 @@ import (
 type invitesHandler struct {
 	smtpCredentials  *smtpclient.SMTPCredentials
 	gatewayAddr      string
+	gatewayCertFile  string
 	meshDirectoryURL string
 }
 
 func (h *invitesHandler) init(c *Config) {
 	h.gatewayAddr = c.GatewaySvc
+	h.gatewayCertFile = c.GatewayCertFile
 	if c.SMTPCredentials != nil {
 		h.smtpCredentials = smtpclient.NewSMTPCredentials(c.SMTPCredentials)
 	}
@@ -74,7 +76,7 @@ func (h *invitesHandler) generateInviteToken(w http.ResponseWriter, r *http.Requ
 
 	ctx := r.Context()
 
-	gatewayClient, err := pool.GetGatewayServiceClient(h.gatewayAddr)
+	gatewayClient, err := pool.GetGatewayServiceClient(h.gatewayAddr, h.gatewayCertFile)
 	if err != nil {
 		WriteError(w, r, APIErrorServerError, "error getting gateway grpc client", err)
 		return
@@ -134,7 +136,7 @@ func (h *invitesHandler) forwardInvite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	gatewayClient, err := pool.GetGatewayServiceClient(h.gatewayAddr)
+	gatewayClient, err := pool.GetGatewayServiceClient(h.gatewayAddr, h.gatewayCertFile)
 	if err != nil {
 		WriteError(w, r, APIErrorServerError, "error getting gateway grpc client", err)
 		return
@@ -191,7 +193,7 @@ func (h *invitesHandler) acceptInvite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	gatewayClient, err := pool.GetGatewayServiceClient(h.gatewayAddr)
+	gatewayClient, err := pool.GetGatewayServiceClient(h.gatewayAddr, h.gatewayCertFile)
 	if err != nil {
 		WriteError(w, r, APIErrorServerError, "error getting gateway grpc client", err)
 		return

@@ -35,7 +35,7 @@ import (
 	"github.com/cs3org/reva/pkg/utils"
 )
 
-func expandAndVerifyScope(ctx context.Context, req interface{}, tokenScope map[string]*authpb.Scope, gatewayAddr string) error {
+func expandAndVerifyScope(ctx context.Context, req interface{}, tokenScope map[string]*authpb.Scope, gatewayAddr string, gatewayCertFile string) error {
 	log := appctx.GetLogger(ctx)
 
 	if ref, ok := extractRef(req); ok {
@@ -53,7 +53,7 @@ func expandAndVerifyScope(ctx context.Context, req interface{}, tokenScope map[s
 					if err != nil {
 						continue
 					}
-					if ok, err := checkResourcePath(ctx, ref, share.ResourceId, gatewayAddr); err == nil && ok {
+					if ok, err := checkResourcePath(ctx, ref, share.ResourceId, gatewayAddr, gatewayCertFile); err == nil && ok {
 						return nil
 					}
 
@@ -63,11 +63,11 @@ func expandAndVerifyScope(ctx context.Context, req interface{}, tokenScope map[s
 					if err != nil {
 						continue
 					}
-					if ok, err := checkResourcePath(ctx, ref, share.ResourceId, gatewayAddr); err == nil && ok {
+					if ok, err := checkResourcePath(ctx, ref, share.ResourceId, gatewayAddr, gatewayCertFile); err == nil && ok {
 						return nil
 					}
 				case strings.HasPrefix(k, "lightweight"):
-					client, err := pool.GetGatewayServiceClient(gatewayAddr)
+					client, err := pool.GetGatewayServiceClient(gatewayAddr, gatewayCertFile)
 					if err != nil {
 						continue
 					}
@@ -77,7 +77,7 @@ func expandAndVerifyScope(ctx context.Context, req interface{}, tokenScope map[s
 						continue
 					}
 					for _, share := range shares.Shares {
-						if ok, err := checkResourcePath(ctx, ref, share.Share.ResourceId, gatewayAddr); err == nil && ok {
+						if ok, err := checkResourcePath(ctx, ref, share.Share.ResourceId, gatewayAddr, gatewayCertFile); err == nil && ok {
 							return nil
 						}
 					}
@@ -88,7 +88,7 @@ func expandAndVerifyScope(ctx context.Context, req interface{}, tokenScope map[s
 			// The request might be coming from a share created for a lightweight account
 			// after the token was minted.
 			log.Info().Msgf("resolving ID reference against received shares to verify token scope %+v", ref.GetResourceId())
-			client, err := pool.GetGatewayServiceClient(gatewayAddr)
+			client, err := pool.GetGatewayServiceClient(gatewayAddr, gatewayCertFile)
 			if err != nil {
 				return err
 			}
@@ -113,7 +113,7 @@ func expandAndVerifyScope(ctx context.Context, req interface{}, tokenScope map[s
 		// The request might be coming from a share created for a lightweight account
 		// after the token was minted.
 		log.Info().Msgf("resolving share reference against received shares to verify token scope %+v", ref)
-		client, err := pool.GetGatewayServiceClient(gatewayAddr)
+		client, err := pool.GetGatewayServiceClient(gatewayAddr, gatewayCertFile)
 		if err != nil {
 			return err
 		}
@@ -140,8 +140,8 @@ func expandAndVerifyScope(ctx context.Context, req interface{}, tokenScope map[s
 	return errtypes.PermissionDenied("access to resource not allowed within the assigned scope")
 }
 
-func checkResourcePath(ctx context.Context, ref *provider.Reference, r *provider.ResourceId, gatewayAddr string) (bool, error) {
-	client, err := pool.GetGatewayServiceClient(gatewayAddr)
+func checkResourcePath(ctx context.Context, ref *provider.Reference, r *provider.ResourceId, gatewayAddr string, gatewayCertFile string) (bool, error) {
+	client, err := pool.GetGatewayServiceClient(gatewayAddr, gatewayCertFile)
 	if err != nil {
 		return false, err
 	}

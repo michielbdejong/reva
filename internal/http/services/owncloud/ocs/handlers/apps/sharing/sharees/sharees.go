@@ -35,12 +35,14 @@ import (
 // Handler implements the ownCloud sharing API
 type Handler struct {
 	gatewayAddr             string
+	gatewayCertFile         string
 	additionalInfoAttribute string
 }
 
 // Init initializes this and any contained handlers
 func (h *Handler) Init(c *config.Config) {
 	h.gatewayAddr = c.GatewaySvc
+	h.gatewayCertFile = c.GatewayCertFile
 	h.additionalInfoAttribute = c.AdditionalInfoAttribute
 }
 
@@ -54,7 +56,7 @@ func (h *Handler) FindSharees(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	gwc, err := pool.GetGatewayServiceClient(h.gatewayAddr)
+	gwc, err := pool.GetGatewayServiceClient(h.gatewayAddr, h.gatewayCertFile)
 	if err != nil {
 		response.WriteOCSError(w, r, response.MetaServerError.StatusCode, "error getting gateway grpc client", err)
 		return

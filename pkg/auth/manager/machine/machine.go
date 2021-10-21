@@ -38,8 +38,9 @@ import (
 // in a config file.
 
 type manager struct {
-	APIKey      string `mapstructure:"api_key"`
-	GatewayAddr string `mapstructure:"gateway_addr"`
+	APIKey          string `mapstructure:"api_key"`
+	GatewayAddr     string `mapstructure:"gateway_addr"`
+	GatewayCertFile string `mapstructure:"gateway_certfile"`
 }
 
 func init() {
@@ -71,7 +72,7 @@ func (m *manager) Authenticate(ctx context.Context, username, secret string) (*u
 		return nil, nil, errtypes.InvalidCredentials("")
 	}
 
-	gtw, err := pool.GetGatewayServiceClient(m.GatewayAddr)
+	gtw, err := pool.GetGatewayServiceClient(m.GatewayAddr, m.GatewayCertFile)
 	if err != nil {
 		return nil, nil, err
 	}

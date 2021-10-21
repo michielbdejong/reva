@@ -62,19 +62,21 @@ type UserConverter interface {
 
 // GatewayUserConverter converts usernames and ids using the gateway
 type GatewayUserConverter struct {
-	gwAddr string
+	gwAddr     string
+	gwCertFile string
 }
 
 // NewGatewayUserConverter returns a instance of GatewayUserConverter
-func NewGatewayUserConverter(gwAddr string) *GatewayUserConverter {
+func NewGatewayUserConverter(gwAddr string, gwCertFile string) *GatewayUserConverter {
 	return &GatewayUserConverter{
-		gwAddr: gwAddr,
+		gwAddr:     gwAddr,
+		gwCertFile: gwCertFile,
 	}
 }
 
 // UserIDToUserName converts a user ID to an username
 func (c *GatewayUserConverter) UserIDToUserName(ctx context.Context, userid *userpb.UserId) (string, error) {
-	gwConn, err := pool.GetGatewayServiceClient(c.gwAddr)
+	gwConn, err := pool.GetGatewayServiceClient(c.gwAddr, c.gwCertFile)
 	if err != nil {
 		return "", err
 	}
@@ -92,7 +94,7 @@ func (c *GatewayUserConverter) UserIDToUserName(ctx context.Context, userid *use
 
 // UserNameToUserID converts a username to an user ID
 func (c *GatewayUserConverter) UserNameToUserID(ctx context.Context, username string) (*userpb.UserId, error) {
-	gwConn, err := pool.GetGatewayServiceClient(c.gwAddr)
+	gwConn, err := pool.GetGatewayServiceClient(c.gwAddr, c.gwCertFile)
 	if err != nil {
 		return nil, err
 	}

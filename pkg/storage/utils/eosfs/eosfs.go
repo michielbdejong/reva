@@ -132,6 +132,7 @@ func (c *Config) init() {
 	}
 
 	c.GatewaySvc = sharedconf.GetGatewaySVC(c.GatewaySvc)
+	c.GatewayCertFile = sharedconf.GetGatewayCertFile(c.GatewayCertFile)
 }
 
 type eosfs struct {
@@ -1739,7 +1740,7 @@ func (fs *eosfs) extractUIDAndGID(u *userpb.User) (eosclient.Authorization, erro
 }
 
 func (fs *eosfs) getUIDGateway(ctx context.Context, u *userpb.UserId) (eosclient.Authorization, error) {
-	client, err := pool.GetGatewayServiceClient(fs.conf.GatewaySvc)
+	client, err := pool.GetGatewayServiceClient(fs.conf.GatewaySvc, fs.conf.GatewayCertFile)
 	if err != nil {
 		return eosclient.Authorization{}, errors.Wrap(err, "eosfs: error getting gateway grpc client")
 	}
@@ -1768,7 +1769,7 @@ func (fs *eosfs) getUserIDGateway(ctx context.Context, uid string) (*userpb.User
 	}
 
 	log.Debug().Msg("eosfs: retrieving user from gateway for uid " + uid)
-	client, err := pool.GetGatewayServiceClient(fs.conf.GatewaySvc)
+	client, err := pool.GetGatewayServiceClient(fs.conf.GatewaySvc, fs.conf.GatewayCertFile)
 	if err != nil {
 		return nil, errors.Wrap(err, "eosfs: error getting gateway grpc client")
 	}

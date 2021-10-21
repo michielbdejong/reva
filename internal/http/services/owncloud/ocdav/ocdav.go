@@ -100,6 +100,7 @@ type Config struct {
 	// /users/<first char of username>/<username>/docs
 	WebdavNamespace string `mapstructure:"webdav_namespace"`
 	GatewaySvc      string `mapstructure:"gatewaysvc"`
+	GatewayCertFile string `mapstructure:"gatewaycertfile"`
 	Timeout         int64  `mapstructure:"timeout"`
 	Insecure        bool   `mapstructure:"insecure"`
 	PublicURL       string `mapstructure:"public_url"`
@@ -108,6 +109,7 @@ type Config struct {
 func (c *Config) init() {
 	// note: default c.Prefix is an empty string
 	c.GatewaySvc = sharedconf.GetGatewaySVC(c.GatewaySvc)
+	c.GatewayCertFile = sharedconf.GetGatewaySVC(c.GatewayCertFile)
 }
 
 type svc struct {
@@ -232,7 +234,7 @@ func (s *svc) Handler() http.Handler {
 }
 
 func (s *svc) getClient() (gateway.GatewayAPIClient, error) {
-	return pool.GetGatewayServiceClient(s.c.GatewaySvc)
+	return pool.GetGatewayServiceClient(s.c.GatewaySvc, s.c.GatewayCertFile)
 }
 
 func applyLayout(ctx context.Context, ns string, useLoggedInUserNS bool, requestPath string) string {

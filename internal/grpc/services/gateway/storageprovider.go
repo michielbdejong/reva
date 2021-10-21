@@ -2164,7 +2164,7 @@ func (s *svc) find(ctx context.Context, ref *provider.Reference) (provider.Provi
 }
 
 func (s *svc) getStorageProviderClient(_ context.Context, p *registry.ProviderInfo) (provider.ProviderAPIClient, error) {
-	c, err := pool.GetStorageProviderServiceClient(p.Address)
+	c, err := pool.GetStorageProviderServiceClient(p.Address, p.GetOpaque().String())
 	if err != nil {
 		err = errors.Wrap(err, "gateway: error getting a storage provider client")
 		return nil, err

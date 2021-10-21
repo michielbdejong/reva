@@ -48,7 +48,7 @@ func (h *Handler) updateReceivedShare(w http.ResponseWriter, r *http.Request, sh
 	ctx := r.Context()
 	logger := appctx.GetLogger(ctx)
 
-	client, err := pool.GetGatewayServiceClient(h.gatewayAddr)
+	client, err := pool.GetGatewayServiceClient(h.gatewayAddr, h.gatewayCertFile)
 	if err != nil {
 		response.WriteOCSError(w, r, response.MetaServerError.StatusCode, "error getting grpc gateway client", err)
 		return

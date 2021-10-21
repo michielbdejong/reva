@@ -48,8 +48,9 @@ import (
 var userGroupsCache gcache.Cache
 
 type config struct {
-	Priority   int    `mapstructure:"priority"`
-	GatewaySvc string `mapstructure:"gatewaysvc"`
+	Priority        int    `mapstructure:"priority"`
+	GatewaySvc      string `mapstructure:"gatewaysvc"`
+	GatewayCertFile string `mapstructure:"gatewaycertfile"`
 	// TODO(jdf): Realm is optional, will be filled with request host if not given?
 	Realm                  string                            `mapstructure:"realm"`
 	CredentialsByUserAgent map[string]string                 `mapstructure:"credentials_by_user_agent"`
@@ -80,6 +81,7 @@ func New(m map[string]interface{}, unprotected []string) (global.Middleware, err
 	}
 
 	conf.GatewaySvc = sharedconf.GetGatewaySVC(conf.GatewaySvc)
+	conf.GatewayCertFile = sharedconf.GetGatewayCertFile(conf.GatewayCertFile)
 
 	// set defaults
 	if conf.TokenStrategy == "" {
@@ -161,7 +163,7 @@ func New(m map[string]interface{}, unprotected []string) (global.Middleware, err
 
 			log := appctx.GetLogger(ctx)
 
-			client, err := pool.GetGatewayServiceClient(conf.GatewaySvc)
+			client, err := pool.GetGatewayServiceClient(conf.GatewaySvc, conf.GatewayCertFile)
 			if err != nil {
 				log.Error().Err(err).Msg("error getting the authsvc client")
 				w.WriteHeader(http.StatusUnauthorized)

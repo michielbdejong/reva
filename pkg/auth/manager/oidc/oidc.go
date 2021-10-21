@@ -51,12 +51,13 @@ type mgr struct {
 }
 
 type config struct {
-	Insecure   bool   `mapstructure:"insecure" docs:"false;Whether to skip certificate checks when sending requests."`
-	Issuer     string `mapstructure:"issuer" docs:";The issuer of the OIDC token."`
-	IDClaim    string `mapstructure:"id_claim" docs:"sub;The claim containing the ID of the user."`
-	UIDClaim   string `mapstructure:"uid_claim" docs:";The claim containing the UID of the user."`
-	GIDClaim   string `mapstructure:"gid_claim" docs:";The claim containing the GID of the user."`
-	GatewaySvc string `mapstructure:"gatewaysvc" docs:";The endpoint at which the GRPC gateway is exposed."`
+	Insecure        bool   `mapstructure:"insecure" docs:"false;Whether to skip certificate checks when sending requests."`
+	Issuer          string `mapstructure:"issuer" docs:";The issuer of the OIDC token."`
+	IDClaim         string `mapstructure:"id_claim" docs:"sub;The claim containing the ID of the user."`
+	UIDClaim        string `mapstructure:"uid_claim" docs:";The claim containing the UID of the user."`
+	GIDClaim        string `mapstructure:"gid_claim" docs:";The claim containing the GID of the user."`
+	GatewaySvc      string `mapstructure:"gatewaysvc" docs:";The endpoint at which the GRPC gateway is exposed."`
+	GatewayCertFile string `mapstructure:"gatewaycertfile" docs:";The public certfile (if any) with which the GRPC gateway is encrypted."`
 }
 
 func (c *config) init() {
@@ -66,6 +67,7 @@ func (c *config) init() {
 	}
 
 	c.GatewaySvc = sharedconf.GetGatewaySVC(c.GatewaySvc)
+	c.GatewayCertFile = sharedconf.GetGatewayCertFile(c.GatewayCertFile)
 }
 
 func parseConfig(m map[string]interface{}) (*config, error) {
@@ -152,7 +154,7 @@ func (am *mgr) Authenticate(ctx context.Context, clientID, clientSecret string) 
 		Idp:      claims["issuer"].(string),     // in the scope of this issuer
 		Type:     user.UserType_USER_TYPE_PRIMARY,
 	}
-	gwc, err := pool.GetGatewayServiceClient(am.c.GatewaySvc)
+	gwc, err := pool.GetGatewayServiceClient(am.c.GatewaySvc, am.c.GatewayCertFile)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "oidc: error getting gateway grpc client")
 	}

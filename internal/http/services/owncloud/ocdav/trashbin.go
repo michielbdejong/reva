@@ -185,7 +185,7 @@ func (h *TrashbinHandler) listTrashbin(w http.ResponseWriter, r *http.Request, s
 		return
 	}
 
-	gc, err := pool.GetGatewayServiceClient(s.c.GatewaySvc)
+	gc, err := pool.GetGatewayServiceClient(s.c.GatewaySvc, s.c.GatewayCertFile)
 	if err != nil {
 		// TODO(jfd) how do we make the user aware that some storages are not available?
 		// opaque response property? Or a list of errors?

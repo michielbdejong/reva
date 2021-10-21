@@ -42,6 +42,7 @@ import (
 	rtrace "github.com/cs3org/reva/pkg/trace"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 type provider struct {
@@ -85,8 +86,8 @@ var (
 // TODO(labkode): make grpc tls configurable.
 // TODO make maxCallRecvMsgSize configurable, raised from the default 4MB to be able to list 10k files
 func NewConn(endpoint string, certfile string) (*grpc.ClientConn, error) {
-	var dialOption DialOption
-	if certfile {
+	var dialOption grpc.DialOption
+	if certfile != "" {
 		creds, _ := credentials.NewClientTLSFromFile(certfile, "")
 		dialOption = grpc.WithTransportCredentials(creds)
 	} else {

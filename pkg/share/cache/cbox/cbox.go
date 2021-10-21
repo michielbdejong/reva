@@ -42,13 +42,14 @@ func init() {
 }
 
 type config struct {
-	DbUsername   string `mapstructure:"db_username"`
-	DbPassword   string `mapstructure:"db_password"`
-	DbHost       string `mapstructure:"db_host"`
-	DbPort       int    `mapstructure:"db_port"`
-	DbName       string `mapstructure:"db_name"`
-	EOSNamespace string `mapstructure:"namespace"`
-	GatewaySvc   string `mapstructure:"gatewaysvc"`
+	DbUsername      string `mapstructure:"db_username"`
+	DbPassword      string `mapstructure:"db_password"`
+	DbHost          string `mapstructure:"db_host"`
+	DbPort          int    `mapstructure:"db_port"`
+	DbName          string `mapstructure:"db_name"`
+	EOSNamespace    string `mapstructure:"namespace"`
+	GatewaySvc      string `mapstructure:"gatewaysvc"`
+	GatewayCertFile string `mapstructure:"gatewaycertfile"`
 }
 
 type manager struct {

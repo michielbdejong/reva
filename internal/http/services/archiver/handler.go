@@ -56,13 +56,14 @@ type svc struct {
 
 // Config holds the config options that need to be passed down to all ocdav handlers
 type Config struct {
-	Prefix      string `mapstructure:"prefix"`
-	GatewaySvc  string `mapstructure:"gatewaysvc"`
-	Timeout     int64  `mapstructure:"timeout"`
-	Insecure    bool   `mapstructure:"insecure"`
-	Name        string `mapstructure:"name"`
-	MaxNumFiles int64  `mapstructure:"max_num_files"`
-	MaxSize     int64  `mapstructure:"max_size"`
+	Prefix          string `mapstructure:"prefix"`
+	GatewaySvc      string `mapstructure:"gatewaysvc"`
+	GatewayCertFile string `mapstructure:"gatewaycertfile"`
+	Timeout         int64  `mapstructure:"timeout"`
+	Insecure        bool   `mapstructure:"insecure"`
+	Name            string `mapstructure:"name"`
+	MaxNumFiles     int64  `mapstructure:"max_num_files"`
+	MaxSize         int64  `mapstructure:"max_size"`
 }
 
 func init() {
@@ -79,7 +80,7 @@ func New(conf map[string]interface{}, log *zerolog.Logger) (global.Service, erro
 
 	c.init()
 
-	gtw, err := pool.GetGatewayServiceClient(c.GatewaySvc)
+	gtw, err := pool.GetGatewayServiceClient(c.GatewaySvc, c.GatewayCertFile)
 	if err != nil {
 		return nil, err
 	}
@@ -103,6 +104,7 @@ func (c *Config) init() {
 	}
 
 	c.GatewaySvc = sharedconf.GetGatewaySVC(c.GatewaySvc)
+	c.GatewayCertFile = sharedconf.GetGatewayCertFile(c.GatewayCertFile)
 }
 
 func (s *svc) getFiles(ctx context.Context, files, ids []string) ([]string, error) {

@@ -104,6 +104,9 @@ type Config struct {
 	// GatewaySvc stores the endpoint at which the GRPC gateway is exposed.
 	GatewaySvc string `mapstructure:"gatewaysvc"`
 
+	// GatewayCertFile filename of the public certificate (if any) of the GRPC gateway.
+	GatewayCertFile string `mapstructure:"gatewaycertfile"`
+
 	// GRPCAuthkey is the key that authorizes this client to connect to the GRPC service
 	// It's unclear whether this will be the final solution
 	GRPCAuthkey string `mapstructure:"grpc_auth_key"`

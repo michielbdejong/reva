@@ -45,9 +45,10 @@ var userGroupsCache gcache.Cache
 type config struct {
 	// TODO(labkode): access a map is more performant as uri as fixed in length
 	// for SkipMethods.
-	TokenManager  string                            `mapstructure:"token_manager"`
-	TokenManagers map[string]map[string]interface{} `mapstructure:"token_managers"`
-	GatewayAddr   string                            `mapstructure:"gateway_addr"`
+	TokenManager    string                            `mapstructure:"token_manager"`
+	TokenManagers   map[string]map[string]interface{} `mapstructure:"token_managers"`
+	GatewayAddr     string                            `mapstructure:"gateway_addr"`
+	GatewayCertFile string                            `mapstructure:"gateway_certfile"`
 }
 
 func parseConfig(m map[string]interface{}) (*config, error) {
@@ -95,7 +96,7 @@ func NewUnary(m map[string]interface{}, unprotected []string) (grpc.UnaryServerI
 			// to decide the storage provider.
 			tkn, ok := ctxpkg.ContextGetToken(ctx)
 			if ok {
-				u, err := dismantleToken(ctx, tkn, req, tokenManager, conf.GatewayAddr, false)
+				u, err := dismantleToken(ctx, tkn, req, tokenManager, conf.GatewayAddr, conf.GatewayCertFile, false)
 				if err == nil {
 					ctx = ctxpkg.ContextSetUser(ctx, u)
 				}
@@ -111,7 +112,7 @@ func NewUnary(m map[string]interface{}, unprotected []string) (grpc.UnaryServerI
 		}
 
 		// validate the token and ensure access to the resource is allowed
-		u, err := dismantleToken(ctx, tkn, req, tokenManager, conf.GatewayAddr, true)
+		u, err := dismantleToken(ctx, tkn, req, tokenManager, conf.GatewayAddr, conf.GatewayCertFile, true)
 		if err != nil {
 			log.Warn().Err(err).Msg("access token is invalid")
 			return nil, status.Errorf(codes.PermissionDenied, "auth: core access token is invalid")
@@ -158,7 +159,7 @@ func NewStream(m map[string]interface{}, unprotected []string) (grpc.StreamServe
 			// to decide the storage provider.
 			tkn, ok := ctxpkg.ContextGetToken(ctx)
 			if ok {
-				u, err := dismantleToken(ctx, tkn, ss, tokenManager, conf.GatewayAddr, false)
+				u, err := dismantleToken(ctx, tkn, ss, tokenManager, conf.GatewayAddr, conf.GatewayCertFile, false)
 				if err == nil {
 					ctx = ctxpkg.ContextSetUser(ctx, u)
 					ss = newWrappedServerStream(ctx, ss)
@@ -176,7 +177,7 @@ func NewStream(m map[string]interface{}, unprotected []string) (grpc.StreamServe
 		}
 
 		// validate the token and ensure access to the resource is allowed
-		u, err := dismantleToken(ctx, tkn, ss, tokenManager, conf.GatewayAddr, true)
+		u, err := dismantleToken(ctx, tkn, ss, tokenManager, conf.GatewayAddr, conf.GatewayCertFile, true)
 		if err != nil {
 			log.Warn().Err(err).Msg("access token is invalid")
 			return status.Errorf(codes.PermissionDenied, "auth: core access token is invalid")
@@ -203,14 +204,14 @@ func (ss *wrappedServerStream) Context() context.Context {
 	return ss.newCtx
 }
 
-func dismantleToken(ctx context.Context, tkn string, req interface{}, mgr token.Manager, gatewayAddr string, fetchUserGroups bool) (*userpb.User, error) {
+func dismantleToken(ctx context.Context, tkn string, req interface{}, mgr token.Manager, gatewayAddr string, gatewayCertFile string, fetchUserGroups bool) (*userpb.User, error) {
 	u, tokenScope, err := mgr.DismantleToken(ctx, tkn)
 	if err != nil {
 		return nil, err
 	}
 
 	if sharedconf.SkipUserGroupsInToken() && fetchUserGroups {
-		groups, err := getUserGroups(ctx, u, gatewayAddr)
+		groups, err := getUserGroups(ctx, u, gatewayAddr, gatewayCertFile)
 		if err != nil {
 			return nil, err
 		}
@@ -226,21 +227,21 @@ func dismantleToken(ctx context.Context, tkn string, req interface{}, mgr token.
 		return u, nil
 	}
 
-	if err = expandAndVerifyScope(ctx, req, tokenScope, gatewayAddr); err != nil {
+	if err = expandAndVerifyScope(ctx, req, tokenScope, gatewayAddr, gatewayCertFile); err != nil {
 		return nil, err
 	}
 
 	return u, nil
 }
 
-func getUserGroups(ctx context.Context, u *userpb.User, gatewayAddr string) ([]string, error) {
+func getUserGroups(ctx context.Context, u *userpb.User, gatewayAddr string, gatewayCertFile string) ([]string, error) {
 	if groupsIf, err := userGroupsCache.Get(u.Id.OpaqueId); err == nil {
 		log := appctx.GetLogger(ctx)
 		log.Info().Msgf("user groups found in cache %s", u.Id.OpaqueId)
 		return groupsIf.([]string), nil
 	}
 
-	client, err := pool.GetGatewayServiceClient(gatewayAddr)
+	client, err := pool.GetGatewayServiceClient(gatewayAddr, gatewayCertFile)
 	if err != nil {
 		return nil, err
 	}

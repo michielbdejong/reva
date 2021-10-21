@@ -44,12 +44,14 @@ func init() {
 }
 
 type config struct {
-	Prefix     string `mapstructure:"prefix"`
-	GatewaySvc string `mapstructure:"gatewaysvc"`
+	Prefix          string `mapstructure:"prefix"`
+	GatewaySvc      string `mapstructure:"gatewaysvc"`
+	GatewayCertFile string `mapstructure:"gatewaycertfile"`
 }
 
 func (c *config) init() {
 	c.GatewaySvc = sharedconf.GetGatewaySVC(c.GatewaySvc)
+	c.GatewayCertFile = sharedconf.GetGatewayCertFile(c.GatewayCertFile)
 
 	if c.Prefix == "" {
 		c.Prefix = "meshdir"
@@ -100,7 +102,7 @@ func (s *svc) Close() error {
 }
 
 func (s *svc) getClient() (gateway.GatewayAPIClient, error) {
-	return pool.GetGatewayServiceClient(s.conf.GatewaySvc)
+	return pool.GetGatewayServiceClient(s.conf.GatewaySvc, s.conf.GatewayCertFile)
 }
 
 func (s *svc) serveJSON(w http.ResponseWriter, r *http.Request) {

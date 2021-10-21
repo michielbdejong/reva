@@ -113,6 +113,7 @@ type config struct {
 	UserLayout               string `mapstructure:"user_layout"`
 	EnableHome               bool   `mapstructure:"enable_home"`
 	UserProviderEndpoint     string `mapstructure:"userprovidersvc"`
+	UserProviderCertFile     string `mapstructure:"userprovidercertfile"`
 	DbUsername               string `mapstructure:"dbusername"`
 	DbPassword               string `mapstructure:"dbpassword"`
 	DbHost                   string `mapstructure:"dbhost"`
@@ -370,7 +371,7 @@ func (fs *owncloudsqlfs) getUser(ctx context.Context, usernameOrID string) (id *
 	// look up at the userprovider
 
 	// parts[0] contains the username or userid. use  user service to look up id
-	c, err := pool.GetUserProviderServiceClient(fs.c.UserProviderEndpoint)
+	c, err := pool.GetUserProviderServiceClient(fs.c.UserProviderEndpoint, fs.c.UserProviderCertFile)
 	if err != nil {
 		appctx.GetLogger(ctx).
 			Error().Err(err).

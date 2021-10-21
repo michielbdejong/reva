@@ -30,6 +30,7 @@ var sharedConf = &conf{}
 type conf struct {
 	JWTSecret             string `mapstructure:"jwt_secret"`
 	GatewaySVC            string `mapstructure:"gatewaysvc"`
+	GatewayCertFile       string `mapstructure:"gatewaycertfile"`
 	DataGateway           string `mapstructure:"datagateway"`
 	SkipUserGroupsInToken bool   `mapstructure:"skip_user_groups_in_token"`
 }
@@ -76,6 +77,14 @@ func GetJWTSecret(val string) string {
 func GetGatewaySVC(val string) string {
 	if val == "" {
 		return sharedConf.GatewaySVC
+	}
+	return val
+}
+
+// GetGatewayCertFile returns the package level configured gateway certfile if not overwritten.
+func GetGatewayCertFile(val string) string {
+	if val == "" {
+		return sharedConf.GatewayCertFile
 	}
 	return val
 }
