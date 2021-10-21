@@ -203,7 +203,7 @@ func (s *svc) WhoAmI(ctx context.Context, req *gateway.WhoAmIRequest) (*gateway.
 }
 
 func (s *svc) findAuthProvider(ctx context.Context, authType string) (provider.ProviderAPIClient, error) {
-	c, err := pool.GetAuthRegistryServiceClient(s.c.AuthRegistryEndpoint)
+	c, err := pool.GetAuthRegistryServiceClient(s.c.AuthRegistryEndpoint, s.c.CertFile)
 	if err != nil {
 		err = errors.Wrap(err, "gateway: error getting auth registry client")
 		return nil, err

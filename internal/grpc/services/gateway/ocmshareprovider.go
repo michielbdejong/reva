@@ -35,7 +35,7 @@ import (
 
 // TODO(labkode): add multi-phase commit logic when commit share or commit ref is enabled.
 func (s *svc) CreateOCMShare(ctx context.Context, req *ocm.CreateOCMShareRequest) (*ocm.CreateOCMShareResponse, error) {
-	c, err := pool.GetOCMShareProviderClient(s.c.OCMShareProviderEndpoint)
+	c, err := pool.GetOCMShareProviderClient(s.c.OCMShareProviderEndpoint, s.c.CertFile)
 	if err != nil {
 		return &ocm.CreateOCMShareResponse{
 			Status: status.NewInternal(ctx, err, "error getting user share provider client"),
@@ -69,7 +69,7 @@ func (s *svc) CreateOCMShare(ctx context.Context, req *ocm.CreateOCMShareRequest
 }
 
 func (s *svc) RemoveOCMShare(ctx context.Context, req *ocm.RemoveOCMShareRequest) (*ocm.RemoveOCMShareResponse, error) {
-	c, err := pool.GetOCMShareProviderClient(s.c.OCMShareProviderEndpoint)
+	c, err := pool.GetOCMShareProviderClient(s.c.OCMShareProviderEndpoint, s.c.CertFile)
 	if err != nil {
 		return &ocm.RemoveOCMShareResponse{
 			Status: status.NewInternal(ctx, err, "error getting user share provider client"),
@@ -131,7 +131,7 @@ func (s *svc) GetOCMShare(ctx context.Context, req *ocm.GetOCMShareRequest) (*oc
 }
 
 func (s *svc) getOCMShare(ctx context.Context, req *ocm.GetOCMShareRequest) (*ocm.GetOCMShareResponse, error) {
-	c, err := pool.GetOCMShareProviderClient(s.c.OCMShareProviderEndpoint)
+	c, err := pool.GetOCMShareProviderClient(s.c.OCMShareProviderEndpoint, s.c.CertFile)
 	if err != nil {
 		err = errors.Wrap(err, "gateway: error calling GetOCMShareProviderClient")
 		return &ocm.GetOCMShareResponse{
@@ -149,7 +149,7 @@ func (s *svc) getOCMShare(ctx context.Context, req *ocm.GetOCMShareRequest) (*oc
 
 // TODO(labkode): read GetShare comment.
 func (s *svc) ListOCMShares(ctx context.Context, req *ocm.ListOCMSharesRequest) (*ocm.ListOCMSharesResponse, error) {
-	c, err := pool.GetOCMShareProviderClient(s.c.OCMShareProviderEndpoint)
+	c, err := pool.GetOCMShareProviderClient(s.c.OCMShareProviderEndpoint, s.c.CertFile)
 	if err != nil {
 		err = errors.Wrap(err, "gateway: error calling GetOCMShareProviderClient")
 		return &ocm.ListOCMSharesResponse{
@@ -166,7 +166,7 @@ func (s *svc) ListOCMShares(ctx context.Context, req *ocm.ListOCMSharesRequest) 
 }
 
 func (s *svc) UpdateOCMShare(ctx context.Context, req *ocm.UpdateOCMShareRequest) (*ocm.UpdateOCMShareResponse, error) {
-	c, err := pool.GetOCMShareProviderClient(s.c.OCMShareProviderEndpoint)
+	c, err := pool.GetOCMShareProviderClient(s.c.OCMShareProviderEndpoint, s.c.CertFile)
 	if err != nil {
 		err = errors.Wrap(err, "gateway: error calling GetOCMShareProviderClient")
 		return &ocm.UpdateOCMShareResponse{
@@ -183,7 +183,7 @@ func (s *svc) UpdateOCMShare(ctx context.Context, req *ocm.UpdateOCMShareRequest
 }
 
 func (s *svc) ListReceivedOCMShares(ctx context.Context, req *ocm.ListReceivedOCMSharesRequest) (*ocm.ListReceivedOCMSharesResponse, error) {
-	c, err := pool.GetOCMShareProviderClient(s.c.OCMShareProviderEndpoint)
+	c, err := pool.GetOCMShareProviderClient(s.c.OCMShareProviderEndpoint, s.c.CertFile)
 	if err != nil {
 		err = errors.Wrap(err, "gateway: error calling GetOCMShareProviderClient")
 		return &ocm.ListReceivedOCMSharesResponse{
@@ -201,7 +201,7 @@ func (s *svc) ListReceivedOCMShares(ctx context.Context, req *ocm.ListReceivedOC
 
 func (s *svc) UpdateReceivedOCMShare(ctx context.Context, req *ocm.UpdateReceivedOCMShareRequest) (*ocm.UpdateReceivedOCMShareResponse, error) {
 	log := appctx.GetLogger(ctx)
-	c, err := pool.GetOCMShareProviderClient(s.c.OCMShareProviderEndpoint)
+	c, err := pool.GetOCMShareProviderClient(s.c.OCMShareProviderEndpoint, s.c.CertFile)
 	if err != nil {
 		err = errors.Wrap(err, "gateway: error calling GetOCMShareProviderClient")
 		return &ocm.UpdateReceivedOCMShareResponse{
@@ -275,7 +275,7 @@ func (s *svc) UpdateReceivedOCMShare(ctx context.Context, req *ocm.UpdateReceive
 }
 
 func (s *svc) GetReceivedOCMShare(ctx context.Context, req *ocm.GetReceivedOCMShareRequest) (*ocm.GetReceivedOCMShareResponse, error) {
-	c, err := pool.GetOCMShareProviderClient(s.c.OCMShareProviderEndpoint)
+	c, err := pool.GetOCMShareProviderClient(s.c.OCMShareProviderEndpoint, s.c.CertFile)
 	if err != nil {
 		err = errors.Wrap(err, "gateway: error calling GetOCMShareProviderClient")
 		return &ocm.GetReceivedOCMShareResponse{

@@ -63,6 +63,7 @@ type config struct {
 	TransferSharedSecret          string `mapstructure:"transfer_shared_secret"`
 	TransferExpires               int64  `mapstructure:"transfer_expires"`
 	TokenManager                  string `mapstructure:"token_manager"`
+	CertFile                      string `mapstructure:"certfile"`
 	// ShareFolder is the location where to create shares in the recipient's storage provider.
 	ShareFolder         string                            `mapstructure:"share_folder"`
 	DataTransfersFolder string                            `mapstructure:"data_transfers_folder"`

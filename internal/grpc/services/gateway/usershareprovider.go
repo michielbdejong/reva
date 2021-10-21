@@ -42,7 +42,7 @@ func (s *svc) CreateShare(ctx context.Context, req *collaboration.CreateShareReq
 		return nil, errtypes.AlreadyExists("gateway: can't share the share folder itself")
 	}
 
-	c, err := pool.GetUserShareProviderClient(s.c.UserShareProviderEndpoint)
+	c, err := pool.GetUserShareProviderClient(s.c.UserShareProviderEndpoint, s.c.CertFile)
 	if err != nil {
 		return &collaboration.CreateShareResponse{
 			Status: status.NewInternal(ctx, err, "error getting user share provider client"),
@@ -95,7 +95,7 @@ func (s *svc) CreateShare(ctx context.Context, req *collaboration.CreateShareReq
 }
 
 func (s *svc) RemoveShare(ctx context.Context, req *collaboration.RemoveShareRequest) (*collaboration.RemoveShareResponse, error) {
-	c, err := pool.GetUserShareProviderClient(s.c.UserShareProviderEndpoint)
+	c, err := pool.GetUserShareProviderClient(s.c.UserShareProviderEndpoint, s.c.CertFile)
 	if err != nil {
 		return &collaboration.RemoveShareResponse{
 			Status: status.NewInternal(ctx, err, "error getting user share provider client"),
@@ -159,7 +159,7 @@ func (s *svc) GetShare(ctx context.Context, req *collaboration.GetShareRequest) 
 }
 
 func (s *svc) getShare(ctx context.Context, req *collaboration.GetShareRequest) (*collaboration.GetShareResponse, error) {
-	c, err := pool.GetUserShareProviderClient(s.c.UserShareProviderEndpoint)
+	c, err := pool.GetUserShareProviderClient(s.c.UserShareProviderEndpoint, s.c.CertFile)
 	if err != nil {
 		err = errors.Wrap(err, "gateway: error calling GetUserShareProviderClient")
 		return &collaboration.GetShareResponse{
@@ -177,7 +177,7 @@ func (s *svc) getShare(ctx context.Context, req *collaboration.GetShareRequest) 
 
 // TODO(labkode): read GetShare comment.
 func (s *svc) ListShares(ctx context.Context, req *collaboration.ListSharesRequest) (*collaboration.ListSharesResponse, error) {
-	c, err := pool.GetUserShareProviderClient(s.c.UserShareProviderEndpoint)
+	c, err := pool.GetUserShareProviderClient(s.c.UserShareProviderEndpoint, s.c.CertFile)
 	if err != nil {
 		err = errors.Wrap(err, "gateway: error calling GetUserShareProviderClient")
 		return &collaboration.ListSharesResponse{
@@ -194,7 +194,7 @@ func (s *svc) ListShares(ctx context.Context, req *collaboration.ListSharesReque
 }
 
 func (s *svc) UpdateShare(ctx context.Context, req *collaboration.UpdateShareRequest) (*collaboration.UpdateShareResponse, error) {
-	c, err := pool.GetUserShareProviderClient(s.c.UserShareProviderEndpoint)
+	c, err := pool.GetUserShareProviderClient(s.c.UserShareProviderEndpoint, s.c.CertFile)
 	if err != nil {
 		err = errors.Wrap(err, "gateway: error calling GetUserShareProviderClient")
 		return &collaboration.UpdateShareResponse{
@@ -238,7 +238,7 @@ func (s *svc) UpdateShare(ctx context.Context, req *collaboration.UpdateShareReq
 // received shares. The display name of the shares should be the a friendly name, like the basename
 // of the original file.
 func (s *svc) ListReceivedShares(ctx context.Context, req *collaboration.ListReceivedSharesRequest) (*collaboration.ListReceivedSharesResponse, error) {
-	c, err := pool.GetUserShareProviderClient(s.c.UserShareProviderEndpoint)
+	c, err := pool.GetUserShareProviderClient(s.c.UserShareProviderEndpoint, s.c.CertFile)
 	if err != nil {
 		err = errors.Wrap(err, "gateway: error calling GetUserShareProviderClient")
 		return &collaboration.ListReceivedSharesResponse{
@@ -254,7 +254,7 @@ func (s *svc) ListReceivedShares(ctx context.Context, req *collaboration.ListRec
 }
 
 func (s *svc) GetReceivedShare(ctx context.Context, req *collaboration.GetReceivedShareRequest) (*collaboration.GetReceivedShareResponse, error) {
-	c, err := pool.GetUserShareProviderClient(s.c.UserShareProviderEndpoint)
+	c, err := pool.GetUserShareProviderClient(s.c.UserShareProviderEndpoint, s.c.CertFile)
 	if err != nil {
 		err := errors.Wrap(err, "gateway: error getting user share provider client")
 		return &collaboration.GetReceivedShareResponse{
@@ -276,7 +276,7 @@ func (s *svc) GetReceivedShare(ctx context.Context, req *collaboration.GetReceiv
 //   2) if received share is not mounted: we only rename in user share provider.
 func (s *svc) UpdateReceivedShare(ctx context.Context, req *collaboration.UpdateReceivedShareRequest) (*collaboration.UpdateReceivedShareResponse, error) {
 	log := appctx.GetLogger(ctx)
-	c, err := pool.GetUserShareProviderClient(s.c.UserShareProviderEndpoint)
+	c, err := pool.GetUserShareProviderClient(s.c.UserShareProviderEndpoint, s.c.CertFile)
 	if err != nil {
 		err = errors.Wrap(err, "gateway: error calling GetUserShareProviderClient")
 		return &collaboration.UpdateReceivedShareResponse{

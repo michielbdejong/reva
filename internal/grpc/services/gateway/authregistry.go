@@ -30,7 +30,7 @@ import (
 )
 
 func (s *svc) ListAuthProviders(ctx context.Context, req *registry.ListAuthProvidersRequest) (*gateway.ListAuthProvidersResponse, error) {
-	c, err := pool.GetAuthRegistryServiceClient(s.c.AuthRegistryEndpoint)
+	c, err := pool.GetAuthRegistryServiceClient(s.c.AuthRegistryEndpoint, s.c.CertFile)
 	if err != nil {
 		err = errors.Wrap(err, "gateway: error getting auth registry client")
 		return &gateway.ListAuthProvidersResponse{

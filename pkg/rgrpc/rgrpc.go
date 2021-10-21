@@ -223,6 +223,7 @@ func (s *Server) registerServices() error {
 		if err != nil {
 			s.log.Info().Msgf("cannot load TLS credentials '%s' '%s'", s.conf.CertFile, s.conf.KeyFile)
 		} else {
+
 			opts = append(opts, grpc.Creds(tlsCredentials))
 		}
 	} else {

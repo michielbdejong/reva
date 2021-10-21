@@ -84,10 +84,17 @@ var (
 // with open census tracing support.
 // TODO(labkode): make grpc tls configurable.
 // TODO make maxCallRecvMsgSize configurable, raised from the default 4MB to be able to list 10k files
-func NewConn(endpoint string) (*grpc.ClientConn, error) {
+func NewConn(endpoint string, certfile string) (*grpc.ClientConn, error) {
+	var dialOption DialOption
+	if certfile {
+		creds, _ := credentials.NewClientTLSFromFile(certfile, "")
+		dialOption = grpc.WithTransportCredentials(creds)
+	} else {
+		dialOption = grpc.WithInsecure()
+	}
 	conn, err := grpc.Dial(
 		endpoint,
-		grpc.WithInsecure(),
+		dialOption,
 		grpc.WithDefaultCallOptions(
 			grpc.MaxCallRecvMsgSize(maxCallRecvMsgSize),
 		),
@@ -118,7 +125,7 @@ func NewConn(endpoint string) (*grpc.ClientConn, error) {
 }
 
 // GetGatewayServiceClient returns a GatewayServiceClient.
-func GetGatewayServiceClient(endpoint string) (gateway.GatewayAPIClient, error) {
+func GetGatewayServiceClient(endpoint string, certfile string) (gateway.GatewayAPIClient, error) {
 	gatewayProviders.m.Lock()
 	defer gatewayProviders.m.Unlock()
 
@@ -126,7 +133,7 @@ func GetGatewayServiceClient(endpoint string) (gateway.GatewayAPIClient, error) 
 		return val.(gateway.GatewayAPIClient), nil
 	}
 
-	conn, err := NewConn(endpoint)
+	conn, err := NewConn(endpoint, certfile)
 	if err != nil {
 		return nil, err
 	}
@@ -138,7 +145,7 @@ func GetGatewayServiceClient(endpoint string) (gateway.GatewayAPIClient, error) 
 }
 
 // GetUserProviderServiceClient returns a UserProviderServiceClient.
-func GetUserProviderServiceClient(endpoint string) (user.UserAPIClient, error) {
+func GetUserProviderServiceClient(endpoint string, certfile string) (user.UserAPIClient, error) {
 	userProviders.m.Lock()
 	defer userProviders.m.Unlock()
 
@@ -146,7 +153,7 @@ func GetUserProviderServiceClient(endpoint string) (user.UserAPIClient, error) {
 		return val.(user.UserAPIClient), nil
 	}
 
-	conn, err := NewConn(endpoint)
+	conn, err := NewConn(endpoint, certfile)
 	if err != nil {
 		return nil, err
 	}
@@ -157,7 +164,7 @@ func GetUserProviderServiceClient(endpoint string) (user.UserAPIClient, error) {
 }
 
 // GetGroupProviderServiceClient returns a GroupProviderServiceClient.
-func GetGroupProviderServiceClient(endpoint string) (group.GroupAPIClient, error) {
+func GetGroupProviderServiceClient(endpoint string, certfile string) (group.GroupAPIClient, error) {
 	groupProviders.m.Lock()
 	defer groupProviders.m.Unlock()
 
@@ -165,7 +172,7 @@ func GetGroupProviderServiceClient(endpoint string) (group.GroupAPIClient, error
 		return val.(group.GroupAPIClient), nil
 	}
 
-	conn, err := NewConn(endpoint)
+	conn, err := NewConn(endpoint, certfile)
 	if err != nil {
 		return nil, err
 	}
@@ -176,7 +183,7 @@ func GetGroupProviderServiceClient(endpoint string) (group.GroupAPIClient, error
 }
 
 // GetStorageProviderServiceClient returns a StorageProviderServiceClient.
-func GetStorageProviderServiceClient(endpoint string) (storageprovider.ProviderAPIClient, error) {
+func GetStorageProviderServiceClient(endpoint string, certfile string) (storageprovider.ProviderAPIClient, error) {
 	storageProviders.m.Lock()
 	defer storageProviders.m.Unlock()
 
@@ -184,7 +191,7 @@ func GetStorageProviderServiceClient(endpoint string) (storageprovider.ProviderA
 		return c.(storageprovider.ProviderAPIClient), nil
 	}
 
-	conn, err := NewConn(endpoint)
+	conn, err := NewConn(endpoint, certfile)
 	if err != nil {
 		return nil, err
 	}
@@ -195,7 +202,7 @@ func GetStorageProviderServiceClient(endpoint string) (storageprovider.ProviderA
 }
 
 // GetAuthRegistryServiceClient returns a new AuthRegistryServiceClient.
-func GetAuthRegistryServiceClient(endpoint string) (authregistry.RegistryAPIClient, error) {
+func GetAuthRegistryServiceClient(endpoint string, certfile string) (authregistry.RegistryAPIClient, error) {
 	authRegistries.m.Lock()
 	defer authRegistries.m.Unlock()
 
@@ -205,7 +212,7 @@ func GetAuthRegistryServiceClient(endpoint string) (authregistry.RegistryAPIClie
 	}
 
 	// if not, create a new connection
-	conn, err := NewConn(endpoint)
+	conn, err := NewConn(endpoint, certfile)
 	if err != nil {
 		return nil, err
 	}
@@ -217,7 +224,7 @@ func GetAuthRegistryServiceClient(endpoint string) (authregistry.RegistryAPIClie
 }
 
 // GetAuthProviderServiceClient returns a new AuthProviderServiceClient.
-func GetAuthProviderServiceClient(endpoint string) (authprovider.ProviderAPIClient, error) {
+func GetAuthProviderServiceClient(endpoint string, certfile string) (authprovider.ProviderAPIClient, error) {
 	authProviders.m.Lock()
 	defer authProviders.m.Unlock()
 
@@ -225,7 +232,7 @@ func GetAuthProviderServiceClient(endpoint string) (authprovider.ProviderAPIClie
 		return c.(authprovider.ProviderAPIClient), nil
 	}
 
-	conn, err := NewConn(endpoint)
+	conn, err := NewConn(endpoint, certfile)
 	if err != nil {
 		return nil, err
 	}
@@ -236,7 +243,7 @@ func GetAuthProviderServiceClient(endpoint string) (authprovider.ProviderAPIClie
 }
 
 // GetAppAuthProviderServiceClient returns a new AppAuthProviderServiceClient.
-func GetAppAuthProviderServiceClient(endpoint string) (applicationauth.ApplicationsAPIClient, error) {
+func GetAppAuthProviderServiceClient(endpoint string, certfile string) (applicationauth.ApplicationsAPIClient, error) {
 	appAuthProviders.m.Lock()
 	defer appAuthProviders.m.Unlock()
 
@@ -244,7 +251,7 @@ func GetAppAuthProviderServiceClient(endpoint string) (applicationauth.Applicati
 		return c.(applicationauth.ApplicationsAPIClient), nil
 	}
 
-	conn, err := NewConn(endpoint)
+	conn, err := NewConn(endpoint, certfile)
 	if err != nil {
 		return nil, err
 	}
@@ -255,7 +262,7 @@ func GetAppAuthProviderServiceClient(endpoint string) (applicationauth.Applicati
 }
 
 // GetUserShareProviderClient returns a new UserShareProviderClient.
-func GetUserShareProviderClient(endpoint string) (collaboration.CollaborationAPIClient, error) {
+func GetUserShareProviderClient(endpoint string, certfile string) (collaboration.CollaborationAPIClient, error) {
 	userShareProviders.m.Lock()
 	defer userShareProviders.m.Unlock()
 
@@ -263,7 +270,7 @@ func GetUserShareProviderClient(endpoint string) (collaboration.CollaborationAPI
 		return c.(collaboration.CollaborationAPIClient), nil
 	}
 
-	conn, err := NewConn(endpoint)
+	conn, err := NewConn(endpoint, certfile)
 	if err != nil {
 		return nil, err
 	}
@@ -274,7 +281,7 @@ func GetUserShareProviderClient(endpoint string) (collaboration.CollaborationAPI
 }
 
 // GetOCMShareProviderClient returns a new OCMShareProviderClient.
-func GetOCMShareProviderClient(endpoint string) (ocm.OcmAPIClient, error) {
+func GetOCMShareProviderClient(endpoint string, certfile string) (ocm.OcmAPIClient, error) {
 	ocmShareProviders.m.Lock()
 	defer ocmShareProviders.m.Unlock()
 
@@ -282,7 +289,7 @@ func GetOCMShareProviderClient(endpoint string) (ocm.OcmAPIClient, error) {
 		return c.(ocm.OcmAPIClient), nil
 	}
 
-	conn, err := NewConn(endpoint)
+	conn, err := NewConn(endpoint, certfile)
 	if err != nil {
 		return nil, err
 	}
@@ -293,7 +300,7 @@ func GetOCMShareProviderClient(endpoint string) (ocm.OcmAPIClient, error) {
 }
 
 // GetOCMInviteManagerClient returns a new OCMInviteManagerClient.
-func GetOCMInviteManagerClient(endpoint string) (invitepb.InviteAPIClient, error) {
+func GetOCMInviteManagerClient(endpoint string, certfile string) (invitepb.InviteAPIClient, error) {
 	ocmInviteManagers.m.Lock()
 	defer ocmInviteManagers.m.Unlock()
 
@@ -301,7 +308,7 @@ func GetOCMInviteManagerClient(endpoint string) (invitepb.InviteAPIClient, error
 		return c.(invitepb.InviteAPIClient), nil
 	}
 
-	conn, err := NewConn(endpoint)
+	conn, err := NewConn(endpoint, certfile)
 	if err != nil {
 		return nil, err
 	}
@@ -312,7 +319,7 @@ func GetOCMInviteManagerClient(endpoint string) (invitepb.InviteAPIClient, error
 }
 
 // GetPublicShareProviderClient returns a new PublicShareProviderClient.
-func GetPublicShareProviderClient(endpoint string) (link.LinkAPIClient, error) {
+func GetPublicShareProviderClient(endpoint string, certfile string) (link.LinkAPIClient, error) {
 	publicShareProviders.m.Lock()
 	defer publicShareProviders.m.Unlock()
 
@@ -320,7 +327,7 @@ func GetPublicShareProviderClient(endpoint string) (link.LinkAPIClient, error) {
 		return c.(link.LinkAPIClient), nil
 	}
 
-	conn, err := NewConn(endpoint)
+	conn, err := NewConn(endpoint, certfile)
 	if err != nil {
 		return nil, err
 	}
@@ -331,7 +338,7 @@ func GetPublicShareProviderClient(endpoint string) (link.LinkAPIClient, error) {
 }
 
 // GetPreferencesClient returns a new PreferencesClient.
-func GetPreferencesClient(endpoint string) (preferences.PreferencesAPIClient, error) {
+func GetPreferencesClient(endpoint string, certfile string) (preferences.PreferencesAPIClient, error) {
 	preferencesProviders.m.Lock()
 	defer preferencesProviders.m.Unlock()
 
@@ -339,7 +346,7 @@ func GetPreferencesClient(endpoint string) (preferences.PreferencesAPIClient, er
 		return c.(preferences.PreferencesAPIClient), nil
 	}
 
-	conn, err := NewConn(endpoint)
+	conn, err := NewConn(endpoint, certfile)
 	if err != nil {
 		return nil, err
 	}
@@ -350,7 +357,7 @@ func GetPreferencesClient(endpoint string) (preferences.PreferencesAPIClient, er
 }
 
 // GetAppRegistryClient returns a new AppRegistryClient.
-func GetAppRegistryClient(endpoint string) (appregistry.RegistryAPIClient, error) {
+func GetAppRegistryClient(endpoint string, certfile string) (appregistry.RegistryAPIClient, error) {
 	appRegistries.m.Lock()
 	defer appRegistries.m.Unlock()
 
@@ -358,7 +365,7 @@ func GetAppRegistryClient(endpoint string) (appregistry.RegistryAPIClient, error
 		return c.(appregistry.RegistryAPIClient), nil
 	}
 
-	conn, err := NewConn(endpoint)
+	conn, err := NewConn(endpoint, certfile)
 	if err != nil {
 		return nil, err
 	}
@@ -369,7 +376,7 @@ func GetAppRegistryClient(endpoint string) (appregistry.RegistryAPIClient, error
 }
 
 // GetAppProviderClient returns a new AppRegistryClient.
-func GetAppProviderClient(endpoint string) (appprovider.ProviderAPIClient, error) {
+func GetAppProviderClient(endpoint string, certfile string) (appprovider.ProviderAPIClient, error) {
 	appProviders.m.Lock()
 	defer appProviders.m.Unlock()
 
@@ -377,7 +384,7 @@ func GetAppProviderClient(endpoint string) (appprovider.ProviderAPIClient, error
 		return c.(appprovider.ProviderAPIClient), nil
 	}
 
-	conn, err := NewConn(endpoint)
+	conn, err := NewConn(endpoint, certfile)
 	if err != nil {
 		return nil, err
 	}
@@ -388,7 +395,7 @@ func GetAppProviderClient(endpoint string) (appprovider.ProviderAPIClient, error
 }
 
 // GetStorageRegistryClient returns a new StorageRegistryClient.
-func GetStorageRegistryClient(endpoint string) (storageregistry.RegistryAPIClient, error) {
+func GetStorageRegistryClient(endpoint string, certfile string) (storageregistry.RegistryAPIClient, error) {
 	storageRegistries.m.Lock()
 	defer storageRegistries.m.Unlock()
 
@@ -396,7 +403,7 @@ func GetStorageRegistryClient(endpoint string) (storageregistry.RegistryAPIClien
 		return c.(storageregistry.RegistryAPIClient), nil
 	}
 
-	conn, err := NewConn(endpoint)
+	conn, err := NewConn(endpoint, certfile)
 	if err != nil {
 		return nil, err
 	}
@@ -407,7 +414,7 @@ func GetStorageRegistryClient(endpoint string) (storageregistry.RegistryAPIClien
 }
 
 // GetOCMProviderAuthorizerClient returns a new OCMProviderAuthorizerClient.
-func GetOCMProviderAuthorizerClient(endpoint string) (ocmprovider.ProviderAPIClient, error) {
+func GetOCMProviderAuthorizerClient(endpoint string, certfile string) (ocmprovider.ProviderAPIClient, error) {
 	ocmProviderAuthorizers.m.Lock()
 	defer ocmProviderAuthorizers.m.Unlock()
 
@@ -415,7 +422,7 @@ func GetOCMProviderAuthorizerClient(endpoint string) (ocmprovider.ProviderAPICli
 		return c.(ocmprovider.ProviderAPIClient), nil
 	}
 
-	conn, err := NewConn(endpoint)
+	conn, err := NewConn(endpoint, certfile)
 	if err != nil {
 		return nil, err
 	}
@@ -426,7 +433,7 @@ func GetOCMProviderAuthorizerClient(endpoint string) (ocmprovider.ProviderAPICli
 }
 
 // GetOCMCoreClient returns a new OCMCoreClient.
-func GetOCMCoreClient(endpoint string) (ocmcore.OcmCoreAPIClient, error) {
+func GetOCMCoreClient(endpoint string, certfile string) (ocmcore.OcmCoreAPIClient, error) {
 	ocmCores.m.Lock()
 	defer ocmCores.m.Unlock()
 
@@ -434,7 +441,7 @@ func GetOCMCoreClient(endpoint string) (ocmcore.OcmCoreAPIClient, error) {
 		return c.(ocmcore.OcmCoreAPIClient), nil
 	}
 
-	conn, err := NewConn(endpoint)
+	conn, err := NewConn(endpoint, certfile)
 	if err != nil {
 		return nil, err
 	}
@@ -445,7 +452,7 @@ func GetOCMCoreClient(endpoint string) (ocmcore.OcmCoreAPIClient, error) {
 }
 
 // GetDataTxClient returns a new DataTxClient.
-func GetDataTxClient(endpoint string) (datatx.TxAPIClient, error) {
+func GetDataTxClient(endpoint string, certfile string) (datatx.TxAPIClient, error) {
 	dataTxs.m.Lock()
 	defer dataTxs.m.Unlock()
 
@@ -453,7 +460,7 @@ func GetDataTxClient(endpoint string) (datatx.TxAPIClient, error) {
 		return c.(datatx.TxAPIClient), nil
 	}
 
-	conn, err := NewConn(endpoint)
+	conn, err := NewConn(endpoint, certfile)
 	if err != nil {
 		return nil, err
 	}
