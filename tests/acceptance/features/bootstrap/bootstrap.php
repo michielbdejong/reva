@@ -1,7 +1,8 @@
 <?php
+
 $pathToCore = \getenv('PATH_TO_CORE');
 if ($pathToCore === false) {
-    $pathToCore = "../core";
+	$pathToCore = "../core";
 }
 
 require_once $pathToCore . '/tests/acceptance/features/bootstrap/bootstrap.php';
