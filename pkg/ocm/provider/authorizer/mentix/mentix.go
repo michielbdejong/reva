@@ -278,7 +278,6 @@ func (a *authorizer) getOCMHost(ctx context.Context, provider *ocmprovider.Provi
 	log := appctx.GetLogger(ctx)
 	log.Info().Msgf("Getting OCM Host for %s\n", provider.Domain)
 	for _, s := range provider.Services {
-		log.Info().Msgf("Found service of type %s - YES!\n", s.Endpoint.Type.Name)
 		if s.Endpoint.Type.Name == "OCM" {
 			log.Info().Msgf("Found service of type %s - YES!\n", s.Endpoint.Type.Name)
 			return s.Host, nil
