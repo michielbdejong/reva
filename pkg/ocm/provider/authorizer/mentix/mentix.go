@@ -267,14 +267,23 @@ func (a *authorizer) getOCMProviders(providers []*ocmprovider.ProviderInfo) (po 
 	return
 }
 
-func (a *authorizer) getOCMHost(provider *ocmprovider.ProviderInfo) (string, error) {
+func (a *authorizer) getOCMHost(ctx, provider *ocmprovider.ProviderInfo) (string, error) {
+	log := appctx.GetLogger(ctx)
+	log.Info().Msgf("Getting OCM Host for %s\n", provider.Domain)
 	for _, s := range provider.Services {
+		log.Info().Msgf("Found service of type %s - YES!\n", s.Endpoint.Type.Name)
 		if s.Endpoint.Type.Name == "OCM" {
+			log.Info().Msgf("Found service of type %s - YES!\n", s.Endpoint.Type.Name)
 			ocmHost, err := url.Parse(s.Host)
 			if err != nil {
+				log.Info().Msgf("Found service host %s - NO!\n", s.Host)
 				return "", errors.Wrap(err, fmt.Sprintf("mentix: error parsing OCM host URL %s", s.Host))
+			} else {
+				log.Info().Msgf("Found service host %s - YES!\n", s.Host)
 			}
 			return ocmHost.Host, nil
+		} else {
+			log.Info().Msgf("Found service of type %s - NO!\n", s.Endpoint.Type.Name)
 		}
 	}
 	return "", errtypes.NotFound("OCM Host")
