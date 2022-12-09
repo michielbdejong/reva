@@ -112,7 +112,7 @@ func normalizeDomain(d string) (string, error) {
 	return u.Hostname(), nil
 }
 
-func (a *authorizer) fetchProviders() ([]*ocmprovider.ProviderInfo, error) {
+func (a *authorizer) fetchProviders(ctx context.Context) ([]*ocmprovider.ProviderInfo, error) {
 	if (a.providers != nil) && (time.Now().Unix() < a.providersExpiration) {
 		return a.providers, nil
 	}
@@ -138,7 +138,7 @@ func (a *authorizer) fetchProviders() ([]*ocmprovider.ProviderInfo, error) {
 		return nil, err
 	}
 
-	a.providers = a.getOCMProviders(providers)
+	a.providers = a.getOCMProviders(ctx, providers)
 	if a.conf.RefreshInterval > 0 {
 		a.providersExpiration = time.Now().Unix() + a.conf.RefreshInterval
 	}
@@ -148,7 +148,7 @@ func (a *authorizer) fetchProviders() ([]*ocmprovider.ProviderInfo, error) {
 func (a *authorizer) GetInfoByDomain(ctx context.Context, domain string) (*ocmprovider.ProviderInfo, error) {
 	log := appctx.GetLogger(ctx)
 	normalizedDomain, err := normalizeDomain(domain)
-	providers, err := a.fetchProviders()
+	providers, err := a.fetchProviders(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -167,7 +167,7 @@ func (a *authorizer) GetInfoByDomain(ctx context.Context, domain string) (*ocmpr
 
 func (a *authorizer) IsProviderAllowed(ctx context.Context, pi *ocmprovider.ProviderInfo) error {
 	log := appctx.GetLogger(ctx)
-	providers, err := a.fetchProviders()
+	providers, err := a.fetchProviders(ctx)
 	if err != nil {
 		return err
 	}
@@ -250,7 +250,7 @@ func (a *authorizer) IsProviderAllowed(ctx context.Context, pi *ocmprovider.Prov
 }
 
 func (a *authorizer) ListAllProviders(ctx context.Context) ([]*ocmprovider.ProviderInfo, error) {
-	providers, err := a.fetchProviders()
+	providers, err := a.fetchProviders(ctx)
 	if err != nil {
 		return nil, err
 	}
