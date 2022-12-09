@@ -205,7 +205,7 @@ func (a *authorizer) IsProviderAllowed(ctx context.Context, pi *ocmprovider.Prov
 	var ocmHost string
 	for _, p := range providers {
 		if p.Domain == normalizedDomain {
-			ocmHost, err = a.getOCMHost(p)
+			ocmHost, err = a.getOCMHost(ctx, p)
 			if err != nil {
 				return err
 			}
@@ -257,9 +257,9 @@ func (a *authorizer) ListAllProviders(ctx context.Context) ([]*ocmprovider.Provi
 	return providers, nil
 }
 
-func (a *authorizer) getOCMProviders(providers []*ocmprovider.ProviderInfo) (po []*ocmprovider.ProviderInfo) {
+func (a *authorizer) getOCMProviders(ctx context.Context, providers []*ocmprovider.ProviderInfo) (po []*ocmprovider.ProviderInfo) {
 	for _, p := range providers {
-		_, err := a.getOCMHost(p)
+		_, err := a.getOCMHost(ctx, p)
 		if err == nil {
 			po = append(po, p)
 		}
@@ -267,7 +267,7 @@ func (a *authorizer) getOCMProviders(providers []*ocmprovider.ProviderInfo) (po 
 	return
 }
 
-func (a *authorizer) getOCMHost(ctx, provider *ocmprovider.ProviderInfo) (string, error) {
+func (a *authorizer) getOCMHost(ctx context.Context, provider *ocmprovider.ProviderInfo) (string, error) {
 	log := appctx.GetLogger(ctx)
 	log.Info().Msgf("Getting OCM Host for %s\n", provider.Domain)
 	for _, s := range provider.Services {
