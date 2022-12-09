@@ -155,7 +155,7 @@ func (a *authorizer) GetInfoByDomain(ctx context.Context, domain string) (*ocmpr
 
 	log.Info().Msgf("Getting info for domain %s among authorized domains", domain)
 	for _, p := range providers {
-		if strings.Contains(p.Domain, normalizedDomain) {
+		if p.Domain == normalizedDomain {
 			log.Info().Msgf("Considering against %s - YES", p.Domain)
 			return p, nil
 		} else {
@@ -180,7 +180,7 @@ func (a *authorizer) IsProviderAllowed(ctx context.Context, pi *ocmprovider.Prov
 	if normalizedDomain != "" {
 		log.Info().Msgf("Considering %s against authorized domains", normalizedDomain)
 		for _, p := range providers {
-			if p.Domain == provider.Domain {
+			if p.Domain == normalizedDomain {
 				log.Info().Msgf("Considering against %s - YES", p.Domain)
 				providerAuthorized = true
 				break
