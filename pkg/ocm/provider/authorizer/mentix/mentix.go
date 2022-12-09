@@ -1,4 +1,4 @@
-// Copyright 2018-2021 CERN
+// Copyright 2018-2022 CERN
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,12 +29,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cs3org/reva/pkg/rhttp"
-
 	ocmprovider "github.com/cs3org/go-cs3apis/cs3/ocm/provider/v1beta1"
+	"github.com/cs3org/reva/pkg/appctx"
 	"github.com/cs3org/reva/pkg/errtypes"
 	"github.com/cs3org/reva/pkg/ocm/provider"
 	"github.com/cs3org/reva/pkg/ocm/provider/authorizer/registry"
+	"github.com/cs3org/reva/pkg/rhttp"
 	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
 )
@@ -43,7 +43,7 @@ func init() {
 	registry.Register("mentix", New)
 }
 
-// Client is a Mentix API client
+// Client is a Mentix API client.
 type Client struct {
 	BaseURL    string
 	HTTPClient *http.Client
@@ -117,7 +117,7 @@ func (a *authorizer) fetchProviders() ([]*ocmprovider.ProviderInfo, error) {
 		return a.providers, nil
 	}
 
-	req, err := http.NewRequest("GET", a.client.BaseURL, nil)
+	req, err := http.NewRequest(http.MethodGet, a.client.BaseURL, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -146,7 +146,9 @@ func (a *authorizer) fetchProviders() ([]*ocmprovider.ProviderInfo, error) {
 }
 
 func (a *authorizer) GetInfoByDomain(ctx context.Context, domain string) (*ocmprovider.ProviderInfo, error) {
+	log := appctx.GetLogger(ctx)
 	normalizedDomain, err := normalizeDomain(domain)
+	providers, err := a.fetchProviders()
 	if err != nil {
 		return nil, err
 	}
@@ -156,14 +158,19 @@ func (a *authorizer) GetInfoByDomain(ctx context.Context, domain string) (*ocmpr
 		return nil, err
 	}
 	for _, p := range providers {
+		log.Info().Msgf("Getting info for domain %s among authorized domains", domain)
 		if strings.Contains(p.Domain, normalizedDomain) {
+			log.Info().Msgf("Considering against %s - YES", p.Domain)
 			return p, nil
+		} else {
+			log.Info().Msgf("Considering against %s - NO", p.Domain)
 		}
 	}
 	return nil, errtypes.NotFound(domain)
 }
 
 func (a *authorizer) IsProviderAllowed(ctx context.Context, pi *ocmprovider.ProviderInfo) error {
+	log := appctx.GetLogger(ctx)
 	providers, err := a.fetchProviders()
 	if err != nil {
 		return err
@@ -175,10 +182,14 @@ func (a *authorizer) IsProviderAllowed(ctx context.Context, pi *ocmprovider.Prov
 
 	var providerAuthorized bool
 	if normalizedDomain != "" {
+		log.Info().Msgf("Considering %s against authorized domains", provider.Domain)
 		for _, p := range providers {
-			if p.Domain == normalizedDomain {
+			if p.Domain == provider.Domain {
+				log.Info().Msgf("Considering against %s - YES", p.Domain)
 				providerAuthorized = true
 				break
+			} else {
+				log.Info().Msgf("Considering against %s - NO", p.Domain)
 			}
 		}
 	} else {
