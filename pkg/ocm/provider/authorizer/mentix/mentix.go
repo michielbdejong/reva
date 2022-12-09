@@ -153,12 +153,8 @@ func (a *authorizer) GetInfoByDomain(ctx context.Context, domain string) (*ocmpr
 		return nil, err
 	}
 
-	providers, err := a.fetchProviders()
-	if err != nil {
-		return nil, err
-	}
+	log.Info().Msgf("Getting info for domain %s among authorized domains", domain)
 	for _, p := range providers {
-		log.Info().Msgf("Getting info for domain %s among authorized domains", domain)
 		if strings.Contains(p.Domain, normalizedDomain) {
 			log.Info().Msgf("Considering against %s - YES", p.Domain)
 			return p, nil
@@ -182,7 +178,7 @@ func (a *authorizer) IsProviderAllowed(ctx context.Context, pi *ocmprovider.Prov
 
 	var providerAuthorized bool
 	if normalizedDomain != "" {
-		log.Info().Msgf("Considering %s against authorized domains", provider.Domain)
+		log.Info().Msgf("Considering %s against authorized domains", normalizedDomain)
 		for _, p := range providers {
 			if p.Domain == provider.Domain {
 				log.Info().Msgf("Considering against %s - YES", p.Domain)
