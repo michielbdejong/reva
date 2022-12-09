@@ -203,13 +203,20 @@ func (a *authorizer) IsProviderAllowed(ctx context.Context, pi *ocmprovider.Prov
 	}
 
 	var ocmHost string
+	log.Info().Msgf("checking if provider is allowed, finding OCM host for %s\n", normalizedDomain)
 	for _, p := range providers {
 		if p.Domain == normalizedDomain {
+			log.Info().Msgf("Considering %s - Yes, getting ocm host\n", normalizedDomain)
 			ocmHost, err = a.getOCMHost(ctx, p)
 			if err != nil {
+				log.Info().Msgf("Error getting OCM host for %s: %s\n", normalizedDomain, err.Error())
 				return err
+			} else {
+				log.Info().Msgf("Got OCM host for %s: %s\n", normalizedDomain, ocmHost)
 			}
 			break
+		} else {
+			log.Info().Msgf("Considering %s - No, continuing search\n", normalizedDomain)
 		}
 	}
 	if ocmHost == "" {
@@ -274,14 +281,15 @@ func (a *authorizer) getOCMHost(ctx context.Context, provider *ocmprovider.Provi
 		log.Info().Msgf("Found service of type %s - YES!\n", s.Endpoint.Type.Name)
 		if s.Endpoint.Type.Name == "OCM" {
 			log.Info().Msgf("Found service of type %s - YES!\n", s.Endpoint.Type.Name)
-			ocmHost, err := url.Parse(s.Host)
-			if err != nil {
-				log.Info().Msgf("Found service host %s - NO!\n", s.Host)
-				return "", errors.Wrap(err, fmt.Sprintf("mentix: error parsing OCM host URL %s", s.Host))
-			} else {
-				log.Info().Msgf("Found service host %s - YES!\n", s.Host)
-			}
-			return ocmHost.Host, nil
+			return s.Host, nil
+			// // ocmHost, err := url.Parse(s.Host)
+			// if err != nil {
+			// 	log.Info().Msgf("Found service host %s - NO!\n", s.Host)
+			// 	return "", errors.Wrap(err, fmt.Sprintf("mentix: error parsing OCM host URL %s", s.Host))
+			// } else {
+			// 	log.Info().Msgf("Found service host %s - YES!\n", s.Host)
+			// }
+			// return ocmHost.Host, nil
 		} else {
 			log.Info().Msgf("Found service of type %s - NO!\n", s.Endpoint.Type.Name)
 		}
