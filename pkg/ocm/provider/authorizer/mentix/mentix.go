@@ -30,6 +30,7 @@ import (
 	"time"
 
 	ocmprovider "github.com/cs3org/go-cs3apis/cs3/ocm/provider/v1beta1"
+	"github.com/cs3org/reva/pkg/appctx"
 	"github.com/cs3org/reva/pkg/errtypes"
 	"github.com/cs3org/reva/pkg/ocm/provider"
 	"github.com/cs3org/reva/pkg/ocm/provider/authorizer/registry"
@@ -129,20 +130,26 @@ func (a *authorizer) fetchProviders() ([]*ocmprovider.ProviderInfo, error) {
 }
 
 func (a *authorizer) GetInfoByDomain(ctx context.Context, domain string) (*ocmprovider.ProviderInfo, error) {
+	log := appctx.GetLogger(ctx)
 	providers, err := a.fetchProviders()
 	if err != nil {
 		return nil, err
 	}
 
 	for _, p := range providers {
+		log.Info().Msgf("Getting info for domain %s among authorized domains", domain)
 		if strings.Contains(p.Domain, domain) {
+			log.Info().Msgf("Considering against %s - YES", p.Domain)
 			return p, nil
+		} else {
+			log.Info().Msgf("Considering against %s - NO", p.Domain)
 		}
 	}
 	return nil, errtypes.NotFound(domain)
 }
 
 func (a *authorizer) IsProviderAllowed(ctx context.Context, provider *ocmprovider.ProviderInfo) error {
+	log := appctx.GetLogger(ctx)
 	providers, err := a.fetchProviders()
 	if err != nil {
 		return err
@@ -150,10 +157,14 @@ func (a *authorizer) IsProviderAllowed(ctx context.Context, provider *ocmprovide
 
 	var providerAuthorized bool
 	if provider.Domain != "" {
+		log.Info().Msgf("Considering %s against authorized domains", provider.Domain)
 		for _, p := range providers {
 			if p.Domain == provider.Domain {
+				log.Info().Msgf("Considering against %s - YES", p.Domain)
 				providerAuthorized = true
 				break
+			} else {
+				log.Info().Msgf("Considering against %s - NO", p.Domain)
 			}
 		}
 	} else {

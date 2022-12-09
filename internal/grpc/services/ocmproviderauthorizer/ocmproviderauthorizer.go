@@ -22,6 +22,7 @@ import (
 	"context"
 
 	ocmprovider "github.com/cs3org/go-cs3apis/cs3/ocm/provider/v1beta1"
+	"github.com/cs3org/reva/pkg/appctx"
 	"github.com/cs3org/reva/pkg/errtypes"
 	"github.com/cs3org/reva/pkg/ocm/provider"
 	"github.com/cs3org/reva/pkg/ocm/provider/authorizer/registry"
@@ -104,6 +105,9 @@ func (s *service) UnprotectedEndpoints() []string {
 }
 
 func (s *service) GetInfoByDomain(ctx context.Context, req *ocmprovider.GetInfoByDomainRequest) (*ocmprovider.GetInfoByDomainResponse, error) {
+	log := appctx.GetLogger(ctx)
+	log.Info().Msgf("Getting info for domain %s among authorized domains", req.Domain)
+
 	domainInfo, err := s.pa.GetInfoByDomain(ctx, req.Domain)
 	if err != nil {
 		return &ocmprovider.GetInfoByDomainResponse{

@@ -81,6 +81,11 @@ build-cephfs: build-revad-cephfs build-reva
 tidy:
 	go mod tidy
 
+.PHONY: run-revad
+run-revad: imports
+	go run -ldflags ${BUILD_FLAGS} ./cmd/revad
+
+
 .PHONY: build-revad
 build-revad: imports
 	go build -ldflags ${BUILD_FLAGS} -o ./cmd/revad/revad ./cmd/revad
