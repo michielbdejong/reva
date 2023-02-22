@@ -431,7 +431,7 @@ func (s *svc) createOCMReference(ctx context.Context, share *ocm.ReceivedShare) 
 	// targetURI = fmt.Sprintf("%s", share.Creator.Idp)
 	// targetURI = fmt.Sprintf("%s", share.Name)
 	// targetURI = fmt.Sprintf("webdav://%s@%s?name=%s", d.SharedSecret, share.Creator.Idp, share.Name)
-	targetURI = fmt.Sprintf("webdav://%s@%s?name=%s", "d.SharedSecret nil problem", share.Creator.Idp, share.Name)
+	targetURI = fmt.Sprintf("webdav://%s@%s?name=%s", "d.SharedSecret/nil/problem", share.Creator.Idp, share.Name)
 
 	log.Info().Msg("mount path will be:" + refPath)
 	createRefReq := &provider.CreateReferenceRequest{
