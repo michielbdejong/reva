@@ -411,7 +411,7 @@ func getTransferProtocol(share *ocm.ReceivedShare) (*ocm.TransferProtocol, bool)
 func (s *svc) createOCMReference(ctx context.Context, share *ocm.ReceivedShare) (*rpc.Status, error) {
 	log := appctx.GetLogger(ctx)
 
-	d, _ := getTransferProtocol(share)
+	// d, _ := getTransferProtocol(share)
 
 	homeRes, err := s.GetHome(ctx, &provider.GetHomeRequest{})
 	if err != nil {
@@ -426,7 +426,12 @@ func (s *svc) createOCMReference(ctx context.Context, share *ocm.ReceivedShare) 
 	// from the main request.
 	refPath = path.Join(homeRes.Path, s.c.ShareFolder, path.Base(share.Name))
 	// webdav is the scheme, token@host the opaque part and the share name the query of the URL.
-	targetURI = fmt.Sprintf("webdav://%s@%s?name=%s", d.SharedSecret, share.Creator.Idp, share.Name)
+	// targetURI = fmt.Sprintf("%s", d.SharedSecret)
+	// targetURI = fmt.Sprintf("%s", share.Owner.Idp)
+	// targetURI = fmt.Sprintf("%s", share.Creator.Idp)
+	// targetURI = fmt.Sprintf("%s", share.Name)
+	// targetURI = fmt.Sprintf("webdav://%s@%s?name=%s", d.SharedSecret, share.Creator.Idp, share.Name)
+	targetURI = fmt.Sprintf("webdav://%s@%s?name=%s", "d.SharedSecret nil problem", share.Creator.Idp, share.Name)
 
 	log.Info().Msg("mount path will be:" + refPath)
 	createRefReq := &provider.CreateReferenceRequest{
